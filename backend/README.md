@@ -54,7 +54,7 @@ backend/
 - **Migraciones:** Flyway Core + Flyway PostgreSQL
 - **Validación:** Jakarta Bean Validation (Hibernate Validator)
 - **Contenedores:** Docker & Docker Compose
-- **Build Tool:** Gradle 9.3.1 (herramienta de construcción única y canónica con `gradlew`)
+- **Build Tool:** Gradle 8.12 (versión compatible con Spring Boot 3.5.16 y Java 21 LTS mediante `gradlew`)
 
 ---
 
@@ -322,14 +322,15 @@ Todos los endpoints devuelven respuestas estandarizadas bajo el formato `ApiResp
 El despliegue final en producción se llevará a cabo en el servidor TrueNAS SCALE con las siguientes pautas:
 
 - **Hardware:** Intel Xeon E3-1225 v6, 32 GB RAM ECC.
-- **Datasets de Almacenamiento Previstos:**
-  - `Datos/pictohabla-postgres`: Almacenamiento persistente de la base de datos PostgreSQL.
-  - `Datos/pictohabla-uploads`: Archivos multimedia y pictogramas sincronizados.
-  - `Seguridad/pictohabla-backups`: Volcados periódicos automatizados (`pg_dump`).
+- **Datasets de Almacenamiento Reales en TrueNAS:**
+  - `Datos/PictoHabla/Postgres`: Almacenamiento persistente de PostgreSQL (`/mnt/Datos/PictoHabla/Postgres`, UID 70:70, recordsize=16k).
+  - `Datos/PictoHabla/Uploads`: Archivos multimedia y pictogramas (`/mnt/Datos/PictoHabla/Uploads`, UID 1000:1000, recordsize=128k).
+  - `Seguridad/PictoHabla/Backups`: Volcados lógicos periódicos (`/mnt/Seguridad/PictoHabla/Backups`, UID 0:0, 700).
+  - Scripts de soporte: `/mnt/Datos/PictoHabla/scripts/` (`backup.sh` y `restore.sh`).
 - **Conectividad:**
-  - Sin exposición pública de PostgreSQL (aislado en red interna Docker).
-  - Publicación externa exclusiva mediante **Cloudflare Tunnel (`cloudflared`)** con terminación TLS y reglas de acceso seguras.
+  - Sin exposición pública de PostgreSQL (aislado en red interna Docker `pictohabla-net`).
+  - Publicación externa exclusiva mediante **Cloudflare Tunnel (`cloudflared`)** con binding restringido a loopback (`127.0.0.1:18080`).
 - **Límites de Recursos:**
   - PostgreSQL: 256 MB RAM
-  - Spring Boot API: 512 MB RAM
+  - Spring Boot API: 512 MB RAM (JVM con `-XX:MaxRAMPercentage=75.0`)
   *(Garantiza un consumo inferior a 800 MB, conviviendo holgadamente con los ~3 GiB de memoria disponibles en el host).*

@@ -38,23 +38,54 @@ public class RateLimiterService {
     private final Map<String, AttemptRecord> failedLoginByIp = new ConcurrentHashMap<>();
 
     /**
-     * Extrae de forma segura la IP real del cliente, respetando proxies inversos y Cloudflare Tunnel.
+     * Extrae de forma segura la IP real del cliente.
+     * Solo confía en cabeceras de proxy (CF-Connecting-IP, X-Forwarded-For) si la petición
+     * procede de un origen de confianza (Loopback de TrueNAS o red interna Docker).
+     * Si la petición proviene de un cliente LAN directo no confiable, se ignora cualquier
+     * cabecera inyectada y se utiliza estrictamente request.getRemoteAddr().
      */
     public String getClientIp(HttpServletRequest request) {
         if (request == null) {
             return "0.0.0.0";
         }
-        String cfIp = request.getHeader("CF-Connecting-IP");
-        if (cfIp != null && !cfIp.isBlank()) {
-            return cfIp.trim();
+        String remoteAddr = request.getRemoteAddr() != null ? request.getRemoteAddr().trim() : "0.0.0.0";
+
+        if (isTrustedProxy(remoteAddr)) {
+            String cfIp = request.getHeader("CF-Connecting-IP");
+            if (cfIp != null && !cfIp.isBlank()) {
+                return cfIp.trim();
+            }
+            String xff = request.getHeader("X-Forwarded-For");
+            if (xff != null && !xff.isBlank()) {
+                String[] parts = xff.split(",");
+                return parts[0].trim();
+            }
         }
-        String xff = request.getHeader("X-Forwarded-For");
-        if (xff != null && !xff.isBlank()) {
-            // El primer elemento es la IP del cliente original
-            String[] parts = xff.split(",");
-            return parts[0].trim();
+
+        return remoteAddr;
+    }
+
+    private boolean isTrustedProxy(String remoteAddr) {
+        if (remoteAddr == null || remoteAddr.isBlank()) {
+            return false;
         }
-        return request.getRemoteAddr() != null ? request.getRemoteAddr() : "0.0.0.0";
+        // 1. Loopback local (Cloudflare Tunnel ejecutándose en host network en TrueNAS)
+        if (remoteAddr.equals("127.0.0.1") || remoteAddr.equals("::1") || remoteAddr.equals("0:0:0:0:0:0:0:1")) {
+            return true;
+        }
+        // 2. Red interna privada de Docker Bridge (172.16.0.0 - 172.31.255.255)
+        if (remoteAddr.startsWith("172.")) {
+            try {
+                String[] parts = remoteAddr.split("\\.");
+                if (parts.length >= 2) {
+                    int secondOctet = Integer.parseInt(parts[1]);
+                    return secondOctet >= 16 && secondOctet <= 31;
+                }
+            } catch (Exception ignored) {
+                return false;
+            }
+        }
+        return false;
     }
 
     /**
