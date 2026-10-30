@@ -94,7 +94,7 @@ services:
         aliases:
           - pictohabla-backend
     healthcheck:
-      test: ["CMD-SHELL", "curl -f -s http://127.0.0.1:8080/actuator/health > /dev/null || exit 1"]
+      test: ["CMD-SHELL", "curl -f -s http://127.0.0.1:8081/actuator/health > /dev/null || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 3

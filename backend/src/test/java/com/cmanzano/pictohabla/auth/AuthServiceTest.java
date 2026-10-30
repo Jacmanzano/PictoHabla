@@ -204,4 +204,45 @@ class AuthServiceTest {
         assertNull(teacher.getPasswordResetToken());
         verify(refreshTokenRepository).revokeAllTeacherTokens(eq(teacher.getId()), any(Instant.class));
     }
+
+    @Test
+    void forgotPassword_SmtpNotAvailable_ThrowsServiceUnavailable() {
+        // authService en setUp se inicializó sin emailService (null / unavailable)
+        ForgotPasswordRequest request = new ForgotPasswordRequest("profe@colegio.es");
+
+        com.cmanzano.pictohabla.common.exception.ApiException ex = assertThrows(
+                com.cmanzano.pictohabla.common.exception.ApiException.class,
+                () -> authService.forgotPassword(request)
+        );
+
+        assertEquals(org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE, ex.getStatus());
+        assertTrue(ex.getMessage().contains("no está configurado"));
+        verify(teacherRepository, never()).save(any(Teacher.class));
+    }
+
+    @Test
+    void forgotPassword_SmtpAvailable_SendsResetEmail() {
+        com.cmanzano.pictohabla.email.EmailService mockEmailService = mock(com.cmanzano.pictohabla.email.EmailService.class);
+        when(mockEmailService.isAvailable()).thenReturn(true);
+
+        AuthService serviceWithEmail = new AuthService(
+                teacherRepository,
+                refreshTokenRepository,
+                passwordEncoder,
+                jwtService,
+                appProperties,
+                mockEmailService,
+                new com.cmanzano.pictohabla.security.RateLimiterService()
+        );
+
+        Teacher teacher = new Teacher(UUID.randomUUID(), "profe@colegio.es", "oldHash", "Carlos Manzano", TeacherStatus.ACTIVE);
+        when(teacherRepository.findByEmailIgnoreCase("profe@colegio.es")).thenReturn(Optional.of(teacher));
+
+        serviceWithEmail.forgotPassword(new ForgotPasswordRequest("profe@colegio.es"));
+
+        assertNotNull(teacher.getPasswordResetToken());
+        assertNotNull(teacher.getPasswordResetExpiresAt());
+        verify(mockEmailService).sendPasswordResetEmail(eq("profe@colegio.es"), eq("Carlos Manzano"), anyString());
+        verify(teacherRepository).save(teacher);
+    }
 }

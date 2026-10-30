@@ -72,6 +72,20 @@ if [ -d "${POSTGRES_DIR}" ]; then
     if [ "${PG_PERMS}" != "700" ]; then
         echo "    ${YELLOW}ℹ${NC} Recomendación de seguridad POSIX: chmod 700 ${POSTGRES_DIR}"
     fi
+
+    # Inspección de ACL en Postgres
+    if command -v zfs >/dev/null 2>&1; then
+        ZFS_ACL=$(zfs get -H -o value acltype Datos/PictoHabla/Postgres 2>/dev/null || echo "")
+        if [ -n "${ZFS_ACL}" ] && [ "${ZFS_ACL}" != "posix" ] && [ "${ZFS_ACL}" != "off" ]; then
+            echo "    ${YELLOW}⚠ [ALERTA ACL]${NC} Dataset Postgres tiene acltype='${ZFS_ACL}'. Se recomienda 'posix' para evitar bloqueos con UID 70."
+            WARNINGS=$((WARNINGS + 1))
+        fi
+    elif command -v getfacl >/dev/null 2>&1; then
+        if [ "$(getfacl -s "${POSTGRES_DIR}" 2>/dev/null | grep -E '^[^#]' | wc -l)" -gt 3 ]; then
+            echo "    ${YELLOW}⚠ [ALERTA ACL]${NC} Se detectaron ACLs extendidas en ${POSTGRES_DIR}. Comprueba en TrueNAS que no bloqueen a UID 70."
+            WARNINGS=$((WARNINGS + 1))
+        fi
+    fi
 else
     echo "  ${RED}✘ [ERROR CRÍTICO] Dataset no encontrado: ${POSTGRES_DIR}${NC}"
     echo "       Crea el dataset en TrueNAS: Datos/PictoHabla/Postgres"
@@ -92,6 +106,20 @@ if [ -d "${UPLOADS_DIR}" ]; then
     fi
     if [ "${UP_PERMS}" != "750" ] && [ "${UP_PERMS}" != "700" ]; then
         echo "    ${YELLOW}ℹ${NC} Recomendación de seguridad POSIX: chmod 750 ${UPLOADS_DIR}"
+    fi
+
+    # Inspección de ACL en Uploads
+    if command -v zfs >/dev/null 2>&1; then
+        ZFS_ACL_UP=$(zfs get -H -o value acltype Datos/PictoHabla/Uploads 2>/dev/null || echo "")
+        if [ -n "${ZFS_ACL_UP}" ] && [ "${ZFS_ACL_UP}" != "posix" ] && [ "${ZFS_ACL_UP}" != "off" ]; then
+            echo "    ${YELLOW}⚠ [ALERTA ACL]${NC} Dataset Uploads tiene acltype='${ZFS_ACL_UP}'. Se recomienda 'posix' para evitar bloqueos con UID 1000."
+            WARNINGS=$((WARNINGS + 1))
+        fi
+    elif command -v getfacl >/dev/null 2>&1; then
+        if [ "$(getfacl -s "${UPLOADS_DIR}" 2>/dev/null | grep -E '^[^#]' | wc -l)" -gt 3 ]; then
+            echo "    ${YELLOW}⚠ [ALERTA ACL]${NC} Se detectaron ACLs extendidas en ${UPLOADS_DIR}. Comprueba en TrueNAS que no bloqueen a UID 1000."
+            WARNINGS=$((WARNINGS + 1))
+        fi
     fi
 else
     echo "  ${RED}✘ [ERROR CRÍTICO] Dataset no encontrado: ${UPLOADS_DIR}${NC}"

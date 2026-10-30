@@ -8,6 +8,7 @@ import com.cmanzano.pictohabla.auth.dto.ResetPasswordRequest;
 import com.cmanzano.pictohabla.auth.model.RefreshToken;
 import com.cmanzano.pictohabla.auth.model.RefreshTokenRepository;
 import com.cmanzano.pictohabla.common.exception.AccountLockedException;
+import com.cmanzano.pictohabla.common.exception.ApiException;
 import com.cmanzano.pictohabla.common.exception.ConflictException;
 import com.cmanzano.pictohabla.common.exception.UnauthorizedException;
 import com.cmanzano.pictohabla.common.util.HashUtils;
@@ -22,6 +23,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -96,17 +98,19 @@ public class AuthService {
         );
 
         if (requireVerification) {
+            if (emailService == null || !emailService.isAvailable()) {
+                log.warn("Registro rechazado: se requiere verificación por email pero el servicio SMTP no está configurado.");
+                throw new ApiException("El registro con verificación por correo no está disponible porque el servidor SMTP no está configurado.", HttpStatus.SERVICE_UNAVAILABLE);
+            }
             teacher.setEmailVerified(false);
             String token = UUID.randomUUID().toString();
             teacher.setVerificationToken(token);
             teacher.setVerificationTokenExpiresAt(Instant.now().plus(24, ChronoUnit.HOURS));
-            if (emailService != null) {
-                emailService.sendVerificationEmail(teacher.getEmail(), teacher.getFullName(), token);
-            }
+            emailService.sendVerificationEmail(teacher.getEmail(), teacher.getFullName(), token);
             log.info("Profesor registrado en modo producción. Pendiente de verificación por correo.");
         } else {
             teacher.setEmailVerified(true);
-            log.info("Profesor registrado con éxito en modo desarrollo.");
+            log.info("Profesor registrado con éxito (verificación por correo no requerida).");
         }
 
         Teacher saved = teacherRepository.save(teacher);
@@ -236,16 +240,19 @@ public class AuthService {
     }
 
     public void forgotPassword(ForgotPasswordRequest request) {
+        if (emailService == null || !emailService.isAvailable()) {
+            log.warn("Solicitud de recuperación de contraseña rechazada: el servicio SMTP no está configurado en el servidor.");
+            throw new ApiException("El servicio de recuperación de contraseñas por correo electrónico no está configurado en este servidor. Contacte con el administrador del centro.", HttpStatus.SERVICE_UNAVAILABLE);
+        }
+
         String normalizedEmail = request.email().trim().toLowerCase();
         teacherRepository.findByEmailIgnoreCase(normalizedEmail).ifPresent(teacher -> {
             String token = UUID.randomUUID().toString();
             teacher.setPasswordResetToken(token);
             teacher.setPasswordResetExpiresAt(Instant.now().plus(1, ChronoUnit.HOURS));
             teacherRepository.save(teacher);
-            if (emailService != null) {
-                emailService.sendPasswordResetEmail(teacher.getEmail(), teacher.getFullName(), token);
-            }
-            log.info("Token de restablecimiento generado para profesor.");
+            emailService.sendPasswordResetEmail(teacher.getEmail(), teacher.getFullName(), token);
+            log.info("Token de restablecimiento generado y enviado por correo para profesor.");
         });
         // La respuesta al cliente no revela si el correo existe o no
     }

@@ -27,6 +27,7 @@ spring:
             enable: ${SMTP_STARTTLS:true}
 
 server:
+  forward-headers-strategy: none
   error:
     include-message: never
     include-binding-errors: never
@@ -34,6 +35,9 @@ server:
     include-exception: false
 
 management:
+  server:
+    port: 8081
+    address: 127.0.0.1
   endpoints:
     web:
       exposure:

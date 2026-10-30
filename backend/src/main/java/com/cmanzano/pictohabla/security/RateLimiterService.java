@@ -18,8 +18,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * bloqueen maliciosamente las cuentas legítimas de profesores.
  *
  * Incluye validación estricta de proxies de confianza: solo confía en CF-Connecting-IP o
- * X-Forwarded-For si la conexión directa proviene de la subred autorizada (ej. 172.16.1.0/24 de Cloudflare Tunnel).
- * Esto impide que otros contenedores en otros segmentos Docker o clientes LAN falseen direcciones IP.
+ * X-Forwarded-For si la conexión TCP directa (request.getRemoteAddr()) proviene estrictamente
+ * de la subred autorizada (ej. 172.16.1.0/24 de Cloudflare Tunnel) o de loopback local.
+ *
+ * Si un cliente directo o un proxy no confiable intenta falsear cabeceras HTTP, estas son
+ * completamente ignoradas y se utiliza de forma determinista la IP remota del socket TCP.
  */
 @Service
 public class RateLimiterService {
@@ -42,24 +45,34 @@ public class RateLimiterService {
     private final Map<String, AttemptRecord> rateLimitBuckets = new ConcurrentHashMap<>();
     private final Map<String, AttemptRecord> failedLoginByIp = new ConcurrentHashMap<>();
 
-    private final String trustedProxySubnet;
+    private volatile String trustedProxySubnet;
 
     public RateLimiterService() {
         this("172.16.1.0/24");
     }
 
     public RateLimiterService(@Value("${app.security.trusted-proxy-subnet:172.16.1.0/24}") String trustedProxySubnet) {
+        setTrustedProxySubnet(trustedProxySubnet);
+    }
+
+    public void setTrustedProxySubnet(String trustedProxySubnet) {
         this.trustedProxySubnet = (trustedProxySubnet != null && !trustedProxySubnet.isBlank())
                 ? trustedProxySubnet.trim()
                 : "172.16.1.0/24";
     }
 
+    public String getTrustedProxySubnet() {
+        return trustedProxySubnet;
+    }
+
     /**
      * Extrae de forma segura la IP real del cliente.
      * Solo confía en cabeceras de proxy (CF-Connecting-IP, X-Forwarded-For) si la petición
-     * procede estrictamente de un origen de confianza (Loopback o la subred real de Cloudflare Tunnel).
-     * Si la petición proviene de un origen no confiable, se ignora cualquier
-     * cabecera inyectada y se utiliza estrictamente request.getRemoteAddr().
+     * procede estrictamente de un origen de confianza verificado a nivel de socket TCP
+     * (Loopback local o la subred real de Cloudflare Tunnel).
+     *
+     * Si la petición proviene de un origen no confiable, se ignora cualquier cabecera
+     * inyectada por el cliente y se utiliza estrictamente request.getRemoteAddr().
      */
     public String getClientIp(HttpServletRequest request) {
         if (request == null) {
@@ -68,30 +81,87 @@ public class RateLimiterService {
         String remoteAddr = request.getRemoteAddr() != null ? request.getRemoteAddr().trim() : "0.0.0.0";
 
         if (isTrustedProxy(remoteAddr)) {
+            // 1. Evaluar CF-Connecting-IP (cabecera oficial inyectada por Cloudflare)
             String cfIp = request.getHeader("CF-Connecting-IP");
             if (cfIp != null && !cfIp.isBlank()) {
-                return cfIp.trim();
+                String candidate = cfIp.trim();
+                if (isValidIp(candidate)) {
+                    return candidate;
+                }
+                log.warn("Cabecera CF-Connecting-IP malformada recibida desde proxy de confianza {}: '{}'.", remoteAddr, cfIp);
             }
+
+            // 2. Evaluar X-Forwarded-For como alternativa si CF-Connecting-IP no está presente
             String xff = request.getHeader("X-Forwarded-For");
             if (xff != null && !xff.isBlank()) {
                 String[] parts = xff.split(",");
-                return parts[0].trim();
+                String candidate = parts[0].trim();
+                if (isValidIp(candidate)) {
+                    return candidate;
+                }
+                log.warn("Cabecera X-Forwarded-For malformada recibida desde proxy de confianza {}: '{}'.", remoteAddr, xff);
             }
         }
 
+        // Si la conexión no proviene de un proxy confiable, o las cabeceras son inválidas/ausentes,
+        // devolvemos la IP física del peer TCP de forma segura y determinista.
         return remoteAddr;
     }
 
+    /**
+     * Comprueba si la dirección remota física del peer TCP corresponde a un proxy de confianza.
+     */
     public boolean isTrustedProxy(String remoteAddr) {
         if (remoteAddr == null || remoteAddr.isBlank()) {
             return false;
         }
-        // 1. Loopback local (pruebas internas, healthchecks, etc.)
+        // 1. Loopback local (127.0.0.1, ::1, 0:0:0:0:0:0:0:1)
         if (remoteAddr.equals("127.0.0.1") || remoteAddr.equals("::1") || remoteAddr.equals("0:0:0:0:0:0:0:1")) {
             return true;
         }
         // 2. Subred configurada de Cloudflare Tunnel (ej. 172.16.1.0/24)
         return isInSubnet(remoteAddr, trustedProxySubnet);
+    }
+
+    /**
+     * Valida sintácticamente una dirección IP (IPv4 o IPv6) sin realizar resolución DNS externa.
+     */
+    public static boolean isValidIp(String ip) {
+        if (ip == null || ip.isBlank()) {
+            return false;
+        }
+        String trimmed = ip.trim();
+        return isValidIpv4(trimmed) || isValidIpv6(trimmed);
+    }
+
+    public static boolean isValidIpv4(String ip) {
+        if (ip == null) return false;
+        String[] octets = ip.split("\\.", -1);
+        if (octets.length != 4) return false;
+        for (String octet : octets) {
+            if (octet.isEmpty() || octet.length() > 3) return false;
+            if (octet.length() > 1 && octet.startsWith("0")) return false;
+            try {
+                int val = Integer.parseInt(octet);
+                if (val < 0 || val > 255) return false;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean isValidIpv6(String ip) {
+        if (ip == null || !ip.contains(":")) return false;
+        String[] parts = ip.split(":", -1);
+        if (parts.length < 3 || parts.length > 8) return false;
+        for (String part : parts) {
+            if (part.length() > 4) return false;
+            for (char c : part.toCharArray()) {
+                if (Character.digit(c, 16) == -1) return false;
+            }
+        }
+        return true;
     }
 
     /**

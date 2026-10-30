@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 
 /**
  * Servicio de envío de correos transaccionales para verificación de cuentas y restablecimiento de contraseñas.
- * Si el servidor SMTP no está configurado en las variables de entorno, emite una advertencia estructurada
- * sin exponer los tokens en los registros.
+ * Si el servidor SMTP no está configurado en las variables de entorno, reporta su indisponibilidad
+ * y emite una advertencia estructurada sin exponer tokens ni enlaces en los registros.
  */
 @Service
 public class SmtpEmailService implements EmailService {
@@ -31,8 +31,13 @@ public class SmtpEmailService implements EmailService {
     }
 
     @Override
+    public boolean isAvailable() {
+        return mailSender != null;
+    }
+
+    @Override
     public void sendVerificationEmail(String toEmail, String fullName, String token) {
-        if (mailSender == null) {
+        if (!isAvailable()) {
             log.warn("Servidor SMTP no configurado. El correo de verificación para '{}' no se ha enviado.", toEmail);
             return;
         }
@@ -58,7 +63,7 @@ public class SmtpEmailService implements EmailService {
 
     @Override
     public void sendPasswordResetEmail(String toEmail, String fullName, String token) {
-        if (mailSender == null) {
+        if (!isAvailable()) {
             log.warn("Servidor SMTP no configurado. El correo de recuperación para '{}' no se ha enviado.", toEmail);
             return;
         }

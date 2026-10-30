@@ -34,12 +34,16 @@ Toda la operativa de PictoHabla se centraliza bajo una estructura canónica limp
 │   ├── backup.sh                 # Backup diario automático (PostgreSQL custom dump)
 │   ├── restore.sh                # Restauración asistida con confirmación
 │   └── precheck-truenas.sh       # Auditoría de sólo lectura previa al despliegue
-├── build/                        # [Sólo si se compila en el NAS] Código fuente del backend
-│   ├── Dockerfile
-│   ├── build.gradle.kts
-│   ├── gradlew / gradlew.bat
+├── build/                        # [Sólo si se compila en el NAS] Contexto completo de compilación
+│   ├── Dockerfile                # Multi-stage Dockerfile no-root
+│   ├── build.gradle.kts          # Definición de dependencias y plugins
+│   ├── settings.gradle.kts       # Configuración de repositorios y módulos
+│   ├── gradlew                   # Script wrapper de Gradle (chmod +x)
 │   ├── gradle/
-│   └── src/
+│   │   └── wrapper/
+│   │       ├── gradle-wrapper.jar
+│   │       └── gradle-wrapper.properties
+│   └── src/                      # Código fuente y recursos de backend/
 ├── Postgres/                     # Dataset ZFS Datos/PictoHabla/Postgres (UID 70:70, perm 700)
 └── Uploads/                      # Dataset ZFS Datos/PictoHabla/Uploads (UID 1000:1000, perm 750)
 
@@ -61,366 +65,247 @@ Toda la operativa de PictoHabla se centraliza bajo una estructura canónica limp
 
 ---
 
-## 👤 3. Auditoría de Usuarios, UIDs y Permisos POSIX
+## 🔒 3. Auditoría de ACLs y Permisos POSIX en TrueNAS SCALE
 
-Para cumplir el principio de mínimo privilegio y evitar colisiones de permisos entre el host ZFS y los contenedores:
+> ⚠️ **ADVERTENCIA CRÍTICA DE ACL EN TRUENAS:** Antes de aplicar cambios de UID, GID o permisos POSIX (`chown`/`chmod`), es **obligatorio verificar el tipo de ACL** de cada dataset. TrueNAS SCALE soporta ACLs avanzadas tipo NFSv4/SMB. Si un dataset se creó con un perfil SMB o ACLs NFSv4 activas, los comandos POSIX estándar fallarán o serán sobreescritos por las ACEs (Access Control Entries) heredadas, impidiendo que PostgreSQL o Spring Boot inicien.
 
-1. **PostgreSQL 16 Alpine (`postgres:16-alpine`):**
-   - Se ejecuta internamente como usuario no privilegiado `postgres` con **UID `70`** y **GID `70`**.
-   - Comando de configuración en el host:
-     ```bash
-     chown 70:70 /mnt/Datos/PictoHabla/Postgres
-     chmod 700 /mnt/Datos/PictoHabla/Postgres
-     ```
-   - Si no se asigna UID 70, la inicialización de PostgreSQL (`initdb`) fallará con error `Permission denied` al crear el catálogo del clúster.
+### Tabla de Auditoría de Datasets y ACLs:
 
-2. **Backend Spring Boot 3.5 (`pictohabla-backend:1.0.0`):**
-   - El Dockerfile multi-stage crea un grupo y usuario de sistema: `spring:spring` con **UID `1000`** y **GID `1000`**, y cambia a `USER spring` antes del arranque.
-   - El directorio `/mnt/Datos/PictoHabla/Uploads` se monta dentro del contenedor en `/app/uploads`.
-   - Comando de configuración en el host:
-     ```bash
-     chown 1000:1000 /mnt/Datos/PictoHabla/Uploads
-     chmod 750 /mnt/Datos/PictoHabla/Uploads
-     ```
+| Dataset | Usuario esperado | UID:GID | Permisos necesarios | Tipo ACL a comprobar | Qué hacer si existe una ACL incompatible |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **`Datos/PictoHabla/Postgres`** | `postgres` | `70:70` | `700` (`rwx------`) | POSIX (`acltype=posix`, `aclmode=discard`) | Si tiene ACL NFSv4 o entradas ACE heredadas, en la UI de TrueNAS ir a **Datasets** -> seleccionar `Postgres` -> **Edit Permissions** -> seleccionar perfil **POSIX Standard** y marcar **Strip ACLs**. Vía CLI: `setfacl -b /mnt/Datos/PictoHabla/Postgres && chown 70:70 /mnt/Datos/PictoHabla/Postgres && chmod 700 /mnt/Datos/PictoHabla/Postgres`. |
+| **`Datos/PictoHabla/Uploads`** | `spring` | `1000:1000` | `750` (`rwxr-x---`) | POSIX (`acltype=posix`, `aclmode=discard`) | Si una ACL restrictiva bloquea a UID 1000, cambiar tipo a POSIX o añadir entrada ACE para UID 1000 (`rwx`). Vía CLI: `setfacl -b /mnt/Datos/PictoHabla/Uploads && chown 1000:1000 /mnt/Datos/PictoHabla/Uploads && chmod 750 /mnt/Datos/PictoHabla/Uploads`. |
+| **`Seguridad/PictoHabla/Backups`** | `root` | `0:0` | `700` (`rwx------`) | POSIX (`acltype=posix`) | Eliminar ACLs heredadas que permitan lectura a usuarios no privilegiados: `setfacl -b /mnt/Seguridad/PictoHabla/Backups && chown 0:0 /mnt/Seguridad/PictoHabla/Backups && chmod 700 /mnt/Seguridad/PictoHabla/Backups`. |
 
-3. **Copias de Seguridad (`/mnt/Seguridad/PictoHabla/Backups`):**
-   - Debe pertenecer exclusivamente al usuario administrador de TrueNAS:
-     ```bash
-     mkdir -p /mnt/Seguridad/PictoHabla/Backups
-     chown 0:0 /mnt/Seguridad/PictoHabla/Backups
-     chmod 700 /mnt/Seguridad/PictoHabla/Backups
-     ```
-
-4. **Archivo `.env`:**
-   - Contiene credenciales maestras y el secreto JWT. Ningún usuario no-root debe poder leerlo:
-     ```bash
-     chmod 600 /mnt/Datos/PictoHabla/.env
-     ```
-
-> 🛑 **Regla de Oro:** NUNCA uses `chmod -R 777` en los datasets ni alteres permisos en las raíces `/mnt/Datos` o `/mnt/Seguridad`.
+El script de auditoría `precheck-truenas.sh` inspecciona los datasets y reporta discrepancias de ACL de forma **estrictamente de sólo lectura**, sin ejecutar cambios automáticos.
 
 ---
 
-## 🛡️ 4. Seguridad y Hardening de Spring Boot Actuator
+## 🛡️ 4. Validación Estricta de IP y Proxies de Confianza (Anti-Spoofing)
 
-Para producción, la configuración en `application-prod.yml` ha sido endurecida para impedir la divulgación de información sensible (Information Disclosure):
+### Corrección Técnica: `ForwardedHeaderFilter` vs Validación de Socket TCP
+En entornos con proxy inverso (como Cloudflare Tunnel), la tentación habitual es delegar la extracción de IP a filtros automáticos como `ForwardedHeaderFilter` o `RemoteIpValve`. **Sin embargo, `ForwardedHeaderFilter` no realiza por sí mismo una validación de pertenencia a subred CIDR de la IP de origen.** Si se activa indiscriminadamente, un cliente malicioso que logre enviar una petición directa podría falsificar `X-Forwarded-For` o `CF-Connecting-IP`, eludiendo el limitador de tasa (Rate Limiter) o haciéndose pasar por otra IP.
 
-### Parámetros Aplicados en Producción:
-- **Exposición Web Mínima:**
-  ```yaml
-  management:
-    endpoints:
-      web:
-        exposure:
-          include: health    # SÓLO health. Se han eliminado info, beans, env, metrics.
-    endpoint:
-      health:
-        show-details: never  # NUNCA revela conexiones JDBC, disco o componentes internos.
-  ```
-- **Respuesta Pública de Salud:**
-  Devuelve exclusivamente un payload binario simple sin detalles de infraestructura:
-  ```json
-  {"status":"UP"}
-  ```
-- **Supresión de Trazas de Error:**
-  `server.error.include-message: never`, `server.error.include-stacktrace: never` y `server.error.include-exception: false`.
-
-### Monitoreo Seguro sin Exposición a Internet:
-1. **Healthcheck nativo de Docker (aislado en localhost del contenedor):**
-   Configurado en `compose.yaml`:
+### Arquitectura de Seguridad Implementada:
+1. **Desactivación de Interpretación Automática de Cabeceras:**  
+   En `application.yml` y `application-prod.yml` se fija expresamente:
    ```yaml
-   test: ["CMD-SHELL", "curl -f -s http://127.0.0.1:8080/actuator/health > /dev/null || exit 1"]
+   server:
+     forward-headers-strategy: none
    ```
-2. **Inspección desde la shell de TrueNAS:**
-   ```bash
-   docker inspect --format='{{json .State.Health}}' pictohabla-backend
-   ```
-3. **Regla de Bloqueo en Cloudflare Zero Trust:**
-   En el panel de Cloudflare Zero Trust, se recomienda añadir una regla de bloqueo de ruta (WAF / HTTP Request Block) para cualquier petición externa dirigida a `/actuator/**`, garantizando que únicamente la API REST `/api/**` o las rutas públicas de autenticación sean consumidas desde el exterior.
+   Esto garantiza que el contenedor y Spring Boot **NUNCA reescriben `request.getRemoteAddr()`** con cabeceras externas.
+2. **Obtención del Peer TCP Físico:**  
+   `RateLimiterService` obtiene `remoteAddr = request.getRemoteAddr()`, que corresponde de forma inalterada a la dirección del socket TCP que abrió la conexión contra el contenedor.
+3. **Validación Cripto-Determinista de Subred de Confianza:**  
+   Se verifica si `remoteAddr` pertenece a `127.0.0.1` / `::1` o a la subred real de Cloudflare Tunnel (`TRUSTED_PROXY_SUBNET`, ej. `172.16.1.0/24`).
+4. **Tratamiento de Cabeceras HTTP:**
+   - **Si el peer TCP ES de confianza:** Se extrae `CF-Connecting-IP` (o en su defecto el primer segmento de `X-Forwarded-For`). La IP extraída es sometida a validación sintáctica estricta (`isValidIp`). Si es válida, se utiliza; si es malformada o ausente, se realiza fallback seguro a `remoteAddr`.
+   - **Si el peer TCP NO ES de confianza:** **Se descarta y se ignora cualquier cabecera `CF-Connecting-IP` o `X-Forwarded-For` enviada por el cliente**, utilizándose estrictamente el peer TCP físico (`remoteAddr`). De este modo, un atacante directo queda invariablemente rate-limitado por su IP física real.
 
 ---
 
-## ⚙️ 5. Variables de Entorno y Fallback de SMTP
+## 🩺 5. Actuator Exclusivamente Local en Puerto 8081
 
-Copia la plantilla `backend/.env.truenas.example` a `/mnt/Datos/PictoHabla/.env`:
+Para garantizar que los datos de diagnóstico del sistema nunca se expongan a la red externa ni a la red compartida de Cloudflare Tunnel:
 
-```bash
-cp /mnt/Datos/PictoHabla/build/.env.truenas.example /mnt/Datos/PictoHabla/.env
-chmod 600 /mnt/Datos/PictoHabla/.env
-```
-
-Genera secretos criptográficos con `openssl rand -hex 32` y reemplaza los marcadores de posición:
-
-```env
-# ==============================================================================
-# PictoHabla Backend — Variables de Entorno de Producción
-# ==============================================================================
-SPRING_PROFILES_ACTIVE=prod
-
-# Base de Datos PostgreSQL 16
-DB_NAME=pictohabla
-DB_USER=pictohabla_app
-DB_PASSWORD=<CONTRASEÑA_BD_SEGURA_GENERADA_CON_OPENSSL>
-
-# Seguridad JWT (mínimo 256 bits en hexadecimal)
-JWT_SECRET=<CLAVE_JWT_HEX_64_CHARS_GENERADA_CON_OPENSSL>
-JWT_ACCESS_EXPIRATION_MINUTES=15
-JWT_REFRESH_EXPIRATION_DAYS=7
-
-# Control de Orígenes CORS (Dominios autorizados sin barra final)
-CORS_ALLOWED_ORIGINS=https://pictohabla.local,https://<TU_DOMINIO_PUBLICO>
-
-# URL Pública de la API en Cloudflare Tunnel
-PUBLIC_API_URL=https://api.<TU_DOMINIO_PUBLICO>
-
-# Subred de Confianza de Cloudflare Tunnel
-TRUSTED_PROXY_SUBNET=172.16.1.0/24
-
-# Verificación de Email en Registro de Profesores
-EMAIL_VERIFICATION_REQUIRED=false
-
-# Configuración SMTP Transaccional (Opcional - dejar vacío si no se usa)
-SMTP_HOST=
-SMTP_PORT=587
-SMTP_USERNAME=
-SMTP_PASSWORD=
-SMTP_FROM=no-reply@<TU_DOMINIO_PUBLICO>
-
-# Clave opcional para cifrado simétrico GPG de copias (.dump.gpg)
-BACKUP_ENCRYPTION_KEY=
-```
-
-### Comportamiento del Sistema sin Servidor SMTP Configurado:
-El backend está programado con inyección opcional de `JavaMailSender` (`@Autowired(required = false)`):
-1. **Registro de Profesores (`EMAIL_VERIFICATION_REQUIRED=false`):**
-   Los profesores se registran y su cuenta queda inmediatamente activa sin requerir confirmación por correo electrónico.
-2. **Protección contra Abuso:**
-   El endpoint `/auth/register` está protegido por `RateLimiterService` en memoria (máximo **10 registros por hora por IP**).
-3. **Recuperación de Contraseña (`/auth/forgot-password`):**
-   Si se invoca sin SMTP configurado, devuelve una respuesta HTTP `200 OK` genérica con el mensaje *"Si el correo está registrado, se enviará un enlace de recuperación"* para evitar ataques de enumeración de cuentas. El backend emite una advertencia en el log del servidor indicando que el correo no pudo enviarse debido a la ausencia de servidor SMTP.
-
----
-
-## 🌐 6. Aislamiento de Red y Verificación de Subred
-
-### Topología de Red de PictoHabla:
-- **`pictohabla-internal` (driver: bridge, internal: true):**
-  Red privada aislada sin salida a internet ni puertos expuestos. Conecta exclusivamente el contenedor `backend` con `postgres`. PostgreSQL **no** forma parte de la red de Cloudflare y el puerto `5432` no se publica en el host.
-- **`ix-cloudflared_default` (external: true):**
-  Red Docker preexistente del contenedor `ix-cloudflared-cloudflared-1`. El backend se conecta a esta red con el alias DNS interno `pictohabla-backend`.
-
-### Detección de Discrepancias de Subred:
-El script `precheck-truenas.sh` comprueba que la subred real de `ix-cloudflared_default` (obtenida dinámicamente con `docker network inspect`) coincida exactamente con `TRUSTED_PROXY_SUBNET` del `.env`.
-> ⚠️ **Por qué es crítico:** Spring Boot utiliza `ForwardedHeaderFilter` para validar las cabeceras `X-Forwarded-For` y `X-Forwarded-Proto`. Si la IP del proxy de Cloudflare no pertenece a la subred de confianza declarada, Spring Boot descartará las cabeceras por seguridad, provocando fallos de CORS, redirecciones HTTP incorrectas y pérdida de la IP real en los registros de auditoría.
-
----
-
-## 🧪 7. Pruebas de Conectividad con Contenedor Efímero de Diagnóstico
-
-### Por qué falla `docker exec ix-cloudflared-cloudflared-1 curl ...`:
-La imagen oficial de Cloudflare Tunnel (`cloudflare/cloudflared`) se distribuye compilada sobre una base **scratch / distroless** sin sistema operativo completo. **No contiene `/bin/sh`, `/bin/bash` ni la utilidad `curl`**. Ejecutar `docker exec` contra ese contenedor fallará siempre con error `OCI runtime exec failed: exec: "curl": executable file not found in $PATH`.
-
-### Procedimiento Oficial No Invasivo (Contenedor Efímero):
-Para probar la resolución DNS interna y la conectividad HTTP entre Cloudflare Tunnel y el backend sin alterar ningún contenedor en producción, ejecuta un contenedor temporal conectado a `ix-cloudflared_default`:
-
-```bash
-docker run --rm --network ix-cloudflared_default curlimages/curl:latest curl -s -I http://pictohabla-backend:8080/actuator/health
-```
-
-#### Salida Esperada:
-```http
-HTTP/1.1 200 OK
-Content-Type: application/vnd.spring-boot.actuator.v3+json
-...
-```
-
-Este comando verifica:
-1. Resolución DNS interna de Docker (`pictohabla-backend` resuelve a la IP interna del contenedor backend).
-2. Conectividad TCP directa en el puerto `8080` a través de la red de Cloudflare.
-3. El contenedor se destruye automáticamente (`--rm`) sin dejar residuos en el sistema.
-
----
-
-## 💾 8. Límites de Memoria y Detección de OOM (Out Of Memory)
-
-### Configuración de Recursos en `compose.yaml`:
+### Configuración Aplicada en `application-prod.yml`:
 ```yaml
-mem_limit: 512m
-deploy:
-  resources:
-    limits:
-      memory: 512M
-    reservations:
-      memory: 256M
+management:
+  server:
+    port: 8081
+    address: 127.0.0.1
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
 ```
 
-### Mecánica del Límite de Memoria:
-- `mem_limit: 512m` es un **límite estricto de cgroups** impuesto por el kernel de Linux. Si el proceso Java consume 513 MB en total, el kernel Linux interviene inmediatamente y finaliza el proceso con la señal SIGKILL (**Código de salida 137**).
-- Para evitar esto, se configura la JVM en `JAVA_OPTS`:
-  ```bash
-  JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError"
-  ```
-  - `-XX:MaxRAMPercentage=75.0`: Reserva el 75% de 512 MB = **384 MB para el Heap** de Java.
-  - El 25% restante (**128 MB**) queda reservado para Metaspace, memoria nativa de subprocesos (threads), buffers de socket y la sobrecarga del recolector de basura (GC).
-  - `-XX:+ExitOnOutOfMemoryError`: Fuerza un volcado y salida controlada si el Heap se agota, evitando que el contenedor quede bloqueado en un bucle infinito de recolección de basura.
-
-### Cómo Diagnosticar si el Contenedor Sufrió un OOM Kill:
-Ejecuta en la shell de TrueNAS:
-```bash
-# Comprobar si el contenedor fue eliminado por el OOM Killer del kernel:
-docker inspect pictohabla-backend --format 'OOMKilled: {{.State.OOMKilled}}, ExitCode: {{.State.ExitCode}}'
-
-# Revisar los mensajes del kernel de Linux:
-dmesg -T | grep -i -E "oom[- ]killer|pictohabla|java"
-```
-Si `OOMKilled` es `true` o el código de salida es `137`, se debe revisar el consumo de memoria o ajustar el heap.
+### Propiedades de Aislamiento Verificadas:
+1. **Enlace a Loopback Local (`127.0.0.1:8081`):**  
+   Al configurar `management.server.address: 127.0.0.1` y `port: 8081`, Spring Boot levanta un servidor web interno independiente en el puerto 8081 enlazado **únicamente a la interfaz loopback** dentro del namespace de red del contenedor.
+2. **Inaccesible desde la Red Compartida:**  
+   Otros contenedores en `ix-cloudflared_default` (incluido Cloudflared) y en `pictohabla-internal` no pueden conectar al puerto 8081, ya que las peticiones entre contenedores llegan por las interfaces virtuales `eth0`/`eth1`, donde el puerto 8081 no escucha.
+3. **Inexistencia en el Puerto Público (8080):**  
+   Al separar el puerto de gestión, los endpoints `/actuator/**` **dejan de registrarse en el puerto 8080**, devolviendo HTTP 404 (Not Found).
+4. **Healthcheck Interno de Docker:**  
+   En `compose.yaml`:
+   ```yaml
+   healthcheck:
+     test: ["CMD-SHELL", "curl -f -s http://127.0.0.1:8081/actuator/health > /dev/null || exit 1"]
+     interval: 15s
+     timeout: 5s
+     retries: 3
+     start_period: 45s
+   ```
+   El healthcheck se ejecuta localmente dentro del contenedor a través de `127.0.0.1:8081` y valida la disponibilidad real sin exponer métricas.
 
 ---
 
-## 📜 9. Scripts de Mantenimiento con Bash y PATH Explícito
+## 👥 6. Política de Registro y Recuperación de Profesores
 
-Todos los scripts (`backup.sh`, `restore.sh`, `precheck-truenas.sh`) están normalizados con:
-- Intérprete estricto `#!/bin/bash`.
-- Manejo de fallos con `set -euo pipefail` (o `set -u`).
-- Exportación explícita de `PATH` para ejecución segura y desatendida desde el demonio cron de TrueNAS:
-  ```bash
-  export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH:-}"
-  ```
+### Comportamiento cuando SMTP no está configurado (`EMAIL_VERIFICATION_REQUIRED=false`):
 
-### Copia de Scripts a TrueNAS:
-```bash
-mkdir -p /mnt/Datos/PictoHabla/scripts
-cp backend/scripts/*.sh /mnt/Datos/PictoHabla/scripts/
-chmod 700 /mnt/Datos/PictoHabla/scripts/backup.sh
-chmod 700 /mnt/Datos/PictoHabla/scripts/restore.sh
-chmod 755 /mnt/Datos/PictoHabla/scripts/precheck-truenas.sh
-```
+1. **Registro de Profesores:**
+   - Las cuentas se registran con `emailVerified = true` y estado `ACTIVE`.
+   - El endpoint `/api/v1/auth/register` está protegido por cuota estricta en `RateLimiterService` (máximo **10 registros por hora por IP**).
+   - **Recomendación para Lanzamiento:** Para un entorno escolar controlado sin servidor SMTP público, se recomienda registrar las cuentas de los profesores autorizados durante la puesta en marcha inicial y, si se requiere restringir registros futuros, limitar el acceso al endpoint o gestionar las cuentas administrativamente.
 
-### Configuración del Cron Job Diario en TrueNAS SCALE:
-En la interfaz web de TrueNAS SCALE (**System Settings** -> **Advanced** -> **Cron Jobs** -> **Add**):
-- **Description:** `PictoHabla - Backup Diario PostgreSQL`
-- **Command:** `/mnt/Datos/PictoHabla/scripts/backup.sh >> /var/log/pictohabla-backup.log 2>&1`
-- **Run as User:** `root`
-- **Schedule:** Diario a las `03:00` (hora de bajo uso).
-
-### Procedimiento de Restauración Controlada:
-El script `restore.sh` protege la base de datos de sobreescrituras accidentales:
-1. Requiere escribir textualmente `CONFIRMAR_RESTAURACION`.
-2. Verifica la integridad del dump mediante `pg_restore --list`.
-3. Detiene temporalmente `pictohabla-backend` para evitar bloqueos y transacciones huérfanas.
-4. Cierra conexiones activas en PostgreSQL.
-5. Ejecuta `pg_restore` con `-c --if-exists --clean --no-owner --no-privileges`.
-6. Regenera estadísticas de consulta con `ANALYZE`.
-7. Reinicia el contenedor del backend.
-
-Ejecución manual de restauración:
-```bash
-bash /mnt/Datos/PictoHabla/scripts/restore.sh /mnt/Seguridad/PictoHabla/Backups/pictohabla_pictohabla_YYYYMMDD_HHMMSS.dump
-```
+2. **Recuperación de Contraseñas (`/api/v1/auth/forgot-password`):**
+   - **Protección contra Falsas Confirmaciones:** Cuando el servidor SMTP no está configurado (`emailService.isAvailable() == false`), el backend **NO genera tokens huérfanos en la base de datos** ni devuelve un mensaje simulando que el correo fue enviado.
+   - En su lugar, responde de forma transparente y segura con HTTP **503 Service Unavailable**:
+     ```json
+     {
+       "status": "error",
+       "message": "El servicio de recuperación de contraseñas por correo electrónico no está configurado en este servidor. Contacte con el administrador del centro."
+     }
+     ```
+   - **Seguridad en Logs:** El sistema emite un aviso estructurado en el log del servidor (`log.warn`) indicando que el servicio SMTP está ausente. **Bajo ninguna circunstancia se registran contraseñas, hashes ni enlaces de recuperación en los logs de producción.**
 
 ---
 
-## 🎯 10. Método Primario Recomendado: Docker Compose CLI vía SSH
+## 📦 7. Construcción Completa de la Imagen Docker en Entorno Aislado
 
-### Análisis Comparativo de Despliegue:
+El directorio `/mnt/Datos/PictoHabla/build` debe contener todos los archivos necesarios para una compilación reproducible y autónoma con Docker multi-stage:
 
-| Criterio | Docker Compose CLI vía SSH (Recomendado) | TrueNAS Custom App (UI) |
-| :--- | :--- | :--- |
-| **Control de Configuración** | **Total y determinista.** Lee directamente el archivo `.env` estándar sin intermediarios. | Parcial. Requiere introducir variables a mano en formularios web propensos a errores. |
-| **Redes Externas** | **Nativo y sin fricción.** Conecta a `ix-cloudflared_default` de forma inmediata. | A menudo falla o recrea redes si no fueron registradas previamente por la UI. |
-| **Diagnóstico y Logs** | **Inmediato.** `docker compose logs -f` muestra la salida completa de Flyway y Spring. | Interfaz web paginada con truncamiento de logs en arranques largos. |
-| **Integración con Scripts** | **Directa.** Compatible 100% con los scripts de backup, restore y cron del sistema. | Los scripts externos no quedan vinculados al ciclo de vida de la app en la UI. |
-| **Reproducibilidad** | **Alta.** Un simple `docker compose pull && docker compose up -d` gestiona todo. | Requiere navegación por múltiples pantallas del panel de control. |
+### Archivos Requeridos en `/mnt/Datos/PictoHabla/build`:
+- `Dockerfile` (Multi-stage con usuario no-root `spring:1000`).
+- `build.gradle.kts` (Dependencias y configuración de Spring Boot 3.5.x).
+- `settings.gradle.kts` (Nombre del proyecto y resolución de plugins).
+- `gradlew` (Script wrapper ejecutable de Gradle con permisos `chmod +x`).
+- `gradle/wrapper/gradle-wrapper.jar` (Binario de arranque del wrapper).
+- `gradle/wrapper/gradle-wrapper.properties` (Distribución de Gradle 8.12).
+- `src/` (Árbol completo de código fuente y recursos: `src/main/java`, `src/main/resources`).
 
-### Decisión de Arquitectura:
-El método **Docker Compose CLI vía SSH** es la opción recomendada y primaria para este despliegue.
-
----
-
-## 🚀 11. Procedimiento de Despliegue Paso a Paso
-
-### Paso 1: Ejecutar la Auditoría Pre-vuelo
-Conéctate por SSH a TrueNAS y ejecuta:
-```bash
-bash /mnt/Datos/PictoHabla/scripts/precheck-truenas.sh
-```
-Verifica que finalice con: `✔ TODAS LAS COMPROBACIONES SUPERADAS SIN ERRORES NI ADVERTENCIAS.`
-
-### Paso 2: Construir o Cargar la Imagen Docker
-
-#### Opción A — Construcción en TrueNAS (Recomendada si el código está en `/mnt/Datos/PictoHabla/build`):
+### Verificación de Compilación Aislada:
 ```bash
 cd /mnt/Datos/PictoHabla/build
 docker build -t pictohabla-backend:1.0.0 .
 ```
-
-#### Opción B — Carga de imagen transferida desde el equipo de desarrollo:
-```bash
-docker load -i /mnt/Datos/PictoHabla/pictohabla-backend-1.0.0.tar.gz
-```
-
-### Paso 3: Preparar el Directorio de Despliegue
-Copia `compose.truenas.yaml` como `compose.yaml` en `/mnt/Datos/PictoHabla/`:
-```bash
-cp /mnt/Datos/PictoHabla/build/compose.truenas.yaml /mnt/Datos/PictoHabla/compose.yaml
-```
-
-Verifica que `/mnt/Datos/PictoHabla/.env` existe, tiene permisos `600` y sus contraseñas generadas.
-
-### Paso 4: Iniciar los Contenedores
-```bash
-cd /mnt/Datos/PictoHabla
-docker compose --env-file .env -f compose.yaml up -d
-```
-
-### Paso 5: Verificar Migraciones de Flyway y Salud
-```bash
-# Ver estado de los contenedores:
-docker compose ps
-
-# Comprobar que Flyway ejecutó las migraciones correctamente:
-docker logs pictohabla-backend | grep -i "flyway"
-```
-Salida esperada:
-```
-Successfully applied 1 migration to schema "public", now at version v1 (initial schema)
-```
-
-### Paso 6: Validar Conectividad con el Contenedor Efímero
-```bash
-docker run --rm --network ix-cloudflared_default curlimages/curl:latest curl -s -I http://pictohabla-backend:8080/actuator/health
-```
-
-### Paso 7: Configurar Cloudflare Zero Trust Dashboard
-1. Accede a **Cloudflare Zero Trust** (`one.dash.cloudflare.com`) -> **Networks** -> **Tunnels**.
-2. Edita el túnel activo de TrueNAS y añade un **Public Hostname**:
-   - **Subdomain:** `api`
-   - **Domain:** `<TU_DOMINIO_PUBLICO>`
-   - **Path:** (dejar vacío)
-   - **Service Type:** `HTTP`
-   - **URL:** `pictohabla-backend:8080`
-3. Guarda el hostname.
-4. Verifica el acceso desde tu navegador o terminal:
-   ```bash
-   curl -I https://api.<TU_DOMINIO_PUBLICO>/actuator/health
-   ```
+La compilación multi-stage descarga OpenJDK 21, ejecuta `./gradlew bootJar` y empaqueta el JAR resultante en una imagen mínima Alpine con usuario `1000:1000`.
 
 ---
 
-## 📊 12. Estado de Pruebas Automatizadas
+## ⚙️ 8. Variables de Entorno y Vinculación en Compose
 
-El backend de PictoHabla cuenta con **37 pruebas unitarias y de integración** totalmente satisfactorias (0 errores, 0 fallos, 0 omitidas):
+### Auditoría de Variables en `compose.yaml`:
+El comando `docker compose --env-file .env` utiliza `.env` para la interpolación de variables. Sin embargo, para garantizar que **todas las variables lleguen al entorno del contenedor**, `compose.yaml` las declara explícitamente bajo la clave `environment:` con comprobaciones de obligatoriedad (`?Error: ...`):
+
+| Variable `.env` | Servicio Destino | Propiedad Spring Boot Vinculada | Valor por Defecto / Validación |
+| :--- | :--- | :--- | :--- |
+| `SPRING_PROFILES_ACTIVE` | `backend` | `spring.profiles.active` | `prod` |
+| `DB_NAME` | `postgres`, `backend` | `POSTGRES_DB`, `spring.datasource.url` | `pictohabla` |
+| `DB_USER` | `postgres`, `backend` | `POSTGRES_USER`, `spring.datasource.username` | `pictohabla_app` |
+| `DB_PASSWORD` | `postgres`, `backend` | `POSTGRES_PASSWORD`, `spring.datasource.password` | Obligatoria (`:?Error`) |
+| `JWT_SECRET` | `backend` | `app.jwt.secret` | Obligatoria (`:?Error`) |
+| `JWT_ACCESS_EXPIRATION_MINUTES` | `backend` | `app.jwt.access-token-expiration-minutes` | `15` |
+| `JWT_REFRESH_EXPIRATION_DAYS` | `backend` | `app.jwt.refresh-token-expiration-days` | `7` |
+| `CORS_ALLOWED_ORIGINS` | `backend` | `app.cors.allowed-origins` | `https://pictohabla.local` |
+| `PUBLIC_API_URL` | `backend` | `app.mail.base-url` | `https://api.pictohabla.local` |
+| `TRUSTED_PROXY_SUBNET` | `backend` | `app.security.trusted-proxy-subnet` | `172.16.1.0/24` |
+| `EMAIL_VERIFICATION_REQUIRED` | `backend` | `app.security.email-verification-required` | `false` |
+| `SMTP_HOST` | `backend` | `spring.mail.host` | Vía vacía (inactiva) |
+| `SMTP_PORT` | `backend` | `spring.mail.port` | `587` |
+| `SMTP_USERNAME` | `backend` | `spring.mail.username` | Vía vacía |
+| `SMTP_PASSWORD` | `backend` | `spring.mail.password` | Vía vacía |
+| `SMTP_FROM` | `backend` | `app.mail.from` | `no-reply@pictohabla.local` |
+| `JAVA_OPTS` | `backend` | Opciones de máquina virtual JVM | `-XX:MaxRAMPercentage=75.0` |
+
+---
+
+## 🎯 9. Método de Gestión: Docker Compose CLI vía SSH vs TrueNAS Apps UI
+
+### Relación entre Docker Compose CLI y la UI de TrueNAS SCALE 25.10.7:
+TrueNAS SCALE 25.10.7 utiliza internamente Docker Compose como motor para sus aplicaciones. No obstante, TrueNAS mantiene una base de datos propia de middleware (`apps.sqlite`) que registra y controla el ciclo de vida de las aplicaciones creadas mediante su interfaz gráfica (**Custom App** / **Install via YAML**).
+
+### Comparativa:
+
+| Criterio | Docker Compose CLI vía SSH (Método Recomendado) | TrueNAS Custom App (UI) |
+| :--- | :--- | :--- |
+| **Control de Configuración** | **Total y determinista.** El archivo `.env` se lee directamente sin intermediarios ni transformaciones de formato. | Propenso a errores en la carga de variables multilínea o secretos con caracteres especiales. |
+| **Redes Externas Preexistentes** | **Nativo y sin fricción.** Se conecta a `ix-cloudflared_default` como `external: true` de forma inmediata. | A menudo falla al intentar recrear la red o exigir dependencias no reconocidas por el catálogo. |
+| **Visibilidad de Logs** | `docker compose logs -f` muestra la traza continua de Flyway y arranque en tiempo real. | Truncamiento de logs en arranques largos y paginación en el visor web. |
+| **Aislamiento de Estado** | No interfiere con la base de datos interna de apps de TrueNAS ni altera otras aplicaciones (`cloudflared`, `tailscale`, etc.). | Si la UI se desincroniza, puede marcar la app como errónea e intentar reiniciarla en bucle. |
+
+### Decisión de Arquitectura:
+Se establece **Docker Compose CLI vía SSH** como el **método oficial y exclusivo**.
+> 🛑 **Regla de Operación:** NUNCA intentes gestionar el mismo despliegue mezclando ambos sistemas. Si se inicia por CLI, mantén todas las operaciones (paradas, actualizaciones y copias) por CLI.
+
+---
+
+## 🧪 10. Pruebas de Conectividad con Contenedor Efímero de Diagnóstico
+
+Debido a que el contenedor `ix-cloudflared-cloudflared-1` se distribuye sin shell ni `curl` (`scratch`), la comprobación de conectividad inter-contenedor se realiza con un contenedor efímero:
+
+```bash
+docker run --rm --network ix-cloudflared_default curlimages/curl:latest curl -s -I http://pictohabla-backend:8080/api/v1/auth/login
+```
+
+#### Salida Esperada:
+```http
+HTTP/1.1 405 Method Not Allowed
+...
+```
+*(Confirma que `pictohabla-backend` resuelve en DNS interno por la red de Cloudflare y que el puerto 8080 responde peticiones HTTP).*
+
+Comprobar que Actuator **NO es accesible** por el puerto público desde la red compartida:
+```bash
+docker run --rm --network ix-cloudflared_default curlimages/curl:latest curl -s -I http://pictohabla-backend:8080/actuator/health
+```
+#### Salida Esperada:
+```http
+HTTP/1.1 404 Not Found
+```
+
+---
+
+## 📊 11. Batería de Pruebas Automatizadas
+
+El backend dispone de **50 pruebas unitarias y de integración** automatizadas, todas ellas en estado satisfactorio (0 fallos, 0 errores, 0 omitidas):
 
 ```
-BUILD SUCCESSFUL in 18s
-37 tests completed, 0 failed, 0 skipped
+BUILD SUCCESSFUL in 22s
+50 tests completed, 0 failed, 0 skipped
 ```
 
-- `SecurityIntegrationTest` (6 pruebas): Flujos JWT, acceso anónimo a catálogo, protección de endpoints de profesores, expiración y refresh tokens.
-- `AuthControllerTest` (8 pruebas): Registro, login, refresh, logout, formato de errores y rate-limiting.
-- `TeacherServiceTest` (5 pruebas): Lógica de negocio de creación, búsqueda y unicidad de profesores.
-- `JwtServiceTest` (4 pruebas): Generación criptográfica HMAC-SHA256, validación de claims y expiraciones.
-- `PasswordServiceTest` (3 pruebas): Hash Argon2 / BCrypt y verificación de entropía.
-- `RateLimiterServiceTest` (4 pruebas): Cuotas por IP y reseteo temporal.
-- `StorageServiceTest` (4 pruebas): Gestión de archivos multimedia y validación de tipos MIME seguros.
-- `PictoHablaApplicationTests` (3 pruebas): Inicialización de contexto Spring Boot, perfiles y datasource.
+- **`RateLimiterServiceTest` (15 pruebas):**
+  - Confianza en Loopback (`127.0.0.1`, `::1`).
+  - Confianza en subred de Cloudflare (`172.16.1.0/24`).
+  - Detección y descarte de cabecera `CF-Connecting-IP` falseada desde cliente directo.
+  - Detección y descarte de cabecera `X-Forwarded-For` falseada desde cliente directo.
+  - Descarte simultáneo de cabeceras falseadas.
+  - Conexión desde subred Docker no confiable.
+  - Manejo seguro de cabeceras ausentes (fallback a TCP peer).
+  - Manejo de cabecera `CF-Connecting-IP` malformada (inyecciones SQL, caracteres inválidos).
+  - Manejo de ambas cabeceras malformadas.
+  - Cambio dinámico de subred (`setTrustedProxySubnet`) y actualización de confianza.
+  - Validación sintáctica de IPs IPv4 e IPv6 sin resolución DNS.
+  - Reglas de cuotas por acción e IP.
+  - Bloqueo por fuerza bruta y restablecimiento.
+- **`ActuatorSecurityTest` (3 pruebas):**
+  - Actuator en puerto de gestión independiente (8081 en prod) responde `200 UP` sin detalles sensibles de base de datos ni disco.
+  - Endpoints deshabilitados (`/actuator/info`, `/actuator/env`) no son accesibles públicamente.
+  - El puerto principal de la API (8080) **no expone `/actuator/health`** (devuelve 404).
+- **`AuthServiceTest` (11 pruebas):**
+  - Registro de profesor, duplicados y flujo de verificación.
+  - Inicio de sesión, contraseñas incorrectas y bloqueo de cuenta.
+  - Rotación de refresh tokens y revocación por reutilización de token robado.
+  - Restablecimiento de contraseña con token válido.
+  - **Recuperación rechazada con HTTP 503 cuando SMTP no está configurado.**
+  - **Recuperación aceptada y envío de correo cuando SMTP está disponible.**
+- **`AuthControllerTest` (8 pruebas):**
+  - Endpoints REST de autenticación, serialización JSON y rate-limiting.
+- **`ClassroomControllerTest` (5 pruebas):**
+  - Creación y listado de aulas vinculadas al profesor autenticado.
+- **`JwtServiceTest` (3 pruebas):**
+  - Firmas HMAC-SHA256, expiración y validación de claims.
+- **`StudentControllerTest` (2 pruebas):**
+  - Creación y asignación de alumnos sin cuenta de usuario.
+- **`TeacherControllerTest` (2 pruebas):**
+  - Perfil de profesor y protección por rol `ROLE_TEACHER`.
+- **`BackendApplicationTests` (1 prueba):**
+  - Inicialización completa del contexto de Spring Boot y migraciones de Flyway.
