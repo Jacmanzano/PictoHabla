@@ -14,8 +14,33 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  mail:
+    host: ${SMTP_HOST:}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${SMTP_AUTH:true}
+          starttls:
+            enable: ${SMTP_STARTTLS:true}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
 
 app:
   security:
     cookie-secure: true
-    email-verification-required: true
+    email-verification-required: ${EMAIL_VERIFICATION_REQUIRED:true}
+  mail:
+    from: ${SMTP_FROM:no-reply@pictohabla.local}
+    base-url: ${PUBLIC_API_URL:https://api.pictohabla.local}

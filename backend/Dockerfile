@@ -26,8 +26,8 @@ FROM eclipse-temurin:21-jre-alpine
 LABEL maintainer="PictoHabla Team"
 LABEL description="PictoHabla Backend REST API"
 
-# Crear usuario y grupo de sistema sin privilegios (Seguridad)
-RUN addgroup -S spring && adduser -S spring -G spring
+# Crear usuario y grupo de sistema sin privilegios con UID/GID fijo 1000 (Determinismo para ACLs en TrueNAS)
+RUN addgroup -g 1000 -S spring && adduser -u 1000 -S spring -G spring
 USER spring:spring
 
 WORKDIR /app

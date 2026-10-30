@@ -45,6 +45,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AppProperties appProperties;
+    private final com.cmanzano.pictohabla.email.EmailService emailService;
+    private final com.cmanzano.pictohabla.security.RateLimiterService rateLimiterService;
 
     public AuthService(
             TeacherRepository teacherRepository,
@@ -53,11 +55,26 @@ public class AuthService {
             JwtService jwtService,
             AppProperties appProperties
     ) {
+        this(teacherRepository, refreshTokenRepository, passwordEncoder, jwtService, appProperties, null, new com.cmanzano.pictohabla.security.RateLimiterService());
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public AuthService(
+            TeacherRepository teacherRepository,
+            RefreshTokenRepository refreshTokenRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService,
+            AppProperties appProperties,
+            @org.springframework.beans.factory.annotation.Autowired(required = false) com.cmanzano.pictohabla.email.EmailService emailService,
+            com.cmanzano.pictohabla.security.RateLimiterService rateLimiterService
+    ) {
         this.teacherRepository = teacherRepository;
         this.refreshTokenRepository = refreshTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.appProperties = appProperties;
+        this.emailService = emailService;
+        this.rateLimiterService = rateLimiterService != null ? rateLimiterService : new com.cmanzano.pictohabla.security.RateLimiterService();
     }
 
     public TeacherResponse register(RegisterRequest request) {
@@ -80,8 +97,12 @@ public class AuthService {
 
         if (requireVerification) {
             teacher.setEmailVerified(false);
-            teacher.setVerificationToken(UUID.randomUUID().toString());
+            String token = UUID.randomUUID().toString();
+            teacher.setVerificationToken(token);
             teacher.setVerificationTokenExpiresAt(Instant.now().plus(24, ChronoUnit.HOURS));
+            if (emailService != null) {
+                emailService.sendVerificationEmail(teacher.getEmail(), teacher.getFullName(), token);
+            }
             log.info("Profesor registrado en modo producción. Pendiente de verificación por correo.");
         } else {
             teacher.setEmailVerified(true);
@@ -93,10 +114,23 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request, HttpServletResponse response) {
+        return login(request, response, "0.0.0.0");
+    }
+
+    public AuthResponse login(LoginRequest request, HttpServletResponse response, String clientIp) {
+        if (clientIp != null) {
+            rateLimiterService.checkLoginAllowed(clientIp);
+        }
+
         String normalizedEmail = request.email().trim().toLowerCase();
 
         Teacher teacher = teacherRepository.findByEmailIgnoreCase(normalizedEmail)
-                .orElseThrow(() -> new UnauthorizedException("Credenciales inválidas"));
+                .orElseThrow(() -> {
+                    if (clientIp != null) {
+                        rateLimiterService.recordFailedLogin(clientIp);
+                    }
+                    return new UnauthorizedException("Credenciales inválidas");
+                });
 
         // Comprobación de bloqueo temporal por intentos fallidos
         if (!teacher.isAccountNonLocked()) {
@@ -105,8 +139,15 @@ public class AuthService {
 
         // Verificación de contraseña segura
         if (!passwordEncoder.matches(request.password(), teacher.getPasswordHash())) {
+            if (clientIp != null) {
+                rateLimiterService.recordFailedLogin(clientIp);
+            }
             handleFailedLogin(teacher);
             throw new UnauthorizedException("Credenciales inválidas");
+        }
+
+        if (clientIp != null) {
+            rateLimiterService.resetFailedLogin(clientIp);
         }
 
         // Restablecer contador de fallos
@@ -197,10 +238,14 @@ public class AuthService {
     public void forgotPassword(ForgotPasswordRequest request) {
         String normalizedEmail = request.email().trim().toLowerCase();
         teacherRepository.findByEmailIgnoreCase(normalizedEmail).ifPresent(teacher -> {
-            teacher.setPasswordResetToken(UUID.randomUUID().toString());
+            String token = UUID.randomUUID().toString();
+            teacher.setPasswordResetToken(token);
             teacher.setPasswordResetExpiresAt(Instant.now().plus(1, ChronoUnit.HOURS));
             teacherRepository.save(teacher);
-            log.info("Token de restablecimiento generado para profesor. En producción se enviará mediante el servicio SMTP configurado.");
+            if (emailService != null) {
+                emailService.sendPasswordResetEmail(teacher.getEmail(), teacher.getFullName(), token);
+            }
+            log.info("Token de restablecimiento generado para profesor.");
         });
         // La respuesta al cliente no revela si el correo existe o no
     }

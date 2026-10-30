@@ -13,7 +13,7 @@ backend/
 ├── compose.dev.yaml               # Orquestación de desarrollo con Docker Compose
 ├── Dockerfile                     # Imagen multi-stage optimizada para producción
 ├── .env.example                   # Plantilla de variables de entorno (sin secretos)
-├── build.gradle.kts / pom.xml     # Sistema de compilación dual (Gradle independiente + Maven)
+├── build.gradle.kts               # Sistema de compilación canónico (Gradle 9.3.1 con wrapper propio)
 └── src/
     ├── main/
     │   ├── java/com/cmanzano/pictohabla/
@@ -47,14 +47,14 @@ backend/
 ## 🛠️ 2. Tecnologías Utilizadas
 
 - **Lenguaje:** Java 21 LTS
-- **Framework:** Spring Boot 3.3.5
-- **Seguridad:** Spring Security 6 + JJWT (Java JWT 0.12.6)
+- **Framework:** Spring Boot 3.5.16
+- **Seguridad:** Spring Security 6.5 + JJWT (Java JWT 0.12.6)
 - **Persistencia:** Spring Data JPA / Hibernate 6.5
 - **Base de Datos:** PostgreSQL 16+
 - **Migraciones:** Flyway Core + Flyway PostgreSQL
 - **Validación:** Jakarta Bean Validation (Hibernate Validator)
 - **Contenedores:** Docker & Docker Compose
-- **Build Tools:** Gradle 9.3.1 (independiente con su propio wrapper) y Maven (`pom.xml` compatible)
+- **Build Tool:** Gradle 9.3.1 (herramienta de construcción única y canónica con `gradlew`)
 
 ---
 

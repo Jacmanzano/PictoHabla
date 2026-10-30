@@ -1,0 +1,107 @@
+# ==============================================================================
+# PictoHabla Backend — TrueNAS SCALE 25.10.7 Production Compose
+# ==============================================================================
+# Despliegue en TrueNAS SCALE:
+#   Ruta: Apps -> Discover Apps -> Custom App -> Install via YAML
+# Características:
+#   - PostgreSQL 16 Alpine aislado en red privada (sin puerto 5432 expuesto al host).
+#   - Montajes persistentes en datasets ZFS (/mnt/Datos y /mnt/Seguridad).
+#   - Límites de recursos estrictos para servidor de 32GB con apps existentes.
+#   - Healthchecks nativos para sincronización de arranque y migraciones Flyway.
+#   - Rotación de logs para evitar saturar el almacenamiento ZFS.
+#   - Puerto 18080 publicado en la LAN únicamente para origen de Cloudflare Tunnel.
+# ==============================================================================
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: pictohabla-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-pictohabla}
+      POSTGRES_USER: ${DB_USER:-pictohabla_app}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Error: DB_PASSWORD es obligatoria}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      # Dataset ZFS en pool Datos (Permisos: chown 70:70, recordsize=16k)
+      - /mnt/Datos/pictohabla-postgres:/var/lib/postgresql/data
+    networks:
+      - pictohabla-net
+    # PUERTO 5432 NO PUBLICADO EN EL HOST POR SEGURIDAD
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-pictohabla_app} -d $${POSTGRES_DB:-pictohabla}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.00"
+          memory: 256M
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  backend:
+    image: pictohabla-backend:1.0.0
+    container_name: pictohabla-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-pictohabla}
+      DB_USER: ${DB_USER:-pictohabla_app}
+      DB_PASSWORD: ${DB_PASSWORD:?Error: DB_PASSWORD es obligatoria}
+      JWT_SECRET: ${JWT_SECRET:?Error: JWT_SECRET es obligatoria}
+      JWT_ACCESS_EXPIRATION_MINUTES: ${JWT_ACCESS_EXPIRATION_MINUTES:-15}
+      JWT_REFRESH_EXPIRATION_DAYS: ${JWT_REFRESH_EXPIRATION_DAYS:-7}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://pictohabla.local}
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-https://api.pictohabla.local}
+      EMAIL_VERIFICATION_REQUIRED: ${EMAIL_VERIFICATION_REQUIRED:-false}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USERNAME: ${SMTP_USERNAME:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-no-reply@pictohabla.local}
+      JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError"
+    volumes:
+      # Dataset ZFS para subidas multimedia (Permisos: chown 1000:1000, usuario spring)
+      - /mnt/Datos/pictohabla-uploads:/app/uploads
+    ports:
+      # Publicado en la interfaz LAN de TrueNAS para Cloudflare Tunnel (NO exponer en router)
+      - "18080:8080"
+    networks:
+      - pictohabla-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/actuator/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.50"
+          memory: 512M
+        reservations:
+          cpus: "0.50"
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  pictohabla-net:
+    driver: bridge

@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -22,6 +22,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -40,7 +42,7 @@ class AuthControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private AuthService authService;
 
     @Test
@@ -90,7 +92,7 @@ class AuthControllerTest {
         );
         AuthResponse authResponse = AuthResponse.of("access.token.jwt", 900, teacherResponse, "refresh.token.uuid");
 
-        when(authService.login(any(LoginRequest.class), any(HttpServletResponse.class))).thenReturn(authResponse);
+        when(authService.login(any(LoginRequest.class), any(HttpServletResponse.class), anyString())).thenReturn(authResponse);
 
         mockMvc.perform(post("/api/v1/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -121,5 +123,33 @@ class AuthControllerTest {
         mockMvc.perform(get("/api/v1/auth/me"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
+    void refresh_CookieWithoutCsrfHeader_ReturnsForbidden() throws Exception {
+        jakarta.servlet.http.Cookie refreshCookie = new jakarta.servlet.http.Cookie("pictohabla_refresh", "some-cookie-token");
+
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .cookie(refreshCookie))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("Protección CSRF")));
+    }
+
+    @Test
+    void refresh_CookieWithCsrfHeader_ReturnsOk() throws Exception {
+        jakarta.servlet.http.Cookie refreshCookie = new jakarta.servlet.http.Cookie("pictohabla_refresh", "valid-cookie-token");
+        TeacherResponse teacherResponse = new TeacherResponse(
+                UUID.randomUUID(), "profe@colegio.es", "Profesor Carlos", TeacherStatus.ACTIVE, true, Instant.now()
+        );
+        AuthResponse authResponse = AuthResponse.of("new.access.token", 900, teacherResponse, "new.refresh.token");
+        when(authService.refreshToken(eq("valid-cookie-token"), any())).thenReturn(authResponse);
+
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .cookie(refreshCookie)
+                        .header("X-Requested-With", "XMLHttpRequest"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.accessToken").value("new.access.token"));
     }
 }
