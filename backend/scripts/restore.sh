@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # ==============================================================================
 # PictoHabla — Script de Restauración Controlada de Base de Datos PostgreSQL
 # ==============================================================================
@@ -8,7 +8,10 @@
 # Ubicación recomendada en TrueNAS: /mnt/Datos/PictoHabla/scripts/restore.sh
 # ==============================================================================
 
-set -eu
+set -euo pipefail
+
+# Asegurar PATH completo para ejecución en TrueNAS SCALE
+export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${PATH:-}"
 
 if [ $# -lt 1 ]; then
     echo "Uso: $0 <ruta_al_archivo_dump>"

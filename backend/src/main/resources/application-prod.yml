@@ -26,14 +26,21 @@ spring:
           starttls:
             enable: ${SMTP_STARTTLS:true}
 
+server:
+  error:
+    include-message: never
+    include-binding-errors: never
+    include-stacktrace: never
+    include-exception: false
+
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health
   endpoint:
     health:
-      show-details: when-authorized
+      show-details: never
       probes:
         enabled: true
 
