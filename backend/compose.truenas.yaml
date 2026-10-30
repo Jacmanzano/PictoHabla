@@ -4,16 +4,17 @@
 # Despliegue en TrueNAS SCALE:
 #   Ruta: Apps -> Discover Apps -> Custom App -> Install via YAML
 # Características:
-#   - PostgreSQL 16 Alpine aislado en red interna privada pictohabla-net.
-#   - Puerto 5432 NO publicado en el host ni expuesto a la red local.
-#   - Montajes persistentes en datasets ZFS exactos:
+#   - Sin puertos publicados en el host del NAS (acceso 100% aislado).
+#   - Integración directa con Cloudflare Tunnel existente mediante la red
+#     Docker compartida 'ix-cloudflared_default' (Subred: 172.16.1.0/24).
+#   - Red 'pictohabla-internal' estrictamente aislada (internal: true) para
+#     comunicación exclusiva entre Spring Boot y PostgreSQL.
+#   - PostgreSQL 16 Alpine NO está en la red de Cloudflare ni expone el puerto 5432.
+#   - Alias DNS 'pictohabla-backend' configurado para resolución interna en Cloudflare.
+#   - Montajes persistentes en datasets ZFS:
 #       * /mnt/Datos/PictoHabla/Postgres (UID 70:70, recordsize=16k)
 #       * /mnt/Datos/PictoHabla/Uploads  (UID 1000:1000, recordsize=128k)
-#   - Puerto 18080 enlazado exclusivamente a loopback (127.0.0.1) por defecto,
-#     asegurando que únicamente el Cloudflare Tunnel local en el host pueda
-#     acceder a la API sin exponerla al resto de la LAN.
-#   - Límites estrictos de memoria y CPU (Postgres: 256 MB, Backend: 512 MB).
-#   - Rotación automática de logs para evitar saturación de almacenamiento.
+#   - Límites de memoria y CPU estrictos (Postgres: 256 MB, Backend: 512 MB).
 # ==============================================================================
 
 services:
@@ -30,7 +31,8 @@ services:
       # Dataset ZFS en pool Datos (Permisos: UID 70:70, recordsize=16k)
       - /mnt/Datos/PictoHabla/Postgres:/var/lib/postgresql/data
     networks:
-      - pictohabla-net
+      # Exclusivamente en la red privada interna (sin acceso desde cloudflared ni host)
+      - pictohabla-internal
     # PUERTO 5432 NO PUBLICADO EN EL HOST POR SEGURIDAD
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-pictohabla_app} -d $${POSTGRES_DB:-pictohabla}"]
@@ -74,6 +76,7 @@ services:
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://pictohabla.local}
       PUBLIC_API_URL: ${PUBLIC_API_URL:-https://api.pictohabla.local}
       EMAIL_VERIFICATION_REQUIRED: ${EMAIL_VERIFICATION_REQUIRED:-false}
+      TRUSTED_PROXY_SUBNET: ${TRUSTED_PROXY_SUBNET:-172.16.1.0/24}
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USERNAME: ${SMTP_USERNAME:-}
@@ -83,12 +86,13 @@ services:
     volumes:
       # Dataset ZFS para subidas multimedia (Permisos: UID 1000:1000, usuario spring)
       - /mnt/Datos/PictoHabla/Uploads:/app/uploads
-    ports:
-      # Publicado EXCLUSIVAMENTE en loopback 127.0.0.1 por defecto (para Cloudflare Tunnel en host network)
-      # Evita exponer la API a otros clientes no autorizados de la LAN doméstica
-      - "${API_BIND_IP:-127.0.0.1}:18080:8080"
+    # SIN PUERTOS MAPEADOS EN EL HOST: La comunicacion ocurre 100% de contenedor
+    # a contenedor dentro de la red compartida ix-cloudflared_default
     networks:
-      - pictohabla-net
+      pictohabla-internal:
+      ix-cloudflared_default:
+        aliases:
+          - pictohabla-backend
     healthcheck:
       test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:8080/actuator/health || exit 1"]
       interval: 15s
@@ -112,5 +116,12 @@ services:
         max-file: "3"
 
 networks:
-  pictohabla-net:
+  # Red privada aislada de PictoHabla (Postgres <-> Backend)
+  pictohabla-internal:
     driver: bridge
+    internal: true
+
+  # Red externa preexistente de la aplicacion Cloudflare Tunnel en TrueNAS SCALE
+  ix-cloudflared_default:
+    external: true
+    name: ix-cloudflared_default

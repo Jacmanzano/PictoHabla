@@ -4,6 +4,7 @@ import com.cmanzano.pictohabla.common.exception.TooManyRequestsException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -13,8 +14,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Servicio de limitación de tasa (Rate Limiting) y mitigación de ataques de fuerza bruta / DoS.
- * Permite proteger endpoints sensibles (login, registro, recuperación de contraseña, renovación de tokens)
- * basándose en la IP de origen, evitando que atacantes bloqueen maliciosamente las cuentas legítimas de profesores.
+ * Permite proteger endpoints sensibles basándose en la IP de origen, evitando que atacantes
+ * bloqueen maliciosamente las cuentas legítimas de profesores.
+ *
+ * Incluye validación estricta de proxies de confianza: solo confía en CF-Connecting-IP o
+ * X-Forwarded-For si la conexión directa proviene de la subred autorizada (ej. 172.16.1.0/24 de Cloudflare Tunnel).
+ * Esto impide que otros contenedores en otros segmentos Docker o clientes LAN falseen direcciones IP.
  */
 @Service
 public class RateLimiterService {
@@ -37,11 +42,23 @@ public class RateLimiterService {
     private final Map<String, AttemptRecord> rateLimitBuckets = new ConcurrentHashMap<>();
     private final Map<String, AttemptRecord> failedLoginByIp = new ConcurrentHashMap<>();
 
+    private final String trustedProxySubnet;
+
+    public RateLimiterService() {
+        this("172.16.1.0/24");
+    }
+
+    public RateLimiterService(@Value("${app.security.trusted-proxy-subnet:172.16.1.0/24}") String trustedProxySubnet) {
+        this.trustedProxySubnet = (trustedProxySubnet != null && !trustedProxySubnet.isBlank())
+                ? trustedProxySubnet.trim()
+                : "172.16.1.0/24";
+    }
+
     /**
      * Extrae de forma segura la IP real del cliente.
      * Solo confía en cabeceras de proxy (CF-Connecting-IP, X-Forwarded-For) si la petición
-     * procede de un origen de confianza (Loopback de TrueNAS o red interna Docker).
-     * Si la petición proviene de un cliente LAN directo no confiable, se ignora cualquier
+     * procede estrictamente de un origen de confianza (Loopback o la subred real de Cloudflare Tunnel).
+     * Si la petición proviene de un origen no confiable, se ignora cualquier
      * cabecera inyectada y se utiliza estrictamente request.getRemoteAddr().
      */
     public String getClientIp(HttpServletRequest request) {
@@ -65,27 +82,55 @@ public class RateLimiterService {
         return remoteAddr;
     }
 
-    private boolean isTrustedProxy(String remoteAddr) {
+    public boolean isTrustedProxy(String remoteAddr) {
         if (remoteAddr == null || remoteAddr.isBlank()) {
             return false;
         }
-        // 1. Loopback local (Cloudflare Tunnel ejecutándose en host network en TrueNAS)
+        // 1. Loopback local (pruebas internas, healthchecks, etc.)
         if (remoteAddr.equals("127.0.0.1") || remoteAddr.equals("::1") || remoteAddr.equals("0:0:0:0:0:0:0:1")) {
             return true;
         }
-        // 2. Red interna privada de Docker Bridge (172.16.0.0 - 172.31.255.255)
-        if (remoteAddr.startsWith("172.")) {
-            try {
-                String[] parts = remoteAddr.split("\\.");
-                if (parts.length >= 2) {
-                    int secondOctet = Integer.parseInt(parts[1]);
-                    return secondOctet >= 16 && secondOctet <= 31;
-                }
-            } catch (Exception ignored) {
-                return false;
-            }
+        // 2. Subred configurada de Cloudflare Tunnel (ej. 172.16.1.0/24)
+        return isInSubnet(remoteAddr, trustedProxySubnet);
+    }
+
+    /**
+     * Comprueba si una dirección IPv4 pertenece a una subred en notación CIDR.
+     */
+    public static boolean isInSubnet(String ipStr, String cidr) {
+        if (cidr == null || cidr.isBlank() || ipStr == null || ipStr.isBlank()) {
+            return false;
         }
-        return false;
+        String[] parts = cidr.split("/");
+        if (parts.length != 2) {
+            return ipStr.equals(cidr);
+        }
+        try {
+            long ip = ipToLong(ipStr);
+            long subnet = ipToLong(parts[0]);
+            int prefix = Integer.parseInt(parts[1]);
+            if (prefix < 0 || prefix > 32) return false;
+            long mask = prefix == 0 ? 0 : (~0L << (32 - prefix)) & 0xFFFFFFFFL;
+            return (ip & mask) == (subnet & mask);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static long ipToLong(String ipStr) {
+        String[] octets = ipStr.split("\\.");
+        if (octets.length != 4) {
+            throw new IllegalArgumentException("Dirección IPv4 no válida: " + ipStr);
+        }
+        long result = 0;
+        for (int i = 0; i < 4; i++) {
+            long octet = Long.parseLong(octets[i].trim());
+            if (octet < 0 || octet > 255) {
+                throw new IllegalArgumentException("Octeto IPv4 fuera de rango: " + octet);
+            }
+            result = (result << 8) | octet;
+        }
+        return result;
     }
 
     /**
@@ -146,7 +191,6 @@ public class RateLimiterService {
 
     private void cleanExpiredEntries() {
         Instant now = Instant.now();
-        // Limpieza oportunista si la colección crece
         if (rateLimitBuckets.size() > 500) {
             rateLimitBuckets.entrySet().removeIf(entry -> now.isAfter(entry.getValue().resetTime));
         }

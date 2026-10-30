@@ -15,7 +15,8 @@ class RateLimiterServiceTest {
 
     @BeforeEach
     void setUp() {
-        rateLimiterService = new RateLimiterService();
+        // Inicializa con la subred real de Cloudflare Tunnel en TrueNAS: 172.16.1.0/24
+        rateLimiterService = new RateLimiterService("172.16.1.0/24");
     }
 
     @Test
@@ -29,13 +30,26 @@ class RateLimiterServiceTest {
     }
 
     @Test
-    void getClientIp_TrustedDockerBridge_TrustsXForwardedFor() {
+    void getClientIp_TrustedCloudflareSubnet_TrustsHeader() {
         MockHttpServletRequest request = new MockHttpServletRequest();
-        request.setRemoteAddr("172.18.0.1");
-        request.addHeader("X-Forwarded-For", "198.51.100.42, 172.18.0.1");
+        // IP real del contenedor cloudflared en TrueNAS: 172.16.1.2 dentro de 172.16.1.0/24
+        request.setRemoteAddr("172.16.1.2");
+        request.addHeader("CF-Connecting-IP", "198.51.100.77");
 
         String ip = rateLimiterService.getClientIp(request);
-        assertEquals("198.51.100.42", ip);
+        assertEquals("198.51.100.77", ip);
+    }
+
+    @Test
+    void getClientIp_OtherDockerSubnet_IgnoresSpoofedHeader() {
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        // Otro contenedor en otro segmento Docker (ej. 172.16.2.10 fuera de 172.16.1.0/24)
+        request.setRemoteAddr("172.16.2.10");
+        request.addHeader("CF-Connecting-IP", "8.8.8.8");
+
+        String ip = rateLimiterService.getClientIp(request);
+        // Debe ignorar la cabecera falseada y reportar la IP real de conexión
+        assertEquals("172.16.2.10", ip);
     }
 
     @Test
@@ -45,8 +59,15 @@ class RateLimiterServiceTest {
         request.addHeader("CF-Connecting-IP", "8.8.8.8");
 
         String ip = rateLimiterService.getClientIp(request);
-        // Debe ignorar la cabecera inyectada y retornar la IP real directa
         assertEquals("192.168.1.150", ip);
+    }
+
+    @Test
+    void isInSubnet_CorrectMatching() {
+        assertTrue(RateLimiterService.isInSubnet("172.16.1.2", "172.16.1.0/24"));
+        assertTrue(RateLimiterService.isInSubnet("172.16.1.254", "172.16.1.0/24"));
+        assertFalse(RateLimiterService.isInSubnet("172.16.2.1", "172.16.1.0/24"));
+        assertFalse(RateLimiterService.isInSubnet("10.0.0.1", "172.16.1.0/24"));
     }
 
     @Test
@@ -72,7 +93,6 @@ class RateLimiterServiceTest {
                 rateLimiterService.checkLoginAllowed(attackerIp)
         );
 
-        // Tras resetear (login exitoso o desbloqueo), debe permitirse
         rateLimiterService.resetFailedLogin(attackerIp);
         assertDoesNotThrow(() -> rateLimiterService.checkLoginAllowed(attackerIp));
     }
