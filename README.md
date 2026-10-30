@@ -104,7 +104,7 @@ PictoHabla sigue en desarrollo. Estas son algunas de las funcionalidades que que
 - [x] Múltiples tableros de comunicación.
 - [x] Adaptación visual para teléfonos y tablets.
 - [x] Actividades educativas en el Modo Aprender.
-- [ ] Backend y sincronización entre dispositivos.
+- [x] Backend propio, PostgreSQL y autenticación de profesores.
 - [ ] Panel web para profesores y cuidadores.
 - [ ] Gestión de aulas.
 - [ ] Comunicación en tiempo real mediante el Modo Aula.
