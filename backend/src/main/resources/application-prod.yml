@@ -51,7 +51,9 @@ management:
 app:
   security:
     cookie-secure: true
-    email-verification-required: ${EMAIL_VERIFICATION_REQUIRED:true}
+    email-verification-required: ${EMAIL_VERIFICATION_REQUIRED:false}
+    teacher-registration-enabled: ${TEACHER_REGISTRATION_ENABLED:false}
+    trusted-proxy-ip: ${TRUSTED_PROXY_IP}
   mail:
-    from: ${SMTP_FROM:no-reply@pictohabla.local}
-    base-url: ${PUBLIC_API_URL:https://api.pictohabla.local}
+    from: ${SMTP_FROM:}
+    base-url: ${PUBLIC_API_URL}

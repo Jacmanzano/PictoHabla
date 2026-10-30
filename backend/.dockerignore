@@ -1,0 +1,36 @@
+# Control de versiones
+.git/
+.gitignore
+
+# Caché y artefactos locales de Gradle
+.gradle/
+build/
+out/
+
+# Archivos de entorno y credenciales
+.env*
+*.env
+*.key
+*.pem
+*.secret
+*.dump
+*.dump.gpg
+
+# Logs y volcados
+*.log
+logs/
+
+# Archivos de IDE y sistema operativo
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+*.tmp
+tmp/
+
+# Scripts de mantenimiento y documentación del host
+scripts/
+*.md
+compose*.yaml
+compose*.yml

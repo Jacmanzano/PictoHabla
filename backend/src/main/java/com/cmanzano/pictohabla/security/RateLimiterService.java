@@ -17,12 +17,13 @@ import java.util.concurrent.ConcurrentHashMap;
  * Permite proteger endpoints sensibles basándose en la IP de origen, evitando que atacantes
  * bloqueen maliciosamente las cuentas legítimas de profesores.
  *
- * Incluye validación estricta de proxies de confianza: solo confía en CF-Connecting-IP o
- * X-Forwarded-For si la conexión TCP directa (request.getRemoteAddr()) proviene estrictamente
- * de la subred autorizada (ej. 172.16.1.0/24 de Cloudflare Tunnel) o de loopback local.
+ * Incluye validación estricta de proxy de confianza: solo confía en CF-Connecting-IP si
+ * la conexión TCP directa (request.getRemoteAddr()) coincide exactamente con TRUSTED_PROXY_IP
+ * (IP fija del contenedor Cloudflare Tunnel, ej. 172.16.1.2).
  *
- * Si un cliente directo o un proxy no confiable intenta falsear cabeceras HTTP, estas son
- * completamente ignoradas y se utiliza de forma determinista la IP remota del socket TCP.
+ * No se utiliza X-Forwarded-For como alternativa ni se confía en loopback por defecto en producción.
+ * Si un cliente directo o un proxy no autorizado envía cabeceras, estas son completamente
+ * ignoradas y se utiliza estrictamente la IP remota del socket TCP (request.getRemoteAddr()).
  */
 @Service
 public class RateLimiterService {
@@ -45,34 +46,34 @@ public class RateLimiterService {
     private final Map<String, AttemptRecord> rateLimitBuckets = new ConcurrentHashMap<>();
     private final Map<String, AttemptRecord> failedLoginByIp = new ConcurrentHashMap<>();
 
-    private volatile String trustedProxySubnet;
+    private volatile String trustedProxyIp;
 
     public RateLimiterService() {
-        this("172.16.1.0/24");
+        this("");
     }
 
-    public RateLimiterService(@Value("${app.security.trusted-proxy-subnet:172.16.1.0/24}") String trustedProxySubnet) {
-        setTrustedProxySubnet(trustedProxySubnet);
+    public RateLimiterService(@Value("${app.security.trusted-proxy-ip:}") String trustedProxyIp) {
+        setTrustedProxyIp(trustedProxyIp);
     }
 
-    public void setTrustedProxySubnet(String trustedProxySubnet) {
-        this.trustedProxySubnet = (trustedProxySubnet != null && !trustedProxySubnet.isBlank())
-                ? trustedProxySubnet.trim()
-                : "172.16.1.0/24";
+    public void setTrustedProxyIp(String trustedProxyIp) {
+        this.trustedProxyIp = (trustedProxyIp != null && !trustedProxyIp.isBlank())
+                ? trustedProxyIp.trim()
+                : "";
     }
 
-    public String getTrustedProxySubnet() {
-        return trustedProxySubnet;
+    public String getTrustedProxyIp() {
+        return trustedProxyIp;
     }
 
     /**
      * Extrae de forma segura la IP real del cliente.
-     * Solo confía en cabeceras de proxy (CF-Connecting-IP, X-Forwarded-For) si la petición
-     * procede estrictamente de un origen de confianza verificado a nivel de socket TCP
-     * (Loopback local o la subred real de Cloudflare Tunnel).
+     * Solo confía en la cabecera CF-Connecting-IP si el peer TCP directo coincide
+     * exactamente con TRUSTED_PROXY_IP.
      *
-     * Si la petición proviene de un origen no confiable, se ignora cualquier cabecera
-     * inyectada por el cliente y se utiliza estrictamente request.getRemoteAddr().
+     * No se utiliza X-Forwarded-For como alternativa para evitar riesgos de inyección.
+     * Si la petición no procede del proxy configurado o la cabecera es malformada/ausente,
+     * se utiliza estrictamente request.getRemoteAddr().
      */
     public String getClientIp(HttpServletRequest request) {
         if (request == null) {
@@ -81,7 +82,6 @@ public class RateLimiterService {
         String remoteAddr = request.getRemoteAddr() != null ? request.getRemoteAddr().trim() : "0.0.0.0";
 
         if (isTrustedProxy(remoteAddr)) {
-            // 1. Evaluar CF-Connecting-IP (cabecera oficial inyectada por Cloudflare)
             String cfIp = request.getHeader("CF-Connecting-IP");
             if (cfIp != null && !cfIp.isBlank()) {
                 String candidate = cfIp.trim();
@@ -90,37 +90,20 @@ public class RateLimiterService {
                 }
                 log.warn("Cabecera CF-Connecting-IP malformada recibida desde proxy de confianza {}: '{}'.", remoteAddr, cfIp);
             }
-
-            // 2. Evaluar X-Forwarded-For como alternativa si CF-Connecting-IP no está presente
-            String xff = request.getHeader("X-Forwarded-For");
-            if (xff != null && !xff.isBlank()) {
-                String[] parts = xff.split(",");
-                String candidate = parts[0].trim();
-                if (isValidIp(candidate)) {
-                    return candidate;
-                }
-                log.warn("Cabecera X-Forwarded-For malformada recibida desde proxy de confianza {}: '{}'.", remoteAddr, xff);
-            }
         }
 
-        // Si la conexión no proviene de un proxy confiable, o las cabeceras son inválidas/ausentes,
-        // devolvemos la IP física del peer TCP de forma segura y determinista.
         return remoteAddr;
     }
 
     /**
-     * Comprueba si la dirección remota física del peer TCP corresponde a un proxy de confianza.
+     * Comprueba si la dirección remota física del peer TCP coincide exactamente con el proxy de confianza.
+     * No confía ciegamente en loopback ni en rangos generales.
      */
     public boolean isTrustedProxy(String remoteAddr) {
-        if (remoteAddr == null || remoteAddr.isBlank()) {
+        if (remoteAddr == null || remoteAddr.isBlank() || trustedProxyIp == null || trustedProxyIp.isBlank()) {
             return false;
         }
-        // 1. Loopback local (127.0.0.1, ::1, 0:0:0:0:0:0:0:1)
-        if (remoteAddr.equals("127.0.0.1") || remoteAddr.equals("::1") || remoteAddr.equals("0:0:0:0:0:0:0:1")) {
-            return true;
-        }
-        // 2. Subred configurada de Cloudflare Tunnel (ej. 172.16.1.0/24)
-        return isInSubnet(remoteAddr, trustedProxySubnet);
+        return remoteAddr.equals(trustedProxyIp);
     }
 
     /**
@@ -162,45 +145,6 @@ public class RateLimiterService {
             }
         }
         return true;
-    }
-
-    /**
-     * Comprueba si una dirección IPv4 pertenece a una subred en notación CIDR.
-     */
-    public static boolean isInSubnet(String ipStr, String cidr) {
-        if (cidr == null || cidr.isBlank() || ipStr == null || ipStr.isBlank()) {
-            return false;
-        }
-        String[] parts = cidr.split("/");
-        if (parts.length != 2) {
-            return ipStr.equals(cidr);
-        }
-        try {
-            long ip = ipToLong(ipStr);
-            long subnet = ipToLong(parts[0]);
-            int prefix = Integer.parseInt(parts[1]);
-            if (prefix < 0 || prefix > 32) return false;
-            long mask = prefix == 0 ? 0 : (~0L << (32 - prefix)) & 0xFFFFFFFFL;
-            return (ip & mask) == (subnet & mask);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private static long ipToLong(String ipStr) {
-        String[] octets = ipStr.split("\\.");
-        if (octets.length != 4) {
-            throw new IllegalArgumentException("Dirección IPv4 no válida: " + ipStr);
-        }
-        long result = 0;
-        for (int i = 0; i < 4; i++) {
-            long octet = Long.parseLong(octets[i].trim());
-            if (octet < 0 || octet > 255) {
-                throw new IllegalArgumentException("Octeto IPv4 fuera de rango: " + octet);
-            }
-            result = (result << 8) | octet;
-        }
-        return result;
     }
 
     /**

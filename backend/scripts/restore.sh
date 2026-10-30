@@ -5,7 +5,7 @@
 # ADVERTENCIA: Este script sobreescribe los datos existentes en la base de datos.
 # NUNCA se debe ejecutar automáticamente. Requiere intervención consciente del
 # administrador de TrueNAS SCALE.
-# Ubicación recomendada en TrueNAS: /mnt/Datos/PictoHabla/scripts/restore.sh
+# Ubicación recomendada en TrueNAS: /mnt/Datos/Aplicaciones/PictoHabla/scripts/restore.sh
 # ==============================================================================
 
 set -euo pipefail

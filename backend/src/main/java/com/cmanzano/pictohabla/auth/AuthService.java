@@ -10,6 +10,7 @@ import com.cmanzano.pictohabla.auth.model.RefreshTokenRepository;
 import com.cmanzano.pictohabla.common.exception.AccountLockedException;
 import com.cmanzano.pictohabla.common.exception.ApiException;
 import com.cmanzano.pictohabla.common.exception.ConflictException;
+import com.cmanzano.pictohabla.common.exception.ForbiddenException;
 import com.cmanzano.pictohabla.common.exception.UnauthorizedException;
 import com.cmanzano.pictohabla.common.util.HashUtils;
 import com.cmanzano.pictohabla.config.AppProperties;
@@ -80,6 +81,12 @@ public class AuthService {
     }
 
     public TeacherResponse register(RegisterRequest request) {
+        boolean registrationEnabled = appProperties.security() == null || appProperties.security().teacherRegistrationEnabled();
+        if (!registrationEnabled) {
+            log.warn("Registro rechazado: el registro público de profesores está desactivado.");
+            throw new ForbiddenException("El registro de nuevos profesores está deshabilitado en este servidor. Contacte con el administrador.");
+        }
+
         String normalizedEmail = request.email().trim().toLowerCase();
 
         if (teacherRepository.existsByEmailIgnoreCase(normalizedEmail)) {

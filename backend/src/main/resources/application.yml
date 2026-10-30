@@ -26,8 +26,9 @@ app:
   security:
     cookie-secure: ${SECURITY_COOKIE_SECURE:false}
     email-verification-required: ${EMAIL_VERIFICATION_REQUIRED:false}
+    teacher-registration-enabled: ${TEACHER_REGISTRATION_ENABLED:true}
     max-failed-attempts: 5
     lockout-duration-minutes: 15
-    trusted-proxy-subnet: ${TRUSTED_PROXY_SUBNET:172.16.1.0/24}
+    trusted-proxy-ip: ${TRUSTED_PROXY_IP:}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173,http://localhost:8080}

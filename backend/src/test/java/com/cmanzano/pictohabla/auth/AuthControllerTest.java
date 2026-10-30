@@ -63,6 +63,19 @@ class AuthControllerTest {
     }
 
     @Test
+    void register_WhenDisabled_ReturnsForbidden() throws Exception {
+        RegisterRequest request = new RegisterRequest("profe@colegio.es", "Password123", "Profesor Carlos");
+        when(authService.register(any(RegisterRequest.class)))
+                .thenThrow(new com.cmanzano.pictohabla.common.exception.ForbiddenException("El registro de nuevos profesores está deshabilitado en este servidor."));
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false));
+    }
+
+    @Test
     void register_InvalidEmail_ReturnsBadRequest() throws Exception {
         RegisterRequest request = new RegisterRequest("email-no-valido", "Password123", "Profesor");
 

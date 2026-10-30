@@ -44,3 +44,13 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+// Desactivar la generación del JAR estándar (-plain.jar) para que solo exista el fat JAR ejecutable
+tasks.named<Jar>("jar") {
+    enabled = false
+}
+
+// Nombre determinista para el artefacto ejecutable generado por bootJar
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    archiveFileName.set("pictohabla-backend.jar")
+}

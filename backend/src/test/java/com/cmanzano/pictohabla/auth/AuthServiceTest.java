@@ -56,7 +56,7 @@ class AuthServiceTest {
         passwordEncoder = new BCryptPasswordEncoder();
         appProperties = new AppProperties(
                 new AppProperties.JwtProperties("404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970", 15, 7),
-                new AppProperties.SecurityProperties(false, false, 5, 15),
+                new AppProperties.SecurityProperties(false, false, true, 5, 15),
                 new AppProperties.CorsProperties(List.of("http://localhost:3000"))
         );
         jwtService = new JwtService(appProperties);
@@ -84,6 +84,27 @@ class AuthServiceTest {
         when(teacherRepository.existsByEmailIgnoreCase("repetido@colegio.es")).thenReturn(true);
 
         assertThrows(ConflictException.class, () -> authService.register(request));
+        verify(teacherRepository, never()).save(any(Teacher.class));
+    }
+
+    @Test
+    void register_RegistrationDisabled_ThrowsForbiddenException() {
+        AppProperties disabledProps = new AppProperties(
+                appProperties.jwt(),
+                new AppProperties.SecurityProperties(false, false, false, 5, 15),
+                appProperties.cors()
+        );
+        AuthService serviceWithRegDisabled = new AuthService(
+                teacherRepository,
+                refreshTokenRepository,
+                passwordEncoder,
+                jwtService,
+                disabledProps
+        );
+
+        RegisterRequest request = new RegisterRequest("nuevo@colegio.es", "Password123", "Profesor");
+        assertThrows(com.cmanzano.pictohabla.common.exception.ForbiddenException.class,
+                () -> serviceWithRegDisabled.register(request));
         verify(teacherRepository, never()).save(any(Teacher.class));
     }
 

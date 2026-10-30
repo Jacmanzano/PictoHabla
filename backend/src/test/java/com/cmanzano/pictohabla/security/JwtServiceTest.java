@@ -17,7 +17,7 @@ class JwtServiceTest {
     void setUp() {
         AppProperties appProperties = new AppProperties(
                 new AppProperties.JwtProperties("404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970", 15, 7),
-                new AppProperties.SecurityProperties(false, false, 5, 15),
+                new AppProperties.SecurityProperties(false, false, true, 5, 15),
                 new AppProperties.CorsProperties(List.of("http://localhost:3000"))
         );
         jwtService = new JwtService(appProperties);

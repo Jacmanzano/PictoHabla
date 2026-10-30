@@ -12,8 +12,8 @@
 #   - PostgreSQL 16 Alpine NO está en la red de Cloudflare ni expone el puerto 5432.
 #   - Alias DNS 'pictohabla-backend' configurado para resolución interna en Cloudflare.
 #   - Montajes persistentes en datasets ZFS:
-#       * /mnt/Datos/PictoHabla/Postgres (UID 70:70, recordsize=16k)
-#       * /mnt/Datos/PictoHabla/Uploads  (UID 1000:1000, recordsize=128k)
+#       * /mnt/Datos/Aplicaciones/PictoHabla/Postgres (UID 70:70, recordsize=16k)
+#       * /mnt/Datos/Aplicaciones/PictoHabla/Uploads  (UID 1000:1000, recordsize=128k)
 #   - Límites de memoria y CPU estrictos (Postgres: 256 MB, Backend: 512 MB).
 # ==============================================================================
 
@@ -28,8 +28,8 @@ services:
       POSTGRES_PASSWORD: "${DB_PASSWORD:?Error: DB_PASSWORD es obligatoria}"
       PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      # Dataset ZFS en pool Datos (Permisos: UID 70:70, recordsize=16k)
-      - /mnt/Datos/PictoHabla/Postgres:/var/lib/postgresql/data
+      # Dataset ZFS en pool Datos (Ruta real en TrueNAS: UID 70:70, recordsize=16k)
+      - /mnt/Datos/Aplicaciones/PictoHabla/Postgres:/var/lib/postgresql/data
     networks:
       # Exclusivamente en la red privada interna (sin acceso desde cloudflared ni host)
       - pictohabla-internal
@@ -73,19 +73,20 @@ services:
       JWT_SECRET: "${JWT_SECRET:?Error: JWT_SECRET es obligatoria}"
       JWT_ACCESS_EXPIRATION_MINUTES: ${JWT_ACCESS_EXPIRATION_MINUTES:-15}
       JWT_REFRESH_EXPIRATION_DAYS: ${JWT_REFRESH_EXPIRATION_DAYS:-7}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://pictohabla.local}
-      PUBLIC_API_URL: ${PUBLIC_API_URL:-https://api.pictohabla.local}
+      CORS_ALLOWED_ORIGINS: "${CORS_ALLOWED_ORIGINS:?Error: CORS_ALLOWED_ORIGINS es obligatoria}"
+      PUBLIC_API_URL: "${PUBLIC_API_URL:?Error: PUBLIC_API_URL es obligatoria}"
+      TEACHER_REGISTRATION_ENABLED: ${TEACHER_REGISTRATION_ENABLED:-false}
       EMAIL_VERIFICATION_REQUIRED: ${EMAIL_VERIFICATION_REQUIRED:-false}
-      TRUSTED_PROXY_SUBNET: ${TRUSTED_PROXY_SUBNET:-172.16.1.0/24}
+      TRUSTED_PROXY_IP: "${TRUSTED_PROXY_IP:?Error: TRUSTED_PROXY_IP es obligatoria}"
       SMTP_HOST: ${SMTP_HOST:-}
       SMTP_PORT: ${SMTP_PORT:-587}
       SMTP_USERNAME: ${SMTP_USERNAME:-}
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
-      SMTP_FROM: ${SMTP_FROM:-no-reply@pictohabla.local}
+      SMTP_FROM: ${SMTP_FROM:-}
       JAVA_OPTS: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError"
     volumes:
-      # Dataset ZFS para subidas multimedia (Permisos: UID 1000:1000, usuario spring)
-      - /mnt/Datos/PictoHabla/Uploads:/app/uploads
+      # Dataset ZFS para subidas multimedia (Ruta real en TrueNAS: UID 1000:1000, usuario spring)
+      - /mnt/Datos/Aplicaciones/PictoHabla/Uploads:/app/uploads
     # SIN PUERTOS MAPEADOS EN EL HOST: La comunicacion ocurre 100% de contenedor
     # a contenedor dentro de la red compartida ix-cloudflared_default
     networks:

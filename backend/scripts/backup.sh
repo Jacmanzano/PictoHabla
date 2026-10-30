@@ -4,7 +4,7 @@
 # ==============================================================================
 # Destino estricto: /mnt/Seguridad/PictoHabla/Backups
 # Formato: PostgreSQL Custom Format (-F c) con compresión y checksums internos
-# Ubicación en TrueNAS: /mnt/Datos/PictoHabla/scripts/backup.sh
+# Ubicación en TrueNAS: /mnt/Datos/Aplicaciones/PictoHabla/scripts/backup.sh
 # Programación: Tarea Cron en TrueNAS SCALE (diaria a las 03:00)
 # ==============================================================================
 

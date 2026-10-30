@@ -323,13 +323,14 @@ El despliegue final en producción se llevará a cabo en el servidor TrueNAS SCA
 
 - **Hardware:** Intel Xeon E3-1225 v6, 32 GB RAM ECC.
 - **Datasets de Almacenamiento Reales en TrueNAS:**
-  - `Datos/PictoHabla/Postgres`: Almacenamiento persistente de PostgreSQL (`/mnt/Datos/PictoHabla/Postgres`, UID 70:70, recordsize=16k).
-  - `Datos/PictoHabla/Uploads`: Archivos multimedia y pictogramas (`/mnt/Datos/PictoHabla/Uploads`, UID 1000:1000, recordsize=128k).
+  - `Datos/Aplicaciones/PictoHabla/Postgres`: Almacenamiento persistente de PostgreSQL (`/mnt/Datos/Aplicaciones/PictoHabla/Postgres`, UID 70:70, recordsize=16k).
+  - `Datos/Aplicaciones/PictoHabla/Uploads`: Archivos multimedia y pictogramas (`/mnt/Datos/Aplicaciones/PictoHabla/Uploads`, UID 1000:1000, recordsize=128k).
   - `Seguridad/PictoHabla/Backups`: Volcados lógicos periódicos (`/mnt/Seguridad/PictoHabla/Backups`, UID 0:0, 700).
-  - Scripts de soporte: `/mnt/Datos/PictoHabla/scripts/` (`backup.sh` y `restore.sh`).
+  - Scripts de soporte: `/mnt/Datos/Aplicaciones/PictoHabla/scripts/` (`backup.sh`, `restore.sh` y `precheck-truenas.sh`).
 - **Conectividad:**
-  - Sin exposición pública de PostgreSQL (aislado en red interna Docker `pictohabla-net`).
-  - Publicación externa exclusiva mediante **Cloudflare Tunnel (`cloudflared`)** con binding restringido a loopback (`127.0.0.1:18080`).
+  - Sin exposición pública ni publicación de puertos en el host para PostgreSQL (aislado en red privada `pictohabla-internal`).
+  - Publicación externa exclusiva mediante **Cloudflare Tunnel (`cloudflared`)** compartiendo la red Docker preexistente `ix-cloudflared_default` con alias `pictohabla-backend` sin publicar puertos en el host.
+  - Endpoints de diagnóstico (Actuator) restringidos a loopback local (`127.0.0.1:8081`).
 - **Límites de Recursos:**
   - PostgreSQL: 256 MB RAM
   - Spring Boot API: 512 MB RAM (JVM con `-XX:MaxRAMPercentage=75.0`)

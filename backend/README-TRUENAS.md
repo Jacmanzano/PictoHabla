@@ -27,7 +27,7 @@ El servidor aloja aplicaciones que **NO se modifican ni se reinician**:
 Toda la operativa de PictoHabla se centraliza bajo una estructura canónica limpia y unificada en el pool `Datos`, separando el almacenamiento de copias en el pool `Seguridad`:
 
 ```
-/mnt/Datos/PictoHabla/
+/mnt/Datos/Aplicaciones/PictoHabla/
 ├── compose.yaml                  # Archivo de orquestación de Docker Compose
 ├── .env                          # Variables de entorno de producción (chmod 600)
 ├── scripts/                      # Scripts de mantenimiento y auditoría (chmod 700 / 755)
@@ -35,8 +35,9 @@ Toda la operativa de PictoHabla se centraliza bajo una estructura canónica limp
 │   ├── restore.sh                # Restauración asistida con confirmación
 │   └── precheck-truenas.sh       # Auditoría de sólo lectura previa al despliegue
 ├── build/                        # [Sólo si se compila en el NAS] Contexto completo de compilación
-│   ├── Dockerfile                # Multi-stage Dockerfile no-root
-│   ├── build.gradle.kts          # Definición de dependencias y plugins
+│   ├── Dockerfile                # Multi-stage Dockerfile no-root (exec java, pictohabla-backend.jar)
+│   ├── .dockerignore             # Exclusión de binarios, logs y secretos en contexto Docker
+│   ├── build.gradle.kts          # Definición de dependencias y plugins (jar deshabilitado)
 │   ├── settings.gradle.kts       # Configuración de repositorios y módulos
 │   ├── gradlew                   # Script wrapper de Gradle (chmod +x)
 │   ├── gradle/
@@ -44,8 +45,8 @@ Toda la operativa de PictoHabla se centraliza bajo una estructura canónica limp
 │   │       ├── gradle-wrapper.jar
 │   │       └── gradle-wrapper.properties
 │   └── src/                      # Código fuente y recursos de backend/
-├── Postgres/                     # Dataset ZFS Datos/PictoHabla/Postgres (UID 70:70, perm 700)
-└── Uploads/                      # Dataset ZFS Datos/PictoHabla/Uploads (UID 1000:1000, perm 750)
+├── Postgres/                     # Dataset ZFS Datos/Aplicaciones/PictoHabla/Postgres (UID 70:70, perm 700)
+└── Uploads/                      # Dataset ZFS Datos/Aplicaciones/PictoHabla/Uploads (UID 1000:1000, perm 750)
 
 /mnt/Seguridad/PictoHabla/
 └── Backups/                      # Dataset ZFS Seguridad/PictoHabla/Backups (root:root, perm 700)
@@ -54,12 +55,12 @@ Toda la operativa de PictoHabla se centraliza bajo una estructura canónica limp
 ### Ubicación de Componentes Clave:
 | Elemento | Ruta en TrueNAS SCALE | Permisos Recomendados |
 | :--- | :--- | :--- |
-| **Directorio de Trabajo** | `/mnt/Datos/PictoHabla` | `755` (`root:root`) |
-| **Orquestación Compose** | `/mnt/Datos/PictoHabla/compose.yaml` | `644` (`root:root`) |
-| **Configuración Secreta** | `/mnt/Datos/PictoHabla/.env` | `600` (`root:root`) |
-| **Scripts de Operación** | `/mnt/Datos/PictoHabla/scripts/*.sh` | `700` (`root:root`) |
-| **Dataset BD Postgres** | `/mnt/Datos/PictoHabla/Postgres` | `700` (`70:70` - `postgres:postgres`) |
-| **Dataset Subidas Multimedia** | `/mnt/Datos/PictoHabla/Uploads` | `750` (`1000:1000` - `spring:spring`) |
+| **Directorio de Trabajo** | `/mnt/Datos/Aplicaciones/PictoHabla` | `755` (`root:root`) |
+| **Orquestación Compose** | `/mnt/Datos/Aplicaciones/PictoHabla/compose.yaml` | `644` (`root:root`) |
+| **Configuración Secreta** | `/mnt/Datos/Aplicaciones/PictoHabla/.env` | `600` (`root:root`) |
+| **Scripts de Operación** | `/mnt/Datos/Aplicaciones/PictoHabla/scripts/*.sh` | `700` (`root:root`) |
+| **Dataset BD Postgres** | `/mnt/Datos/Aplicaciones/PictoHabla/Postgres` | `700` (`70:70` - `postgres:postgres`) |
+| **Dataset Subidas Multimedia** | `/mnt/Datos/Aplicaciones/PictoHabla/Uploads` | `750` (`1000:1000` - `spring:spring`) |
 | **Dataset Copias Seguridad** | `/mnt/Seguridad/PictoHabla/Backups` | `700` (`0:0` - `root:root`) |
 | **Imagen Docker generada** | Daemon local de Docker (`pictohabla-backend:1.0.0`) | N/A (Docker Image Store) |
 
@@ -73,8 +74,8 @@ Toda la operativa de PictoHabla se centraliza bajo una estructura canónica limp
 
 | Dataset | Usuario esperado | UID:GID | Permisos necesarios | Tipo ACL a comprobar | Qué hacer si existe una ACL incompatible |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **`Datos/PictoHabla/Postgres`** | `postgres` | `70:70` | `700` (`rwx------`) | POSIX (`acltype=posix`, `aclmode=discard`) | Si tiene ACL NFSv4 o entradas ACE heredadas, en la UI de TrueNAS ir a **Datasets** -> seleccionar `Postgres` -> **Edit Permissions** -> seleccionar perfil **POSIX Standard** y marcar **Strip ACLs**. Vía CLI: `setfacl -b /mnt/Datos/PictoHabla/Postgres && chown 70:70 /mnt/Datos/PictoHabla/Postgres && chmod 700 /mnt/Datos/PictoHabla/Postgres`. |
-| **`Datos/PictoHabla/Uploads`** | `spring` | `1000:1000` | `750` (`rwxr-x---`) | POSIX (`acltype=posix`, `aclmode=discard`) | Si una ACL restrictiva bloquea a UID 1000, cambiar tipo a POSIX o añadir entrada ACE para UID 1000 (`rwx`). Vía CLI: `setfacl -b /mnt/Datos/PictoHabla/Uploads && chown 1000:1000 /mnt/Datos/PictoHabla/Uploads && chmod 750 /mnt/Datos/PictoHabla/Uploads`. |
+| **`Datos/Aplicaciones/PictoHabla/Postgres`** | `postgres` | `70:70` | `700` (`rwx------`) | POSIX (`acltype=posix`, `aclmode=discard`) | Si tiene ACL NFSv4 o entradas ACE heredadas, en la UI de TrueNAS ir a **Datasets** -> seleccionar `Postgres` -> **Edit Permissions** -> seleccionar perfil **POSIX Standard** y marcar **Strip ACLs**. Vía CLI: `setfacl -b /mnt/Datos/Aplicaciones/PictoHabla/Postgres && chown 70:70 /mnt/Datos/Aplicaciones/PictoHabla/Postgres && chmod 700 /mnt/Datos/Aplicaciones/PictoHabla/Postgres`. |
+| **`Datos/Aplicaciones/PictoHabla/Uploads`** | `spring` | `1000:1000` | `750` (`rwxr-x---`) | POSIX (`acltype=posix`, `aclmode=discard`) | Si una ACL restrictiva bloquea a UID 1000, cambiar tipo a POSIX o añadir entrada ACE para UID 1000 (`rwx`). Vía CLI: `setfacl -b /mnt/Datos/Aplicaciones/PictoHabla/Uploads && chown 1000:1000 /mnt/Datos/Aplicaciones/PictoHabla/Uploads && chmod 750 /mnt/Datos/Aplicaciones/PictoHabla/Uploads`. |
 | **`Seguridad/PictoHabla/Backups`** | `root` | `0:0` | `700` (`rwx------`) | POSIX (`acltype=posix`) | Eliminar ACLs heredadas que permitan lectura a usuarios no privilegiados: `setfacl -b /mnt/Seguridad/PictoHabla/Backups && chown 0:0 /mnt/Seguridad/PictoHabla/Backups && chmod 700 /mnt/Seguridad/PictoHabla/Backups`. |
 
 El script de auditoría `precheck-truenas.sh` inspecciona los datasets y reporta discrepancias de ACL de forma **estrictamente de sólo lectura**, sin ejecutar cambios automáticos.
@@ -84,7 +85,7 @@ El script de auditoría `precheck-truenas.sh` inspecciona los datasets y reporta
 ## 🛡️ 4. Validación Estricta de IP y Proxies de Confianza (Anti-Spoofing)
 
 ### Corrección Técnica: `ForwardedHeaderFilter` vs Validación de Socket TCP
-En entornos con proxy inverso (como Cloudflare Tunnel), la tentación habitual es delegar la extracción de IP a filtros automáticos como `ForwardedHeaderFilter` o `RemoteIpValve`. **Sin embargo, `ForwardedHeaderFilter` no realiza por sí mismo una validación de pertenencia a subred CIDR de la IP de origen.** Si se activa indiscriminadamente, un cliente malicioso que logre enviar una petición directa podría falsificar `X-Forwarded-For` o `CF-Connecting-IP`, eludiendo el limitador de tasa (Rate Limiter) o haciéndose pasar por otra IP.
+En entornos con proxy inverso (como Cloudflare Tunnel), delegar la extracción de IP a filtros automáticos como `ForwardedHeaderFilter` o `RemoteIpValve` es un vector de riesgo. **`ForwardedHeaderFilter` no valida por sí mismo la identidad ni la pertenencia del peer TCP a una IP de confianza.** Si se activa indiscriminadamente o se confía en cabeceras ciegas, un cliente en la red compartida o un atacante directo podría falsificar `CF-Connecting-IP` o `X-Forwarded-For`, eludiendo las cuotas de seguridad del Rate Limiter o suplantando la identidad de otros clientes.
 
 ### Arquitectura de Seguridad Implementada:
 1. **Desactivación de Interpretación Automática de Cabeceras:**  
@@ -93,14 +94,22 @@ En entornos con proxy inverso (como Cloudflare Tunnel), la tentación habitual e
    server:
      forward-headers-strategy: none
    ```
-   Esto garantiza que el contenedor y Spring Boot **NUNCA reescriben `request.getRemoteAddr()`** con cabeceras externas.
-2. **Obtención del Peer TCP Físico:**  
-   `RateLimiterService` obtiene `remoteAddr = request.getRemoteAddr()`, que corresponde de forma inalterada a la dirección del socket TCP que abrió la conexión contra el contenedor.
-3. **Validación Cripto-Determinista de Subred de Confianza:**  
-   Se verifica si `remoteAddr` pertenece a `127.0.0.1` / `::1` o a la subred real de Cloudflare Tunnel (`TRUSTED_PROXY_SUBNET`, ej. `172.16.1.0/24`).
-4. **Tratamiento de Cabeceras HTTP:**
-   - **Si el peer TCP ES de confianza:** Se extrae `CF-Connecting-IP` (o en su defecto el primer segmento de `X-Forwarded-For`). La IP extraída es sometida a validación sintáctica estricta (`isValidIp`). Si es válida, se utiliza; si es malformada o ausente, se realiza fallback seguro a `remoteAddr`.
-   - **Si el peer TCP NO ES de confianza:** **Se descarta y se ignora cualquier cabecera `CF-Connecting-IP` o `X-Forwarded-For` enviada por el cliente**, utilizándose estrictamente el peer TCP físico (`remoteAddr`). De este modo, un atacante directo queda invariablemente rate-limitado por su IP física real.
+   Esto garantiza que el contenedor y Spring Boot **NUNCA reescriben `request.getRemoteAddr()`** a partir de cabeceras HTTP entrantes.
+2. **Obtención del Peer TCP Físico Directo:**  
+   `RateLimiterService` obtiene `remoteAddr = request.getRemoteAddr()`, que corresponde de forma inalterada a la dirección del socket TCP físico que abrió la conexión contra el contenedor.
+3. **Validación Estricta de IP Específica de Proxy (`TRUSTED_PROXY_IP`):**  
+   En lugar de confiar en una subred completa donde otros contenedores pudieran coexistir, se valida la IP exacta del contenedor Cloudflared (`TRUSTED_PROXY_IP=172.16.1.2`):
+   ```java
+   private boolean isTrustedProxy(String remoteAddr) {
+       return StringUtils.hasText(trustedProxyIp) && remoteAddr.equals(trustedProxyIp);
+   }
+   ```
+   - **Sin confianza en loopback por defecto en producción:** En producción no se presupone loopback como proxy de confianza a menos que se configure explícitamente.
+   - **Sin IPs hardcodeadas en código Java:** La IP de confianza se inyecta dinámicamente mediante `@Value("${app.security.trusted-proxy-ip:}")`.
+4. **Tratamiento Exclusivo de Cabeceras:**
+   - **Si el peer TCP coincide exactamente con `TRUSTED_PROXY_IP`:** Se extrae `CF-Connecting-IP`, pasando por validación sintáctica estricta de formato IPv4/IPv6 (`isValidIp`). Si es válida, se utiliza como IP del cliente; si es malformada o está vacía, se realiza fallback seguro a `remoteAddr`.
+   - **Descarte de `X-Forwarded-For`:** No se utiliza `X-Forwarded-For` como respaldo, eliminando el riesgo de manipulación de cadenas de proxies múltiples.
+   - **Si el peer TCP NO coincide con `TRUSTED_PROXY_IP`:** **Se descarta y se ignora por completo cualquier cabecera `CF-Connecting-IP` enviada en la petición**, utilizándose indefectiblemente el peer TCP físico (`remoteAddr`). De este modo, un atacante o cliente directo queda siempre rate-limitado por su IP física real sin posibilidad de spoofing.
 
 ---
 
@@ -148,34 +157,46 @@ management:
 
 ## 👥 6. Política de Registro y Recuperación de Profesores
 
-### Comportamiento cuando SMTP no está configurado (`EMAIL_VERIFICATION_REQUIRED=false`):
+### 1. Control Estricto de Registro de Profesores (`TEACHER_REGISTRATION_ENABLED`):
+- **Deshabilitado por Defecto en Producción:** En `application-prod.yml` y `compose.truenas.yaml`, el registro público de nuevos profesores está deshabilitado por defecto (`TEACHER_REGISTRATION_ENABLED=false`).
+- **Bloqueo HTTP 403 Forbidden:** Cualquier petición dirigida a `POST /api/v1/auth/register` mientras el registro esté inactivo es rechazada de inmediato con HTTP **403 Forbidden**:
+  ```json
+  {
+    "status": "error",
+    "message": "El registro de nuevos profesores está deshabilitado en este servidor. Contacte con el administrador."
+  }
+  ```
+- **Procedimiento de Alta Segura:** Para la incorporación inicial de docentes al centro educativo:
+  1. El administrador accede por SSH a `/mnt/Datos/Aplicaciones/PictoHabla/`.
+  2. Activa temporalmente el registro en `.env`: `TEACHER_REGISTRATION_ENABLED=true`.
+  3. Aplica los cambios: `docker compose up -d backend`.
+  4. Los profesores autorizados completan su registro (protegidos por cuota estricta de 10 altas/hora por IP).
+  5. El administrador restablece `TEACHER_REGISTRATION_ENABLED=false` en `.env` y ejecuta `docker compose up -d backend` para sellar definitivamente el registro público.
 
-1. **Registro de Profesores:**
-   - Las cuentas se registran con `emailVerified = true` y estado `ACTIVE`.
-   - El endpoint `/api/v1/auth/register` está protegido por cuota estricta en `RateLimiterService` (máximo **10 registros por hora por IP**).
-   - **Recomendación para Lanzamiento:** Para un entorno escolar controlado sin servidor SMTP público, se recomienda registrar las cuentas de los profesores autorizados durante la puesta en marcha inicial y, si se requiere restringir registros futuros, limitar el acceso al endpoint o gestionar las cuentas administrativamente.
-
-2. **Recuperación de Contraseñas (`/api/v1/auth/forgot-password`):**
-   - **Protección contra Falsas Confirmaciones:** Cuando el servidor SMTP no está configurado (`emailService.isAvailable() == false`), el backend **NO genera tokens huérfanos en la base de datos** ni devuelve un mensaje simulando que el correo fue enviado.
-   - En su lugar, responde de forma transparente y segura con HTTP **503 Service Unavailable**:
-     ```json
-     {
-       "status": "error",
-       "message": "El servicio de recuperación de contraseñas por correo electrónico no está configurado en este servidor. Contacte con el administrador del centro."
-     }
-     ```
-   - **Seguridad en Logs:** El sistema emite un aviso estructurado en el log del servidor (`log.warn`) indicando que el servicio SMTP está ausente. **Bajo ninguna circunstancia se registran contraseñas, hashes ni enlaces de recuperación en los logs de producción.**
+### 2. Comportamiento cuando SMTP no está configurado (`EMAIL_VERIFICATION_REQUIRED=false`):
+- **Cuentas Activas Inmediatas:** Si el registro está habilitado y SMTP no está disponible, las cuentas se crean directamente con `emailVerified = true` y estado `ACTIVE`.
+- **Recuperación de Contraseñas (`/api/v1/auth/forgot-password`):**
+  - **Protección contra Falsas Confirmaciones:** Cuando el servidor SMTP no está configurado (`emailService.isAvailable() == false`), el backend **NO genera tokens huérfanos en la base de datos** ni devuelve un mensaje simulando que el correo fue enviado.
+  - En su lugar, responde de forma transparente y segura con HTTP **503 Service Unavailable**:
+    ```json
+    {
+      "status": "error",
+      "message": "El servicio de recuperación de contraseñas por correo electrónico no está configurado en este servidor. Contacte con el administrador del centro."
+    }
+    ```
+  - **Seguridad en Logs:** El sistema emite un aviso estructurado en el log del servidor (`log.warn`) indicando que el servicio SMTP está ausente. **Bajo ninguna circunstancia se registran contraseñas, hashes ni enlaces de recuperación en los logs de producción.**
 
 ---
 
 ## 📦 7. Construcción Completa de la Imagen Docker en Entorno Aislado
 
-El directorio `/mnt/Datos/PictoHabla/build` debe contener todos los archivos necesarios para una compilación reproducible y autónoma con Docker multi-stage:
+El directorio `/mnt/Datos/Aplicaciones/PictoHabla/build` contiene todos los archivos necesarios para una compilación reproducible, determinista y autónoma con Docker multi-stage:
 
-### Archivos Requeridos en `/mnt/Datos/PictoHabla/build`:
-- `Dockerfile` (Multi-stage con usuario no-root `spring:1000`).
-- `build.gradle.kts` (Dependencias y configuración de Spring Boot 3.5.x).
-- `settings.gradle.kts` (Nombre del proyecto y resolución de plugins).
+### Archivos Requeridos en `/mnt/Datos/Aplicaciones/PictoHabla/build`:
+- `Dockerfile` (Multi-stage con usuario no-root `spring:1000`, `exec java` en ENTRYPOINT).
+- `.dockerignore` (Exclusión estricta de `.git/`, `.gradle/`, `build/`, `.env*`, claves, certificados y volcados).
+- `build.gradle.kts` (Tarea `jar` desactivada para evitar JAR plain no ejecutable; `bootJar` genera determinísticamente `pictohabla-backend.jar`).
+- `settings.gradle.kts` (Nombre del proyecto y resolución de repositorios).
 - `gradlew` (Script wrapper ejecutable de Gradle con permisos `chmod +x`).
 - `gradle/wrapper/gradle-wrapper.jar` (Binario de arranque del wrapper).
 - `gradle/wrapper/gradle-wrapper.properties` (Distribución de Gradle 8.12).
@@ -183,36 +204,37 @@ El directorio `/mnt/Datos/PictoHabla/build` debe contener todos los archivos nec
 
 ### Verificación de Compilación Aislada:
 ```bash
-cd /mnt/Datos/PictoHabla/build
+cd /mnt/Datos/Aplicaciones/PictoHabla/build
 docker build -t pictohabla-backend:1.0.0 .
 ```
-La compilación multi-stage descarga OpenJDK 21, ejecuta `./gradlew bootJar` y empaqueta el JAR resultante en una imagen mínima Alpine con usuario `1000:1000`.
+La compilación multi-stage descarga Eclipse Temurin OpenJDK 21 Alpine, ejecuta `./gradlew bootJar --no-daemon` produciendo exclusivamente `pictohabla-backend.jar` y empaqueta el artefacto en una imagen mínima Alpine con usuario `spring:1000`.
 
 ---
 
 ## ⚙️ 8. Variables de Entorno y Vinculación en Compose
 
 ### Auditoría de Variables en `compose.yaml`:
-El comando `docker compose --env-file .env` utiliza `.env` para la interpolación de variables. Sin embargo, para garantizar que **todas las variables lleguen al entorno del contenedor**, `compose.yaml` las declara explícitamente bajo la clave `environment:` con comprobaciones de obligatoriedad (`?Error: ...`):
+El comando `docker compose --env-file .env` utiliza `.env` para la interpolación de variables. Para garantizar que **todas las variables lleguen al entorno del contenedor sin valores por defecto inseguros**, `compose.yaml` las declara explícitamente bajo la clave `environment:` con comprobaciones de obligatoriedad (`?Error: ...`):
 
 | Variable `.env` | Servicio Destino | Propiedad Spring Boot Vinculada | Valor por Defecto / Validación |
 | :--- | :--- | :--- | :--- |
 | `SPRING_PROFILES_ACTIVE` | `backend` | `spring.profiles.active` | `prod` |
 | `DB_NAME` | `postgres`, `backend` | `POSTGRES_DB`, `spring.datasource.url` | `pictohabla` |
 | `DB_USER` | `postgres`, `backend` | `POSTGRES_USER`, `spring.datasource.username` | `pictohabla_app` |
-| `DB_PASSWORD` | `postgres`, `backend` | `POSTGRES_PASSWORD`, `spring.datasource.password` | Obligatoria (`:?Error`) |
-| `JWT_SECRET` | `backend` | `app.jwt.secret` | Obligatoria (`:?Error`) |
+| `DB_PASSWORD` | `postgres`, `backend` | `POSTGRES_PASSWORD`, `spring.datasource.password` | Obligatoria (`:?Error: DB_PASSWORD es obligatoria`) |
+| `JWT_SECRET` | `backend` | `app.jwt.secret` | Obligatoria (`:?Error: JWT_SECRET es obligatoria`) |
 | `JWT_ACCESS_EXPIRATION_MINUTES` | `backend` | `app.jwt.access-token-expiration-minutes` | `15` |
 | `JWT_REFRESH_EXPIRATION_DAYS` | `backend` | `app.jwt.refresh-token-expiration-days` | `7` |
-| `CORS_ALLOWED_ORIGINS` | `backend` | `app.cors.allowed-origins` | `https://pictohabla.local` |
-| `PUBLIC_API_URL` | `backend` | `app.mail.base-url` | `https://api.pictohabla.local` |
-| `TRUSTED_PROXY_SUBNET` | `backend` | `app.security.trusted-proxy-subnet` | `172.16.1.0/24` |
+| `CORS_ALLOWED_ORIGINS` | `backend` | `app.cors.allowed-origins` | Obligatoria (`:?Error: CORS_ALLOWED_ORIGINS es obligatoria`) |
+| `PUBLIC_API_URL` | `backend` | `app.mail.base-url` | Obligatoria (`:?Error: PUBLIC_API_URL es obligatoria`) |
+| `TRUSTED_PROXY_IP` | `backend` | `app.security.trusted-proxy-ip` | Obligatoria (`:?Error: TRUSTED_PROXY_IP es obligatoria`, ej. `172.16.1.2`) |
+| `TEACHER_REGISTRATION_ENABLED` | `backend` | `app.security.teacher-registration-enabled` | `false` (`${TEACHER_REGISTRATION_ENABLED:-false}`) |
 | `EMAIL_VERIFICATION_REQUIRED` | `backend` | `app.security.email-verification-required` | `false` |
 | `SMTP_HOST` | `backend` | `spring.mail.host` | Vía vacía (inactiva) |
 | `SMTP_PORT` | `backend` | `spring.mail.port` | `587` |
 | `SMTP_USERNAME` | `backend` | `spring.mail.username` | Vía vacía |
 | `SMTP_PASSWORD` | `backend` | `spring.mail.password` | Vía vacía |
-| `SMTP_FROM` | `backend` | `app.mail.from` | `no-reply@pictohabla.local` |
+| `SMTP_FROM` | `backend` | `app.mail.from` | Vía vacía (sin dominios ficticios) |
 | `JAVA_OPTS` | `backend` | Opciones de máquina virtual JVM | `-XX:MaxRAMPercentage=75.0` |
 
 ---
@@ -265,24 +287,22 @@ HTTP/1.1 404 Not Found
 
 ## 📊 11. Batería de Pruebas Automatizadas
 
-El backend dispone de **50 pruebas unitarias y de integración** automatizadas, todas ellas en estado satisfactorio (0 fallos, 0 errores, 0 omitidas):
+El backend dispone de **51 pruebas unitarias y de integración** automatizadas, todas ellas en estado satisfactorio (0 fallos, 0 errores, 0 omitidas):
 
 ```
 BUILD SUCCESSFUL in 22s
-50 tests completed, 0 failed, 0 skipped
+51 tests completed, 0 failed, 0 skipped
 ```
 
-- **`RateLimiterServiceTest` (15 pruebas):**
-  - Confianza en Loopback (`127.0.0.1`, `::1`).
-  - Confianza en subred de Cloudflare (`172.16.1.0/24`).
+- **`RateLimiterServiceTest` (14 pruebas):**
+  - Confianza estricta en IP configurada de Cloudflared (`172.16.1.2`).
   - Detección y descarte de cabecera `CF-Connecting-IP` falseada desde cliente directo.
-  - Detección y descarte de cabecera `X-Forwarded-For` falseada desde cliente directo.
-  - Descarte simultáneo de cabeceras falseadas.
-  - Conexión desde subred Docker no confiable.
-  - Manejo seguro de cabeceras ausentes (fallback a TCP peer).
+  - Descarte sistemático de cabecera `X-Forwarded-For` incluso si proviene de proxy de confianza.
+  - Conexión desde IP o subred Docker no autorizada.
+  - Loopback no confiable por defecto en producción.
+  - Manejo seguro de cabeceras ausentes (fallback a TCP peer físico).
   - Manejo de cabecera `CF-Connecting-IP` malformada (inyecciones SQL, caracteres inválidos).
-  - Manejo de ambas cabeceras malformadas.
-  - Cambio dinámico de subred (`setTrustedProxySubnet`) y actualización de confianza.
+  - Cambio dinámico de IP de proxy (`setTrustedProxyIp`) y actualización de confianza.
   - Validación sintáctica de IPs IPv4 e IPv6 sin resolución DNS.
   - Reglas de cuotas por acción e IP.
   - Bloqueo por fuerza bruta y restablecimiento.
@@ -290,14 +310,16 @@ BUILD SUCCESSFUL in 22s
   - Actuator en puerto de gestión independiente (8081 en prod) responde `200 UP` sin detalles sensibles de base de datos ni disco.
   - Endpoints deshabilitados (`/actuator/info`, `/actuator/env`) no son accesibles públicamente.
   - El puerto principal de la API (8080) **no expone `/actuator/health`** (devuelve 404).
-- **`AuthServiceTest` (11 pruebas):**
-  - Registro de profesor, duplicados y flujo de verificación.
+- **`AuthServiceTest` (12 pruebas):**
+  - **Rechazo de registro con HTTP 403 Forbidden cuando el registro de profesores está deshabilitado (`teacherRegistrationEnabled = false`).**
+  - Registro exitoso de profesor cuando está habilitado, duplicados y flujo de verificación.
   - Inicio de sesión, contraseñas incorrectas y bloqueo de cuenta.
   - Rotación de refresh tokens y revocación por reutilización de token robado.
   - Restablecimiento de contraseña con token válido.
   - **Recuperación rechazada con HTTP 503 cuando SMTP no está configurado.**
   - **Recuperación aceptada y envío de correo cuando SMTP está disponible.**
-- **`AuthControllerTest` (8 pruebas):**
+- **`AuthControllerTest` (9 pruebas):**
+  - **Endpoint `POST /api/v1/auth/register` devuelve 403 Forbidden cuando el registro está inactivo.**
   - Endpoints REST de autenticación, serialización JSON y rate-limiting.
 - **`ClassroomControllerTest` (5 pruebas):**
   - Creación y listado de aulas vinculadas al profesor autenticado.
@@ -306,6 +328,9 @@ BUILD SUCCESSFUL in 22s
 - **`StudentControllerTest` (2 pruebas):**
   - Creación y asignación de alumnos sin cuenta de usuario.
 - **`TeacherControllerTest` (2 pruebas):**
+  - Perfil de profesor y protección por rol `ROLE_TEACHER`.
+- **`BackendApplicationTests` (1 prueba):**
+  - Inicialización completa del contexto de Spring Boot y migraciones de Flyway.
   - Perfil de profesor y protección por rol `ROLE_TEACHER`.
 - **`BackendApplicationTests` (1 prueba):**
   - Inicialización completa del contexto de Spring Boot y migraciones de Flyway.

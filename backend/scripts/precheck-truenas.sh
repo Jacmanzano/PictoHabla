@@ -7,7 +7,7 @@
 # Analiza el entorno y reporta errores y advertencias antes de iniciar contenedores.
 #
 # Ejecutar en la shell SSH o consola de TrueNAS SCALE:
-#   bash /mnt/Datos/PictoHabla/scripts/precheck-truenas.sh
+#   bash /mnt/Datos/Aplicaciones/PictoHabla/scripts/precheck-truenas.sh
 # ==============================================================================
 
 set -u
@@ -57,8 +57,12 @@ fi
 echo ""
 echo "${BLUE}[2/7] Verificando datasets ZFS y permisos de persistencia...${NC}"
 
-# Dataset Postgres
-POSTGRES_DIR="/mnt/Datos/PictoHabla/Postgres"
+# Dataset Postgres (Ruta real en TrueNAS)
+POSTGRES_DIR="/mnt/Datos/Aplicaciones/PictoHabla/Postgres"
+if [ ! -d "${POSTGRES_DIR}" ] && [ -d "/mnt/Datos/PictoHabla/Postgres" ]; then
+    POSTGRES_DIR="/mnt/Datos/PictoHabla/Postgres"
+fi
+
 if [ -d "${POSTGRES_DIR}" ]; then
     PG_OWNER=$(stat -c '%u:%g' "${POSTGRES_DIR}" 2>/dev/null || stat -f '%u:%g' "${POSTGRES_DIR}" 2>/dev/null || echo "desconocido")
     PG_PERMS=$(stat -c '%a' "${POSTGRES_DIR}" 2>/dev/null || echo "desconocido")
@@ -75,7 +79,7 @@ if [ -d "${POSTGRES_DIR}" ]; then
 
     # Inspección de ACL en Postgres
     if command -v zfs >/dev/null 2>&1; then
-        ZFS_ACL=$(zfs get -H -o value acltype Datos/PictoHabla/Postgres 2>/dev/null || echo "")
+        ZFS_ACL=$(zfs get -H -o value acltype Datos/Aplicaciones/PictoHabla/Postgres 2>/dev/null || zfs get -H -o value acltype Datos/PictoHabla/Postgres 2>/dev/null || echo "")
         if [ -n "${ZFS_ACL}" ] && [ "${ZFS_ACL}" != "posix" ] && [ "${ZFS_ACL}" != "off" ]; then
             echo "    ${YELLOW}⚠ [ALERTA ACL]${NC} Dataset Postgres tiene acltype='${ZFS_ACL}'. Se recomienda 'posix' para evitar bloqueos con UID 70."
             WARNINGS=$((WARNINGS + 1))
@@ -87,13 +91,17 @@ if [ -d "${POSTGRES_DIR}" ]; then
         fi
     fi
 else
-    echo "  ${RED}✘ [ERROR CRÍTICO] Dataset no encontrado: ${POSTGRES_DIR}${NC}"
-    echo "       Crea el dataset en TrueNAS: Datos/PictoHabla/Postgres"
+    echo "  ${RED}✘ [ERROR CRÍTICO] Dataset no encontrado: /mnt/Datos/Aplicaciones/PictoHabla/Postgres${NC}"
+    echo "       Crea el dataset en TrueNAS: Datos/Aplicaciones/PictoHabla/Postgres"
     ERRORS=$((ERRORS + 1))
 fi
 
-# Dataset Uploads
-UPLOADS_DIR="/mnt/Datos/PictoHabla/Uploads"
+# Dataset Uploads (Ruta real en TrueNAS)
+UPLOADS_DIR="/mnt/Datos/Aplicaciones/PictoHabla/Uploads"
+if [ ! -d "${UPLOADS_DIR}" ] && [ -d "/mnt/Datos/PictoHabla/Uploads" ]; then
+    UPLOADS_DIR="/mnt/Datos/PictoHabla/Uploads"
+fi
+
 if [ -d "${UPLOADS_DIR}" ]; then
     UP_OWNER=$(stat -c '%u:%g' "${UPLOADS_DIR}" 2>/dev/null || stat -f '%u:%g' "${UPLOADS_DIR}" 2>/dev/null || echo "desconocido")
     UP_PERMS=$(stat -c '%a' "${UPLOADS_DIR}" 2>/dev/null || echo "desconocido")
@@ -110,7 +118,7 @@ if [ -d "${UPLOADS_DIR}" ]; then
 
     # Inspección de ACL en Uploads
     if command -v zfs >/dev/null 2>&1; then
-        ZFS_ACL_UP=$(zfs get -H -o value acltype Datos/PictoHabla/Uploads 2>/dev/null || echo "")
+        ZFS_ACL_UP=$(zfs get -H -o value acltype Datos/Aplicaciones/PictoHabla/Uploads 2>/dev/null || zfs get -H -o value acltype Datos/PictoHabla/Uploads 2>/dev/null || echo "")
         if [ -n "${ZFS_ACL_UP}" ] && [ "${ZFS_ACL_UP}" != "posix" ] && [ "${ZFS_ACL_UP}" != "off" ]; then
             echo "    ${YELLOW}⚠ [ALERTA ACL]${NC} Dataset Uploads tiene acltype='${ZFS_ACL_UP}'. Se recomienda 'posix' para evitar bloqueos con UID 1000."
             WARNINGS=$((WARNINGS + 1))
@@ -122,8 +130,8 @@ if [ -d "${UPLOADS_DIR}" ]; then
         fi
     fi
 else
-    echo "  ${RED}✘ [ERROR CRÍTICO] Dataset no encontrado: ${UPLOADS_DIR}${NC}"
-    echo "       Crea el dataset en TrueNAS: Datos/PictoHabla/Uploads"
+    echo "  ${RED}✘ [ERROR CRÍTICO] Dataset no encontrado: /mnt/Datos/Aplicaciones/PictoHabla/Uploads${NC}"
+    echo "       Crea el dataset en TrueNAS: Datos/Aplicaciones/PictoHabla/Uploads"
     ERRORS=$((ERRORS + 1))
 fi
 
@@ -141,7 +149,10 @@ else
 fi
 
 # Directorio de Scripts
-SCRIPTS_DIR="/mnt/Datos/PictoHabla/scripts"
+SCRIPTS_DIR="/mnt/Datos/Aplicaciones/PictoHabla/scripts"
+if [ ! -d "${SCRIPTS_DIR}" ] && [ -d "/mnt/Datos/PictoHabla/scripts" ]; then
+    SCRIPTS_DIR="/mnt/Datos/PictoHabla/scripts"
+fi
 if [ -d "${SCRIPTS_DIR}" ]; then
     echo "  ${GREEN}✔${NC} Directorio de scripts existe: ${SCRIPTS_DIR}"
     for script_file in backup.sh restore.sh precheck-truenas.sh; do
@@ -189,8 +200,12 @@ fi
 # 4. Archivo de Entorno (.env) y Coherencia de Red
 # -----------------------------------------------------------------------------
 echo ""
-echo "${BLUE}[4/7] Verificando archivo de entorno (.env) y coherencia de subred...${NC}"
-ENV_FILE="/mnt/Datos/PictoHabla/.env"
+echo "${BLUE}[4/7] Verificando archivo de entorno (.env) e IP de Cloudflared...${NC}"
+ENV_FILE="/mnt/Datos/Aplicaciones/PictoHabla/.env"
+if [ ! -f "${ENV_FILE}" ] && [ -f "/mnt/Datos/PictoHabla/.env" ]; then
+    ENV_FILE="/mnt/Datos/PictoHabla/.env"
+fi
+
 if [ -f "${ENV_FILE}" ]; then
     ENV_PERMS=$(stat -c '%a' "${ENV_FILE}" 2>/dev/null || echo "desconocido")
     echo "  ${GREEN}✔${NC} Archivo de configuración existe: ${ENV_FILE} (Permisos: ${ENV_PERMS})"
@@ -200,25 +215,32 @@ if [ -f "${ENV_FILE}" ]; then
         WARNINGS=$((WARNINGS + 1))
     fi
 
-    # Comprobar TRUSTED_PROXY_SUBNET vs Subred Real
-    ENV_TRUSTED_SUBNET=$(grep -E '^\s*TRUSTED_PROXY_SUBNET=' "${ENV_FILE}" | cut -d= -f2- | tr -d ' "\r' || echo "")
-    if [ -n "${ENV_TRUSTED_SUBNET}" ]; then
-        if [ -n "${CF_SUBNET}" ] && [ "${ENV_TRUSTED_SUBNET}" != "${CF_SUBNET}" ]; then
-            echo "  ${RED}✘ [ERROR CRÍTICO] Discrepancia en TRUSTED_PROXY_SUBNET:${NC}"
-            echo "       - Subred real en Docker (${CF_NETWORK}): ${CF_SUBNET}"
-            echo "       - Subred declarada en ${ENV_FILE}: ${ENV_TRUSTED_SUBNET}"
-            echo "       Causa: Si las subredes no coinciden, Spring Boot ForwardedHeaderFilter descartará"
-            echo "       las cabeceras X-Forwarded-For y X-Forwarded-Proto, provocando problemas con CORS,"
-            echo "       redirecciones HTTPS erróneas y falseamiento de IPs en los logs."
+    # Comprobar TRUSTED_PROXY_IP vs IP real del contenedor
+    ENV_TRUSTED_IP=$(grep -E '^\s*TRUSTED_PROXY_IP=' "${ENV_FILE}" | cut -d= -f2- | tr -d ' "\r' || echo "")
+    if [ -n "${ENV_TRUSTED_IP}" ]; then
+        if [ -n "${CF_IP}" ] && [ "${ENV_TRUSTED_IP}" != "${CF_IP}" ]; then
+            echo "  ${RED}✘ [ERROR CRÍTICO] Discrepancia en TRUSTED_PROXY_IP:${NC}"
+            echo "       - IP real del contenedor Cloudflare (${CF_CONTAINER:-cloudflared}): ${CF_IP}"
+            echo "       - IP declarada en ${ENV_FILE}: ${ENV_TRUSTED_IP}"
+            echo "       Causa: Spring Boot únicamente aceptará cabeceras CF-Connecting-IP procedentes"
+            echo "       de TRUSTED_PROXY_IP. Si difiere, rate-limitará con la IP física y descartará el cliente real."
             echo "       Acción requerida (modifica manualmente el archivo .env):"
-            echo "       Ajusta en ${ENV_FILE}: TRUSTED_PROXY_SUBNET=${CF_SUBNET}"
+            echo "       Ajusta en ${ENV_FILE}: TRUSTED_PROXY_IP=${CF_IP}"
             ERRORS=$((ERRORS + 1))
         else
-            echo "  ${GREEN}✔${NC} TRUSTED_PROXY_SUBNET coincide exactamente con la subred Docker (${ENV_TRUSTED_SUBNET})"
+            echo "  ${GREEN}✔${NC} TRUSTED_PROXY_IP coincide exactamente con la IP de Cloudflare (${ENV_TRUSTED_IP})"
         fi
     else
-        echo "  ${YELLOW}⚠${NC} No se encontró la variable TRUSTED_PROXY_SUBNET en ${ENV_FILE}."
+        echo "  ${YELLOW}⚠${NC} No se encontró la variable TRUSTED_PROXY_IP en ${ENV_FILE}."
         WARNINGS=$((WARNINGS + 1))
+    fi
+
+    # Comprobar TEACHER_REGISTRATION_ENABLED
+    ENV_REG_ENABLED=$(grep -E '^\s*TEACHER_REGISTRATION_ENABLED=' "${ENV_FILE}" | cut -d= -f2- | tr -d ' "\r' || echo "")
+    if [ "${ENV_REG_ENABLED}" = "true" ]; then
+        echo "    ${YELLOW}ℹ${NC} TEACHER_REGISTRATION_ENABLED=true en .env (registro público habilitado)."
+    else
+        echo "  ${GREEN}✔${NC} Registro de profesores restringido (TEACHER_REGISTRATION_ENABLED=false)."
     fi
 
     # Comprobar presencia de contraseñas por defecto o placeholders no reemplazados
@@ -271,8 +293,8 @@ if docker image inspect "${IMAGE_NAME}" >/dev/null 2>&1; then
 else
     echo "  ${YELLOW}ℹ${NC} Imagen '${IMAGE_NAME}' no existe aún en Docker."
     echo "       Opciones de despliegue antes de iniciar:"
-    echo "       A) Construcción local en TrueNAS: docker build -t ${IMAGE_NAME} /mnt/Datos/PictoHabla/build"
-    echo "       B) Carga de tar precompilado:   docker load -i /mnt/Datos/PictoHabla/${IMAGE_NAME}.tar.gz"
+    echo "       A) Construcción local en TrueNAS: docker build -t ${IMAGE_NAME} /mnt/Datos/Aplicaciones/PictoHabla/build"
+    echo "       B) Carga de tar precompilado:   docker load -i /mnt/Datos/Aplicaciones/PictoHabla/${IMAGE_NAME}.tar.gz"
 fi
 
 # -----------------------------------------------------------------------------

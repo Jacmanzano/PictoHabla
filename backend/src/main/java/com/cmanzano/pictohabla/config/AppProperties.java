@@ -19,6 +19,7 @@ public record AppProperties(
     public record SecurityProperties(
             boolean cookieSecure,
             boolean emailVerificationRequired,
+            boolean teacherRegistrationEnabled,
             int maxFailedAttempts,
             long lockoutDurationMinutes
     ) {}

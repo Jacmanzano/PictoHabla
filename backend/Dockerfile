@@ -37,8 +37,8 @@ RUN addgroup -g 1000 -S spring && adduser -u 1000 -S spring -G spring && \
     mkdir -p /app/uploads && \
     chown -R spring:spring /app
 
-# Copiar artefacto compilado desde la etapa anterior con permisos no-root
-COPY --chown=spring:spring --from=builder /build/build/libs/pictohabla-backend-*.jar app.jar
+# Copiar artefacto compilado determinista desde la etapa anterior con permisos no-root
+COPY --chown=spring:spring --from=builder /build/build/libs/pictohabla-backend.jar app.jar
 
 USER spring:spring
 
@@ -47,4 +47,5 @@ EXPOSE 8080
 # Opciones de JVM optimizadas para contenedores con memoria acotada (Xeon TrueNAS / Docker)
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError"
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+# Uso de exec para sustituir la shell por el proceso Java (PID 1) y gestionar señales correctamente
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar app.jar"]
