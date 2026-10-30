@@ -24,16 +24,23 @@ RUN ./gradlew bootJar --no-daemon -x test
 FROM eclipse-temurin:21-jre-alpine
 
 LABEL maintainer="PictoHabla Team"
-LABEL description="PictoHabla Backend REST API"
+LABEL description="PictoHabla Backend REST API - TrueNAS SCALE Production"
 
-# Crear usuario y grupo de sistema sin privilegios con UID/GID fijo 1000 (Determinismo para ACLs en TrueNAS)
-RUN addgroup -g 1000 -S spring && adduser -u 1000 -S spring -G spring
-USER spring:spring
+# Instalar curl para healthchecks nativos y diagnóstico seguro
+RUN apk add --no-cache curl tzdata
 
+# Crear directorio de aplicación y subidas multimedia
 WORKDIR /app
 
-# Copiar artefacto compilado desde la etapa anterior
-COPY --from=builder /build/build/libs/pictohabla-backend-*.jar app.jar
+# Crear usuario y grupo de sistema sin privilegios con UID/GID fijo 1000 (Determinismo para ACLs en TrueNAS)
+RUN addgroup -g 1000 -S spring && adduser -u 1000 -S spring -G spring && \
+    mkdir -p /app/uploads && \
+    chown -R spring:spring /app
+
+# Copiar artefacto compilado desde la etapa anterior con permisos no-root
+COPY --chown=spring:spring --from=builder /build/build/libs/pictohabla-backend-*.jar app.jar
+
+USER spring:spring
 
 EXPOSE 8080
 
