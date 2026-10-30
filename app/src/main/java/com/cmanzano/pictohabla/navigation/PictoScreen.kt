@@ -319,6 +319,7 @@ fun MainNavigation(
             )
 
             PictoScreen.LEARN -> LearningScreen(
+                allPictograms = allPictograms,
                 languageCode = userSettings.languageCode,
                 highContrast = userSettings.highContrast,
                 hapticsEnabled = userSettings.hapticsEnabled,
