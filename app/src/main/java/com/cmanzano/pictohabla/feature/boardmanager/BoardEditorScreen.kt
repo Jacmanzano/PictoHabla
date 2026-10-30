@@ -87,6 +87,7 @@ import com.cmanzano.pictohabla.core.model.Category
 import com.cmanzano.pictohabla.core.model.Pictogram
 import com.cmanzano.pictohabla.core.util.ImageStorageHelper
 import com.cmanzano.pictohabla.core.util.normalizeForSearch
+import com.cmanzano.pictohabla.feature.board.components.PictogramImage
 
 /**
  * Pantalla para editar los datos de un tablero y organizar sus pictogramas.
@@ -434,10 +435,6 @@ private fun BoardPictoRowItem(
             Spacer(Modifier.width(PictoDimens.SpaceSmall))
 
             // Miniatura del pictograma
-            val customBitmap = remember(picto.localImagePath) {
-                ImageStorageHelper.loadBitmap(picto.localImagePath)
-            }
-
             Box(
                 modifier = Modifier
                     .size(48.dp)
@@ -446,21 +443,10 @@ private fun BoardPictoRowItem(
                     .padding(2.dp),
                 contentAlignment = Alignment.Center
             ) {
-                if (customBitmap != null) {
-                    Image(
-                        bitmap = customBitmap.asImageBitmap(),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else if (picto.icon != null) {
-                    Icon(
-                        imageVector = picto.icon,
-                        contentDescription = null,
-                        tint = picto.category.textColor,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+                PictogramImage(
+                    picto = picto,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
 
             Spacer(Modifier.width(PictoDimens.SpaceSmall))
@@ -677,25 +663,10 @@ private fun AddPictogramsDialog(
                                     horizontalAlignment = Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.Center
                                 ) {
-                                    val customBitmap = remember(picto.localImagePath) {
-                                        ImageStorageHelper.loadBitmap(picto.localImagePath)
-                                    }
-
-                                    if (customBitmap != null) {
-                                        Image(
-                                            bitmap = customBitmap.asImageBitmap(),
-                                            contentDescription = null,
-                                            contentScale = ContentScale.Crop,
-                                            modifier = Modifier.size(36.dp)
-                                        )
-                                    } else if (picto.icon != null) {
-                                        Icon(
-                                            imageVector = picto.icon,
-                                            contentDescription = null,
-                                            tint = if (alreadyIn) Color.Gray else picto.category.textColor,
-                                            modifier = Modifier.size(36.dp)
-                                        )
-                                    }
+                                    PictogramImage(
+                                        picto = picto,
+                                        modifier = Modifier.size(36.dp)
+                                    )
 
                                     Text(
                                         text = picto.getName(languageCode),

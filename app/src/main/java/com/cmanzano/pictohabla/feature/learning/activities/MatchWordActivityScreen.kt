@@ -68,6 +68,7 @@ import com.cmanzano.pictohabla.core.designsystem.PictoHaptics
 import com.cmanzano.pictohabla.core.designsystem.PictoTypography
 import com.cmanzano.pictohabla.core.model.Pictogram
 import com.cmanzano.pictohabla.core.util.ImageStorageHelper
+import com.cmanzano.pictohabla.feature.board.components.PictogramImage
 import com.cmanzano.pictohabla.feature.learning.components.ExerciseFeedbackBanner
 import com.cmanzano.pictohabla.feature.learning.components.FeedbackState
 import com.cmanzano.pictohabla.feature.learning.components.LearningSettingsDialog
@@ -272,10 +273,6 @@ fun MatchWordActivityScreen(
                     val isCorrect = optionPicto.id == exercise.targetPicto.id
                     val optionName = optionPicto.getName(languageCode)
 
-                    val localBitmap = remember(optionPicto.localImagePath) {
-                        ImageStorageHelper.loadBitmap(optionPicto.localImagePath)?.asImageBitmap()
-                    }
-
                     val borderColor by animateColorAsState(
                         targetValue = when {
                             highContrast && isSelected && isCorrect -> PictoColors.HighlightHighContrast
@@ -325,30 +322,11 @@ fun MatchWordActivityScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.Center
                             ) {
-                                if (localBitmap != null) {
-                                    Image(
-                                        bitmap = localBitmap,
-                                        contentDescription = null,
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier
-                                            .size(PictoDimens.IconSizeLarge)
-                                            .border(1.dp, Color.Black.copy(alpha = 0.2f), PictoDimens.CornerSmall)
-                                    )
-                                } else if (optionPicto.icon != null) {
-                                    Icon(
-                                        imageVector = optionPicto.icon,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(PictoDimens.IconSizeLarge),
-                                        tint = if (highContrast) Color.White else optionPicto.category.textColor
-                                    )
-                                } else {
-                                    Icon(
-                                        imageVector = Icons.Default.Image,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(PictoDimens.IconSizeLarge),
-                                        tint = if (highContrast) Color.White else optionPicto.category.textColor
-                                    )
-                                }
+                                PictogramImage(
+                                    picto = optionPicto,
+                                    highContrast = highContrast,
+                                    modifier = Modifier.size(PictoDimens.IconSizeLarge)
+                                )
 
                                 Spacer(Modifier.height(PictoDimens.SpaceExtraSmall))
 

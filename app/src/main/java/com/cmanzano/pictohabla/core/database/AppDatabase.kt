@@ -28,7 +28,7 @@ import com.cmanzano.pictohabla.core.database.entity.PictogramEntity
         BoardEntity::class,
         BoardPictogramCrossRef::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -91,6 +91,16 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /**
+         * Migración segura de versión 2 a versión 3 (No destructiva).
+         * Incorpora identificador oficial ARASAAC preservando favoritos, tableros e historial existentes.
+         */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE pictograms ADD COLUMN arasaacId INTEGER")
+            }
+        }
+
         fun getInstance(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -98,7 +108,7 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     "pictohabla_database.db"
                 )
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .build()
                 INSTANCE = instance
                 instance

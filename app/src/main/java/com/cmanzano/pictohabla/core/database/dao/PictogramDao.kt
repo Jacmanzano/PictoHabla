@@ -14,6 +14,9 @@ interface PictogramDao {
     @Query("SELECT * FROM pictograms ORDER BY orderIndex ASC, id ASC")
     fun getAllPictogramsFlow(): Flow<List<PictogramEntity>>
 
+    @Query("SELECT * FROM pictograms")
+    suspend fun getAllPictogramsList(): List<PictogramEntity>
+
     @Query("SELECT * FROM pictograms WHERE categoryName = :categoryName ORDER BY orderIndex ASC, id ASC")
     fun getPictogramsByCategoryFlow(categoryName: String): Flow<List<PictogramEntity>>
 

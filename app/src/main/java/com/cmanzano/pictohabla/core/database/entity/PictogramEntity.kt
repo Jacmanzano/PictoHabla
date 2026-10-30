@@ -25,11 +25,12 @@ data class PictogramEntity(
     val localImagePath: String? = null,
     val speechText: String? = null,
     val isCustom: Boolean = false,
-    val orderIndex: Int = 0
+    val orderIndex: Int = 0,
+    val arasaacId: Int? = null
 ) {
     /**
      * Convierte la entidad de Room al modelo de dominio [Pictogram],
-     * enlazando su icono estático desde [DefaultCatalog] si existe.
+     * enlazando su icono estático y su ID oficial ARASAAC desde [DefaultCatalog] si existe.
      */
     fun toDomain(): Pictogram {
         val category = try {
@@ -46,11 +47,15 @@ data class PictogramEntity(
             if (nameIt.isNotBlank()) put("IT", nameIt)
         }
 
+        val catalogMatch = DefaultCatalog.getFullCatalog().find { it.id == id }
+
         val staticIcon = if (isNumber && digit != null) {
             DefaultCatalog.getNumberIcon(digit)
         } else {
-            DefaultCatalog.getFullCatalog().find { it.id == id }?.icon
+            catalogMatch?.icon
         }
+
+        val resolvedArasaacId = arasaacId ?: catalogMatch?.arasaacId
 
         return Pictogram(
             id = id,
@@ -62,7 +67,8 @@ data class PictogramEntity(
             category = category,
             isCustom = isCustom,
             isNumber = isNumber,
-            digit = digit
+            digit = digit,
+            arasaacId = resolvedArasaacId
         )
     }
 
@@ -82,7 +88,8 @@ data class PictogramEntity(
                 localImagePath = domain.localImagePath,
                 speechText = domain.speechText,
                 isCustom = domain.isCustom,
-                orderIndex = order
+                orderIndex = order,
+                arasaacId = domain.arasaacId
             )
         }
     }

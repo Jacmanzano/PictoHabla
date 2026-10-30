@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
  * @property isCustom Indica si el pictograma fue creado localmente por el usuario o educador.
  * @property isNumber Indica si el pictograma representa un dígito numérico (0..9) para concatenación inteligente.
  * @property digit Valor entero (0..9) cuando [isNumber] es verdadero; null en caso contrario.
+ * @property arasaacId Identificador oficial del pictograma en el catálogo ARASAAC (cuando proceda).
  */
 data class Pictogram(
     val id: Int,
@@ -26,11 +27,12 @@ data class Pictogram(
     val speechText: String? = null,
     val isCustom: Boolean = false,
     val isNumber: Boolean = false,
-    val digit: Int? = null
+    val digit: Int? = null,
+    val arasaacId: Int? = null
 ) {
     /**
      * Constructor secundario de conveniencia para mantener compatibilidad con firmas
-     * posicionales legadas: (id, names, icon, imageUrl, category, isNumber, digit).
+     * posicionales legadas: (id, names, icon, imageUrl, category, isNumber, digit, arasaacId).
      */
     constructor(
         id: Int,
@@ -39,7 +41,8 @@ data class Pictogram(
         imageUrl: String? = null,
         category: Category,
         isNumber: Boolean = false,
-        digit: Int? = null
+        digit: Int? = null,
+        arasaacId: Int? = null
     ) : this(
         id = id,
         names = names,
@@ -50,17 +53,19 @@ data class Pictogram(
         speechText = null,
         isCustom = false,
         isNumber = isNumber,
-        digit = digit
+        digit = digit,
+        arasaacId = arasaacId
     )
 
     /**
-     * Constructor secundario simplificado para pictogramas básicos del catálogo: (id, names, icon, category).
+     * Constructor secundario simplificado para pictogramas básicos del catálogo: (id, names, icon, category, arasaacId).
      */
     constructor(
         id: Int,
         names: Map<String, String>,
         icon: ImageVector?,
-        category: Category
+        category: Category,
+        arasaacId: Int? = null
     ) : this(
         id = id,
         names = names,
@@ -71,7 +76,8 @@ data class Pictogram(
         speechText = null,
         isCustom = false,
         isNumber = false,
-        digit = null
+        digit = null,
+        arasaacId = arasaacId
     )
 
     fun getName(languageCode: String): String {

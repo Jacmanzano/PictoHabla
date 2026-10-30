@@ -66,6 +66,7 @@ import com.cmanzano.pictohabla.core.designsystem.PictoHaptics
 import com.cmanzano.pictohabla.core.model.Category
 import com.cmanzano.pictohabla.core.model.Pictogram
 import com.cmanzano.pictohabla.core.util.ImageStorageHelper
+import com.cmanzano.pictohabla.feature.board.components.PictogramImage
 import com.cmanzano.pictohabla.feature.learning.components.ExerciseFeedbackBanner
 import com.cmanzano.pictohabla.feature.learning.components.FeedbackState
 import com.cmanzano.pictohabla.feature.learning.components.LearningSettingsDialog
@@ -183,10 +184,6 @@ fun ClassifyActivityScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Tarjeta destacada del pictograma a clasificar
-            val localBitmap = remember(exercise.targetPicto.localImagePath) {
-                ImageStorageHelper.loadBitmap(exercise.targetPicto.localImagePath)?.asImageBitmap()
-            }
-
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -222,30 +219,12 @@ fun ClassifyActivityScreen(
                             ),
                             modifier = Modifier.size(72.dp)
                         ) {
-                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                                val targetIcon = exercise.targetPicto.icon
-                                if (localBitmap != null) {
-                                    Image(
-                                        bitmap = localBitmap,
-                                        contentDescription = null,
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier.fillMaxSize()
-                                    )
-                                } else if (targetIcon != null) {
-                                    Icon(
-                                        imageVector = targetIcon,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(44.dp),
-                                        tint = if (highContrast) Color.White else exercise.targetPicto.category.textColor
-                                    )
-                                } else {
-                                    Icon(
-                                        imageVector = Icons.Default.Image,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(44.dp),
-                                        tint = if (highContrast) Color.White else exercise.targetPicto.category.textColor
-                                    )
-                                }
+                            Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize().padding(4.dp)) {
+                                PictogramImage(
+                                    picto = exercise.targetPicto,
+                                    highContrast = highContrast,
+                                    modifier = Modifier.size(56.dp)
+                                )
                             }
                         }
 

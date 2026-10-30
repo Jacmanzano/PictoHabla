@@ -24,17 +24,28 @@ class PictogramRepository(
 ) {
 
     /**
-     * Inicializa el catálogo local en SQLite si la base de datos está vacía.
-     * Operación idempotente: comprueba primero si ya existen registros.
+     * Inicializa el catálogo local en SQLite si la base de datos está vacía,
+     * o sincroniza los IDs oficiales de ARASAAC en bases de datos existentes de versiones anteriores.
+     * Operación idempotente y no destructiva.
      */
     suspend fun initializeCatalogIfNeeded() = withContext(Dispatchers.IO) {
         val count = pictogramDao.getCount()
+        val defaultList = DefaultCatalog.getFullCatalog()
         if (count == 0) {
-            val defaultList = DefaultCatalog.getFullCatalog()
             val entities = defaultList.mapIndexed { index, picto ->
                 PictogramEntity.fromDomain(picto, order = index)
             }
             pictogramDao.insertAll(entities)
+        } else {
+            val defaultMap = defaultList.associateBy { it.id }
+            val existing = pictogramDao.getAllPictogramsList()
+            existing.filter { !it.isCustom && it.arasaacId == null && defaultMap.containsKey(it.id) }
+                .forEach { oldEntity ->
+                    val defaultPicto = defaultMap[oldEntity.id]
+                    if (defaultPicto?.arasaacId != null) {
+                        pictogramDao.update(oldEntity.copy(arasaacId = defaultPicto.arasaacId))
+                    }
+                }
         }
     }
 
@@ -128,6 +139,30 @@ class PictogramRepository(
             speechText = speechText?.trim()?.ifEmpty { null },
             localImagePath = localImagePath,
             isCustom = true
+        )
+        pictogramDao.insert(entity)
+        entity.toDomain()
+    }
+
+    /**
+     * Añade y persiste un nuevo pictograma descargado desde ARASAAC en el catálogo local.
+     */
+    suspend fun createArasaacPictogram(
+        arasaacId: Int,
+        name: String,
+        speechText: String? = null,
+        category: Category,
+        localImagePath: String? = null
+    ): Pictogram = withContext(Dispatchers.IO) {
+        val newId = pictogramDao.getNextCustomId()
+        val entity = PictogramEntity(
+            id = newId,
+            nameEs = name.trim(),
+            categoryName = category.name,
+            speechText = speechText?.trim()?.ifEmpty { null },
+            localImagePath = localImagePath,
+            isCustom = true,
+            arasaacId = arasaacId
         )
         pictogramDao.insert(entity)
         entity.toDomain()

@@ -76,11 +76,6 @@ fun PictogramCard(
     val categoryLabel = picto.category.getLabel(languageCode)
     val favoriteLabel = if (isFavorite) ", marcado como favorito" else ""
 
-    // Carga de foto local persistente si es un pictograma personalizado
-    val localBitmap = remember(picto.localImagePath) {
-        ImageStorageHelper.loadBitmap(picto.localImagePath)?.asImageBitmap()
-    }
-
     ElevatedCard(
         shape = shape,
         colors = CardDefaults.elevatedCardColors(
@@ -117,31 +112,14 @@ fun PictogramCard(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
-                // Renderizado de imagen local o icono vectorial
-                if (localBitmap != null) {
-                    Image(
-                        bitmap = localBitmap,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(PictoDimens.IconSizeLarge)
-                            .border(1.dp, Color.Black.copy(alpha = 0.2f), PictoDimens.CornerSmall)
-                    )
-                } else if (picto.icon != null) {
-                    Icon(
-                        imageVector = picto.icon,
-                        contentDescription = null,
-                        modifier = Modifier.size(PictoDimens.IconSizeLarge),
-                        tint = if (highContrast) Color.White else picto.category.textColor
-                    )
-                } else {
-                    Icon(
-                        imageVector = Icons.Default.Image,
-                        contentDescription = null,
-                        modifier = Modifier.size(PictoDimens.IconSizeLarge),
-                        tint = if (highContrast) Color.White else picto.category.textColor
-                    )
-                }
+                // Renderizado oficial ARASAAC / foto personalizada / respaldo
+                PictogramImage(
+                    picto = picto,
+                    highContrast = highContrast,
+                    modifier = Modifier
+                        .size(PictoDimens.IconSizeLarge)
+                        .padding(2.dp)
+                )
 
                 Spacer(modifier = Modifier.height(PictoDimens.SpaceExtraSmall))
 

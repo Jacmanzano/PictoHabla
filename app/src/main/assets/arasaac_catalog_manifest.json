@@ -1,0 +1,1532 @@
+{
+  "project": "PictoHabla",
+  "version": "1.0",
+  "source": "ARASAAC (Centro Aragonés de la Comunicación Aumentativa y Alternativa)",
+  "website": "https://arasaac.org",
+  "api_base": "https://api.arasaac.org/v1",
+  "author": "Sergio Palao",
+  "owner": "Gobierno de Aragón",
+  "license": "Creative Commons BY-NC-SA 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "attribution_notice": "Los símbolos pictográficos utilizados son propiedad del Gobierno de Aragón y han sido creados por Sergio Palao para ARASAAC (http://www.arasaac.org), que los distribuye bajo licencia Creative Commons (BY-NC-SA).",
+  "total_pictograms": 84,
+  "pictograms": [
+    {
+      "internal_id": 1000,
+      "arasaac_id": 2626,
+      "name_es": "cero",
+      "category": "NUMBERS",
+      "local_asset_path": "pictograms/2626.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2626?resolution=500",
+      "semantic_selection_reason": "Número 0 oficial ARASAAC",
+      "keywords": [
+        "0",
+        "cero"
+      ],
+      "categories": [
+        "number",
+        "numeral adjective",
+        "adjective",
+        "mathematics"
+      ]
+    },
+    {
+      "internal_id": 1001,
+      "arasaac_id": 2627,
+      "name_es": "uno",
+      "category": "NUMBERS",
+      "local_asset_path": "pictograms/2627.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2627?resolution=500",
+      "semantic_selection_reason": "Número 1 oficial ARASAAC",
+      "keywords": [
+        "uno",
+        "1"
+      ],
+      "categories": [
+        "number",
+        "mathematics",
+        "core vocabulary-knowledge",
+        "adjective",
+        "numeral adjective"
+      ]
+    },
+    {
+      "internal_id": 1002,
+      "arasaac_id": 2628,
+      "name_es": "dos",
+      "category": "NUMBERS",
+      "local_asset_path": "pictograms/2628.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2628?resolution=500",
+      "semantic_selection_reason": "Número 2 oficial ARASAAC",
+      "keywords": [
+        "2",
+        "dos"
+      ],
+      "categories": [
+        "number",
+        "numeral adjective",
+        "adjective",
+        "mathematics"
+      ]
+    },
+    {
+      "internal_id": 1003,
+      "arasaac_id": 2629,
+      "name_es": "tres",
+      "category": "NUMBERS",
+      "local_asset_path": "pictograms/2629.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2629?resolution=500",
+      "semantic_selection_reason": "Número 3 oficial ARASAAC",
+      "keywords": [
+        "3",
+        "tres"
+      ],
+      "categories": [
+        "number",
+        "numeral adjective",
+        "mathematics",
+        "core vocabulary-knowledge"
+      ]
+    },
+    {
+      "internal_id": 1004,
+      "arasaac_id": 2630,
+      "name_es": "cuatro",
+      "category": "NUMBERS",
+      "local_asset_path": "pictograms/2630.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2630?resolution=500",
+      "semantic_selection_reason": "Número 4 oficial ARASAAC",
+      "keywords": [
+        "4",
+        "cuatro"
+      ],
+      "categories": [
+        "number",
+        "numeral adjective",
+        "mathematics",
+        "core vocabulary-knowledge"
+      ]
+    },
+    {
+      "internal_id": 1005,
+      "arasaac_id": 2631,
+      "name_es": "cinco",
+      "category": "NUMBERS",
+      "local_asset_path": "pictograms/2631.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2631?resolution=500",
+      "semantic_selection_reason": "Número 5 oficial ARASAAC",
+      "keywords": [
+        "5",
+        "cinco"
+      ],
+      "categories": [
+        "number",
+        "numeral adjective",
+        "mathematics",
+        "core vocabulary-knowledge"
+      ]
+    },
+    {
+      "internal_id": 1006,
+      "arasaac_id": 2632,
+      "name_es": "seis",
+      "category": "NUMBERS",
+      "local_asset_path": "pictograms/2632.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2632?resolution=500",
+      "semantic_selection_reason": "Número 6 oficial ARASAAC",
+      "keywords": [
+        "6",
+        "seis"
+      ],
+      "categories": [
+        "number",
+        "numeral adjective",
+        "mathematics",
+        "core vocabulary-knowledge"
+      ]
+    },
+    {
+      "internal_id": 1007,
+      "arasaac_id": 2633,
+      "name_es": "siete",
+      "category": "NUMBERS",
+      "local_asset_path": "pictograms/2633.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2633?resolution=500",
+      "semantic_selection_reason": "Número 7 oficial ARASAAC",
+      "keywords": [
+        "7",
+        "siete"
+      ],
+      "categories": [
+        "number",
+        "numeral adjective",
+        "mathematics",
+        "core vocabulary-knowledge"
+      ]
+    },
+    {
+      "internal_id": 1008,
+      "arasaac_id": 2634,
+      "name_es": "ocho",
+      "category": "NUMBERS",
+      "local_asset_path": "pictograms/2634.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2634?resolution=500",
+      "semantic_selection_reason": "Número 8 oficial ARASAAC",
+      "keywords": [
+        "8",
+        "ocho"
+      ],
+      "categories": [
+        "number",
+        "numeral adjective",
+        "mathematics",
+        "core vocabulary-knowledge"
+      ]
+    },
+    {
+      "internal_id": 1009,
+      "arasaac_id": 2635,
+      "name_es": "nueve",
+      "category": "NUMBERS",
+      "local_asset_path": "pictograms/2635.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2635?resolution=500",
+      "semantic_selection_reason": "Número 9 oficial ARASAAC",
+      "keywords": [
+        "9",
+        "nueve"
+      ],
+      "categories": [
+        "number",
+        "numeral adjective"
+      ]
+    },
+    {
+      "internal_id": 1,
+      "arasaac_id": 6009,
+      "name_es": "Hola",
+      "category": "SOCIAL",
+      "local_asset_path": "pictograms/6009.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/6009?resolution=500",
+      "semantic_selection_reason": "Saludo Hola oficial ARASAAC",
+      "keywords": [
+        "hola"
+      ],
+      "categories": [
+        "polite set expression"
+      ]
+    },
+    {
+      "internal_id": 2,
+      "arasaac_id": 8129,
+      "name_es": "Gracias",
+      "category": "SOCIAL",
+      "local_asset_path": "pictograms/8129.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/8129?resolution=500",
+      "semantic_selection_reason": "Agradecimiento Gracias oficial ARASAAC",
+      "keywords": [
+        "gracias"
+      ],
+      "categories": [
+        "polite set expression",
+        "human value",
+        "core vocabulary-communication",
+        "core vocabulary-knowledge"
+      ]
+    },
+    {
+      "internal_id": 3,
+      "arasaac_id": 8195,
+      "name_es": "Por favor",
+      "category": "SOCIAL",
+      "local_asset_path": "pictograms/8195.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/8195?resolution=500",
+      "semantic_selection_reason": "Petición Por favor oficial ARASAAC",
+      "keywords": [
+        "por favor",
+        "rogar"
+      ],
+      "categories": [
+        "polite set expression",
+        "core vocabulary-communication"
+      ]
+    },
+    {
+      "internal_id": 4,
+      "arasaac_id": 6028,
+      "name_es": "Adiós",
+      "category": "SOCIAL",
+      "local_asset_path": "pictograms/6028.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/6028?resolution=500",
+      "semantic_selection_reason": "Despedida Adiós / Hasta luego oficial ARASAAC",
+      "keywords": [
+        "adiós",
+        "hasta luego",
+        "hasta la vista"
+      ],
+      "categories": [
+        "polite set expression",
+        "core vocabulary-communication"
+      ]
+    },
+    {
+      "internal_id": 5,
+      "arasaac_id": 5584,
+      "name_es": "Sí",
+      "category": "QUESTIONS",
+      "local_asset_path": "pictograms/5584.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/5584?resolution=500",
+      "semantic_selection_reason": "Afirmación Sí oficial ARASAAC",
+      "keywords": [
+        "sí"
+      ],
+      "categories": [
+        "adverb",
+        "adverb of affirmation",
+        "core vocabulary-education"
+      ]
+    },
+    {
+      "internal_id": 6,
+      "arasaac_id": 5526,
+      "name_es": "No",
+      "category": "QUESTIONS",
+      "local_asset_path": "pictograms/5526.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/5526?resolution=500",
+      "semantic_selection_reason": "Negación No oficial ARASAAC",
+      "keywords": [
+        "no"
+      ],
+      "categories": [
+        "adverb",
+        "adverb of denial",
+        "core vocabulary-communication",
+        "adjective",
+        "indefinite adjective"
+      ]
+    },
+    {
+      "internal_id": 7,
+      "arasaac_id": 11625,
+      "name_es": "Perdón",
+      "category": "SOCIAL",
+      "local_asset_path": "pictograms/11625.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/11625?resolution=500",
+      "semantic_selection_reason": "Disculpa Lo siento / Perdón oficial ARASAAC",
+      "keywords": [
+        "lo siento",
+        "perdonar",
+        "¡lo siento!",
+        "¡perdón!",
+        "perdón"
+      ],
+      "categories": [
+        "polite set expression",
+        "human value",
+        "core vocabulary-communication"
+      ]
+    },
+    {
+      "internal_id": 8,
+      "arasaac_id": 7272,
+      "name_es": "Tengo hambre",
+      "category": "FOOD",
+      "local_asset_path": "pictograms/7272.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/7272?resolution=500",
+      "semantic_selection_reason": "Acción/sensación Tener hambre oficial ARASAAC",
+      "keywords": [
+        "tener hambre"
+      ],
+      "categories": [
+        "verb",
+        "basic needs",
+        "body sensation"
+      ]
+    },
+    {
+      "internal_id": 9,
+      "arasaac_id": 7273,
+      "name_es": "Tengo sed",
+      "category": "FOOD",
+      "local_asset_path": "pictograms/7273.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/7273?resolution=500",
+      "semantic_selection_reason": "Acción/sensación Tener sed oficial ARASAAC",
+      "keywords": [
+        "sediento",
+        "tener sed",
+        "sed"
+      ],
+      "categories": [
+        "verb",
+        "basic needs",
+        "body sensation"
+      ]
+    },
+    {
+      "internal_id": 10,
+      "arasaac_id": 12252,
+      "name_es": "Ayuda",
+      "category": "ACTIONS",
+      "local_asset_path": "pictograms/12252.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/12252?resolution=500",
+      "semantic_selection_reason": "Petición Apoyo / Ayuda oficial ARASAAC",
+      "keywords": [
+        "apoyo",
+        "ayuda",
+        "colaboración",
+        "cooperación"
+      ],
+      "categories": [
+        "human response",
+        "core vocabulary-education",
+        "special education",
+        "basic needs"
+      ]
+    },
+    {
+      "internal_id": 11,
+      "arasaac_id": 3220,
+      "name_es": "Más",
+      "category": "ACTIONS",
+      "local_asset_path": "pictograms/3220.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/3220?resolution=500",
+      "semantic_selection_reason": "Concepto Más (+) oficial ARASAAC",
+      "keywords": [
+        "más",
+        "+"
+      ],
+      "categories": [
+        "orthographic sign",
+        "mathematics",
+        "core vocabulary-communication"
+      ]
+    },
+    {
+      "internal_id": 12,
+      "arasaac_id": 7196,
+      "name_es": "Para",
+      "category": "ACTIONS",
+      "local_asset_path": "pictograms/7196.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/7196?resolution=500",
+      "semantic_selection_reason": "Acción Parar / Detener oficial ARASAAC",
+      "keywords": [
+        "parar",
+        "detener"
+      ],
+      "categories": [
+        "usual verbs",
+        "road safety",
+        "core vocabulary-communication",
+        "physical exercise"
+      ]
+    },
+    {
+      "internal_id": 13,
+      "arasaac_id": 37162,
+      "name_es": "Otra vez",
+      "category": "ACTIONS",
+      "local_asset_path": "pictograms/37162.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/37162?resolution=500",
+      "semantic_selection_reason": "Repetir Otra vez oficial ARASAAC",
+      "keywords": [
+        "otra vez",
+        "una vez más"
+      ],
+      "categories": [
+        "unit of time"
+      ]
+    },
+    {
+      "internal_id": 14,
+      "arasaac_id": 5358,
+      "name_es": "Terminado",
+      "category": "ACTIONS",
+      "local_asset_path": "pictograms/5358.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/5358?resolution=500",
+      "semantic_selection_reason": "Acción Terminar / Acabar / Fin oficial ARASAAC",
+      "keywords": [
+        "terminar",
+        "fin",
+        "acabar",
+        "finalizar",
+        "final"
+      ],
+      "categories": [
+        "usual verbs",
+        "core vocabulary-communication"
+      ]
+    },
+    {
+      "internal_id": 15,
+      "arasaac_id": 11696,
+      "name_es": "No sé",
+      "category": "QUESTIONS",
+      "local_asset_path": "pictograms/11696.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/11696?resolution=500",
+      "semantic_selection_reason": "Duda / No sé oficial ARASAAC",
+      "keywords": [
+        "duda",
+        "dudar"
+      ],
+      "categories": [
+        "human response",
+        "verb"
+      ]
+    },
+    {
+      "internal_id": 16,
+      "arasaac_id": 37826,
+      "name_es": "Me gusta",
+      "category": "FEELINGS",
+      "local_asset_path": "pictograms/37826.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/37826?resolution=500",
+      "semantic_selection_reason": "Expresión Gustar / Me gusta eso oficial ARASAAC",
+      "keywords": [
+        "gustar",
+        "me gusta eso"
+      ],
+      "categories": [
+        "verb",
+        "expression",
+        "core vocabulary-communication",
+        "object",
+        "place",
+        "sport",
+        "event",
+        "mode of transport",
+        "usual verbs",
+        "education",
+        "toy",
+        "traditional game",
+        "game",
+        "outdoor activity",
+        "entertainment facility"
+      ]
+    },
+    {
+      "internal_id": 17,
+      "arasaac_id": 37825,
+      "name_es": "No me gusta",
+      "category": "FEELINGS",
+      "local_asset_path": "pictograms/37825.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/37825?resolution=500",
+      "semantic_selection_reason": "Expresión No gustar / No me gusta oficial ARASAAC",
+      "keywords": [
+        "no gustar",
+        "no me gusta eso"
+      ],
+      "categories": [
+        "verb",
+        "expression",
+        "core vocabulary-communication",
+        "object",
+        "place",
+        "sport",
+        "event",
+        "mode of transport",
+        "usual verbs",
+        "education",
+        "toy",
+        "traditional game",
+        "game",
+        "show",
+        "outdoor activity",
+        "entertainment facility"
+      ]
+    },
+    {
+      "internal_id": 20,
+      "arasaac_id": 2617,
+      "name_es": "Yo",
+      "category": "PEOPLE",
+      "local_asset_path": "pictograms/2617.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2617?resolution=500",
+      "semantic_selection_reason": "Pronombre Yo oficial ARASAAC",
+      "keywords": [
+        "yo",
+        "me",
+        "mí",
+        "yo me"
+      ],
+      "categories": [
+        "pronoun",
+        "personal pronoun"
+      ]
+    },
+    {
+      "internal_id": 21,
+      "arasaac_id": 2608,
+      "name_es": "Tú",
+      "category": "PEOPLE",
+      "local_asset_path": "pictograms/2608.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2608?resolution=500",
+      "semantic_selection_reason": "Pronombre Tú oficial ARASAAC",
+      "keywords": [
+        "tú",
+        "usted",
+        "tú te"
+      ],
+      "categories": [
+        "pronoun",
+        "personal pronoun"
+      ]
+    },
+    {
+      "internal_id": 22,
+      "arasaac_id": 2458,
+      "name_es": "Mamá",
+      "category": "PEOPLE",
+      "local_asset_path": "pictograms/2458.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2458?resolution=500",
+      "semantic_selection_reason": "Familiar Mamá oficial ARASAAC",
+      "keywords": [
+        "mamá"
+      ],
+      "categories": [
+        "family",
+        "core vocabulary-living being"
+      ]
+    },
+    {
+      "internal_id": 23,
+      "arasaac_id": 31146,
+      "name_es": "Papá",
+      "category": "PEOPLE",
+      "local_asset_path": "pictograms/31146.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/31146?resolution=500",
+      "semantic_selection_reason": "Familiar Papá oficial ARASAAC (no patata)",
+      "keywords": [
+        "papá"
+      ],
+      "categories": [
+        "family",
+        "core vocabulary-living being"
+      ]
+    },
+    {
+      "internal_id": 24,
+      "arasaac_id": 2244,
+      "name_es": "Abuelo",
+      "category": "PEOPLE",
+      "local_asset_path": "pictograms/2244.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2244?resolution=500",
+      "semantic_selection_reason": "Familiar Abuelo oficial ARASAAC",
+      "keywords": [
+        "abuelo",
+        "yayo"
+      ],
+      "categories": [
+        "elderly",
+        "family"
+      ]
+    },
+    {
+      "internal_id": 25,
+      "arasaac_id": 2243,
+      "name_es": "Abuela",
+      "category": "PEOPLE",
+      "local_asset_path": "pictograms/2243.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2243?resolution=500",
+      "semantic_selection_reason": "Familiar Abuela oficial ARASAAC",
+      "keywords": [
+        "abuela",
+        "yaya"
+      ],
+      "categories": [
+        "elderly",
+        "family"
+      ]
+    },
+    {
+      "internal_id": 26,
+      "arasaac_id": 8487,
+      "name_es": "Amigo",
+      "category": "PEOPLE",
+      "local_asset_path": "pictograms/8487.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/8487?resolution=500",
+      "semantic_selection_reason": "Persona Amigo oficial ARASAAC",
+      "keywords": [
+        "amigo"
+      ],
+      "categories": [
+        "group"
+      ]
+    },
+    {
+      "internal_id": 27,
+      "arasaac_id": 6556,
+      "name_es": "Profesor",
+      "category": "PEOPLE",
+      "local_asset_path": "pictograms/6556.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/6556?resolution=500",
+      "semantic_selection_reason": "Profesional Maestro / Profesor oficial ARASAAC",
+      "keywords": [
+        "maestro",
+        "profesor",
+        "maestra",
+        "profesora"
+      ],
+      "categories": [
+        "educational staff",
+        "education professionals",
+        "core vocabulary-education",
+        "core vocabulary-work"
+      ]
+    },
+    {
+      "internal_id": 28,
+      "arasaac_id": 6480,
+      "name_es": "Él",
+      "category": "PEOPLE",
+      "local_asset_path": "pictograms/6480.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/6480?resolution=500",
+      "semantic_selection_reason": "Pronombre Él oficial ARASAAC",
+      "keywords": [
+        "él",
+        "él se"
+      ],
+      "categories": [
+        "personal pronoun"
+      ]
+    },
+    {
+      "internal_id": 29,
+      "arasaac_id": 7029,
+      "name_es": "Ella",
+      "category": "PEOPLE",
+      "local_asset_path": "pictograms/7029.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/7029?resolution=500",
+      "semantic_selection_reason": "Pronombre Ella oficial ARASAAC",
+      "keywords": [
+        "ella",
+        "la",
+        "lo",
+        "sí",
+        "se"
+      ],
+      "categories": [
+        "pronoun",
+        "personal pronoun"
+      ]
+    },
+    {
+      "internal_id": 200,
+      "arasaac_id": 7185,
+      "name_es": "Nosotros",
+      "category": "PEOPLE",
+      "local_asset_path": "pictograms/7185.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/7185?resolution=500",
+      "semantic_selection_reason": "Pronombre Nosotros oficial ARASAAC",
+      "keywords": [
+        "nosotros",
+        "nosotros nos"
+      ],
+      "categories": [
+        "personal pronoun"
+      ]
+    },
+    {
+      "internal_id": 30,
+      "arasaac_id": 5441,
+      "name_es": "Quiero",
+      "category": "ACTIONS",
+      "local_asset_path": "pictograms/5441.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/5441?resolution=500",
+      "semantic_selection_reason": "Verbo Querer / Yo quiero oficial ARASAAC",
+      "keywords": [
+        "querer",
+        "desear",
+        "pedir",
+        "yo quiero"
+      ],
+      "categories": [
+        "usual verbs",
+        "core vocabulary-communication",
+        "human response",
+        "feeding",
+        "mode of transport",
+        "educational material",
+        "sport material",
+        "toy"
+      ]
+    },
+    {
+      "internal_id": 39,
+      "arasaac_id": 37160,
+      "name_es": "Necesito",
+      "category": "ACTIONS",
+      "local_asset_path": "pictograms/37160.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/37160?resolution=500",
+      "semantic_selection_reason": "Verbo Necesitar oficial ARASAAC",
+      "keywords": [
+        "necesitar"
+      ],
+      "categories": [
+        "usual verbs",
+        "human response",
+        "core vocabulary-communication",
+        "core vocabulary-knowledge"
+      ]
+    },
+    {
+      "internal_id": 31,
+      "arasaac_id": 2349,
+      "name_es": "Comer",
+      "category": "ACTIONS",
+      "local_asset_path": "pictograms/2349.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2349?resolution=500",
+      "semantic_selection_reason": "Verbo Comer oficial ARASAAC",
+      "keywords": [
+        "comer",
+        "tomar"
+      ],
+      "categories": [
+        "verb",
+        "food",
+        "basic needs"
+      ]
+    },
+    {
+      "internal_id": 32,
+      "arasaac_id": 2276,
+      "name_es": "Beber",
+      "category": "ACTIONS",
+      "local_asset_path": "pictograms/2276.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2276?resolution=500",
+      "semantic_selection_reason": "Verbo Beber oficial ARASAAC",
+      "keywords": [
+        "beber",
+        "tomar"
+      ],
+      "categories": [
+        "verb",
+        "beverage",
+        "basic needs"
+      ]
+    },
+    {
+      "internal_id": 33,
+      "arasaac_id": 2439,
+      "name_es": "Jugar",
+      "category": "ACTIONS",
+      "local_asset_path": "pictograms/2439.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2439?resolution=500",
+      "semantic_selection_reason": "Verbo Jugar oficial ARASAAC",
+      "keywords": [
+        "jugar"
+      ],
+      "categories": [
+        "verb",
+        "traditional game"
+      ]
+    },
+    {
+      "internal_id": 34,
+      "arasaac_id": 2369,
+      "name_es": "Dormir",
+      "category": "ACTIONS",
+      "local_asset_path": "pictograms/2369.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2369?resolution=500",
+      "semantic_selection_reason": "Verbo Dormir oficial ARASAAC",
+      "keywords": [
+        "dormir"
+      ],
+      "categories": [
+        "verb",
+        "basic needs",
+        "routine"
+      ]
+    },
+    {
+      "internal_id": 35,
+      "arasaac_id": 2432,
+      "name_es": "Ir",
+      "category": "ACTIONS",
+      "local_asset_path": "pictograms/2432.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2432?resolution=500",
+      "semantic_selection_reason": "Verbo Ir oficial ARASAAC",
+      "keywords": [
+        "ir"
+      ],
+      "categories": [
+        "verb"
+      ]
+    },
+    {
+      "internal_id": 18,
+      "arasaac_id": 11708,
+      "name_es": "Venir",
+      "category": "ACTIONS",
+      "local_asset_path": "pictograms/11708.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/11708?resolution=500",
+      "semantic_selection_reason": "Verbo Venir oficial ARASAAC",
+      "keywords": [
+        "venir",
+        "acudir",
+        "llegar"
+      ],
+      "categories": [
+        "verb"
+      ]
+    },
+    {
+      "internal_id": 19,
+      "arasaac_id": 11749,
+      "name_es": "Hacer",
+      "category": "ACTIONS",
+      "local_asset_path": "pictograms/11749.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/11749?resolution=500",
+      "semantic_selection_reason": "Verbo Hacer oficial ARASAAC",
+      "keywords": [
+        "hacer"
+      ],
+      "categories": [
+        "usual verbs",
+        "core vocabulary-communication"
+      ]
+    },
+    {
+      "internal_id": 36,
+      "arasaac_id": 2474,
+      "name_es": "Ver",
+      "category": "ACTIONS",
+      "local_asset_path": "pictograms/2474.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2474?resolution=500",
+      "semantic_selection_reason": "Verbo Ver / Mirar oficial ARASAAC",
+      "keywords": [
+        "ver",
+        "mirar",
+        "observar"
+      ],
+      "categories": [
+        "verb",
+        "senses"
+      ]
+    },
+    {
+      "internal_id": 37,
+      "arasaac_id": 2381,
+      "name_es": "Escuchar",
+      "category": "ACTIONS",
+      "local_asset_path": "pictograms/2381.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2381?resolution=500",
+      "semantic_selection_reason": "Verbo Escuchar / Oír oficial ARASAAC",
+      "keywords": [
+        "oír",
+        "escuchar"
+      ],
+      "categories": [
+        "verb",
+        "senses"
+      ]
+    },
+    {
+      "internal_id": 38,
+      "arasaac_id": 2719,
+      "name_es": "Correr",
+      "category": "ACTIONS",
+      "local_asset_path": "pictograms/2719.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2719?resolution=500",
+      "semantic_selection_reason": "Verbo Correr oficial ARASAAC",
+      "keywords": [
+        "correr"
+      ],
+      "categories": [
+        "verb",
+        "physical exercise"
+      ]
+    },
+    {
+      "internal_id": 40,
+      "arasaac_id": 2462,
+      "name_es": "Manzana",
+      "category": "FOOD",
+      "local_asset_path": "pictograms/2462.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2462?resolution=500",
+      "semantic_selection_reason": "Alimento Manzana oficial ARASAAC",
+      "keywords": [
+        "manzana"
+      ],
+      "categories": [
+        "fruit",
+        "core vocabulary-feeding"
+      ]
+    },
+    {
+      "internal_id": 41,
+      "arasaac_id": 2530,
+      "name_es": "Plátano",
+      "category": "FOOD",
+      "local_asset_path": "pictograms/2530.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2530?resolution=500",
+      "semantic_selection_reason": "Alimento Plátano oficial ARASAAC",
+      "keywords": [
+        "plátano"
+      ],
+      "categories": [
+        "fruit",
+        "core vocabulary-feeding"
+      ]
+    },
+    {
+      "internal_id": 42,
+      "arasaac_id": 2494,
+      "name_es": "Pan",
+      "category": "FOOD",
+      "local_asset_path": "pictograms/2494.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2494?resolution=500",
+      "semantic_selection_reason": "Alimento Pan oficial ARASAAC",
+      "keywords": [
+        "pan",
+        "barra de pan"
+      ],
+      "categories": [
+        "ultra-processed food",
+        "core vocabulary-feeding"
+      ]
+    },
+    {
+      "internal_id": 43,
+      "arasaac_id": 2445,
+      "name_es": "Leche",
+      "category": "FOOD",
+      "local_asset_path": "pictograms/2445.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2445?resolution=500",
+      "semantic_selection_reason": "Bebida Leche oficial ARASAAC",
+      "keywords": [
+        "leche"
+      ],
+      "categories": [
+        "beverage",
+        "dairy product",
+        "core vocabulary-feeding"
+      ]
+    },
+    {
+      "internal_id": 44,
+      "arasaac_id": 2248,
+      "name_es": "Agua",
+      "category": "FOOD",
+      "local_asset_path": "pictograms/2248.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2248?resolution=500",
+      "semantic_selection_reason": "Bebida Agua oficial ARASAAC",
+      "keywords": [
+        "agua"
+      ],
+      "categories": [
+        "beverage",
+        "mineral rich food"
+      ]
+    },
+    {
+      "internal_id": 45,
+      "arasaac_id": 2527,
+      "name_es": "Pizza",
+      "category": "FOOD",
+      "local_asset_path": "pictograms/2527.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2527?resolution=500",
+      "semantic_selection_reason": "Alimento Pizza oficial ARASAAC",
+      "keywords": [
+        "pizza"
+      ],
+      "categories": [
+        "traditional dish",
+        "core vocabulary-feeding"
+      ]
+    },
+    {
+      "internal_id": 50,
+      "arasaac_id": 9907,
+      "name_es": "Feliz",
+      "category": "FEELINGS",
+      "local_asset_path": "pictograms/9907.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/9907?resolution=500",
+      "semantic_selection_reason": "Emoción Feliz / Contento oficial ARASAAC",
+      "keywords": [
+        "contento",
+        "feliz",
+        "contenta"
+      ],
+      "categories": [
+        "qualifying adjective",
+        "feeling",
+        "adjective"
+      ]
+    },
+    {
+      "internal_id": 51,
+      "arasaac_id": 2606,
+      "name_es": "Triste",
+      "category": "FEELINGS",
+      "local_asset_path": "pictograms/2606.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2606?resolution=500",
+      "semantic_selection_reason": "Emoción Triste oficial ARASAAC",
+      "keywords": [
+        "triste"
+      ],
+      "categories": [
+        "qualifying adjective",
+        "feeling"
+      ]
+    },
+    {
+      "internal_id": 52,
+      "arasaac_id": 2374,
+      "name_es": "Enfadado",
+      "category": "FEELINGS",
+      "local_asset_path": "pictograms/2374.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2374?resolution=500",
+      "semantic_selection_reason": "Emoción Enfadado oficial ARASAAC",
+      "keywords": [
+        "enfadado",
+        "enfadada"
+      ],
+      "categories": [
+        "qualifying adjective",
+        "feeling"
+      ]
+    },
+    {
+      "internal_id": 53,
+      "arasaac_id": 2314,
+      "name_es": "Cansado",
+      "category": "FEELINGS",
+      "local_asset_path": "pictograms/2314.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2314?resolution=500",
+      "semantic_selection_reason": "Sensación Cansado oficial ARASAAC",
+      "keywords": [
+        "cansado"
+      ],
+      "categories": [
+        "qualifying adjective",
+        "feeling",
+        "body sensation",
+        "symptom"
+      ]
+    },
+    {
+      "internal_id": 54,
+      "arasaac_id": 30620,
+      "name_es": "Duele",
+      "category": "FEELINGS",
+      "local_asset_path": "pictograms/30620.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/30620?resolution=500",
+      "semantic_selection_reason": "Sensación Dolor / Doler oficial ARASAAC",
+      "keywords": [
+        "doler",
+        "dolor"
+      ],
+      "categories": [
+        "verb",
+        "symptom",
+        "human anatomy",
+        "animal anatomy"
+      ]
+    },
+    {
+      "internal_id": 55,
+      "arasaac_id": 35557,
+      "name_es": "Tengo frío",
+      "category": "FEELINGS",
+      "local_asset_path": "pictograms/35557.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/35557?resolution=500",
+      "semantic_selection_reason": "Sensación Frío oficial ARASAAC",
+      "keywords": [
+        "frío"
+      ],
+      "categories": [
+        "body sensation",
+        "meteorology"
+      ]
+    },
+    {
+      "internal_id": 56,
+      "arasaac_id": 6952,
+      "name_es": "Tengo calor",
+      "category": "FEELINGS",
+      "local_asset_path": "pictograms/6952.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/6952?resolution=500",
+      "semantic_selection_reason": "Sensación Tener calor oficial ARASAAC",
+      "keywords": [
+        "tener calor",
+        "hacer calor"
+      ],
+      "categories": [
+        "verb",
+        "body sensation",
+        "summer",
+        "core vocabulary-communication",
+        "core vocabulary-living being",
+        "core vocabulary-miscellaneous",
+        "beach"
+      ]
+    },
+    {
+      "internal_id": 60,
+      "arasaac_id": 2317,
+      "name_es": "Casa",
+      "category": "PLACES",
+      "local_asset_path": "pictograms/2317.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2317?resolution=500",
+      "semantic_selection_reason": "Lugar Casa oficial ARASAAC",
+      "keywords": [
+        "casa"
+      ],
+      "categories": [
+        "residential building"
+      ]
+    },
+    {
+      "internal_id": 61,
+      "arasaac_id": 6929,
+      "name_es": "Baño",
+      "category": "PLACES",
+      "local_asset_path": "pictograms/6929.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/6929?resolution=500",
+      "semantic_selection_reason": "Lugar Cuarto de baño oficial ARASAAC",
+      "keywords": [
+        "cuarto de baño",
+        "baño"
+      ],
+      "categories": [
+        "building room"
+      ]
+    },
+    {
+      "internal_id": 62,
+      "arasaac_id": 3082,
+      "name_es": "Colegio",
+      "category": "PLACES",
+      "local_asset_path": "pictograms/3082.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/3082?resolution=500",
+      "semantic_selection_reason": "Lugar Colegio / Escuela oficial ARASAAC",
+      "keywords": [
+        "colegio",
+        "escuela"
+      ],
+      "categories": [
+        "educational building",
+        "educational_building",
+        "educational institution"
+      ]
+    },
+    {
+      "internal_id": 63,
+      "arasaac_id": 2859,
+      "name_es": "Parque",
+      "category": "PLACES",
+      "local_asset_path": "pictograms/2859.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2859?resolution=500",
+      "semantic_selection_reason": "Lugar Parque oficial ARASAAC",
+      "keywords": [
+        "parque"
+      ],
+      "categories": [
+        "playground",
+        "entertainment facility",
+        "core vocabulary-place",
+        "core vocabulary-leisure"
+      ]
+    },
+    {
+      "internal_id": 64,
+      "arasaac_id": 16713,
+      "name_es": "Quiero ir al baño",
+      "category": "PLACES",
+      "local_asset_path": "pictograms/16713.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/16713?resolution=500",
+      "semantic_selection_reason": "Necesidad básica Hacer pis / Ir al baño oficial ARASAAC",
+      "keywords": [
+        "hacer pis",
+        "orinar",
+        "pis",
+        "pipí",
+        "hacer pipí"
+      ],
+      "categories": [
+        "usual verbs",
+        "basic needs",
+        "routine",
+        "core vocabulary-communication"
+      ]
+    },
+    {
+      "internal_id": 70,
+      "arasaac_id": 3241,
+      "name_es": "Pelota",
+      "category": "THINGS",
+      "local_asset_path": "pictograms/3241.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/3241?resolution=500",
+      "semantic_selection_reason": "Objeto Pelota oficial ARASAAC",
+      "keywords": [
+        "pelota",
+        "pelota de playa"
+      ],
+      "categories": [
+        "toy",
+        "beach",
+        "core vocabulary-leisure"
+      ]
+    },
+    {
+      "internal_id": 71,
+      "arasaac_id": 2450,
+      "name_es": "Libro",
+      "category": "THINGS",
+      "local_asset_path": "pictograms/2450.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2450?resolution=500",
+      "semantic_selection_reason": "Objeto Libro oficial ARASAAC",
+      "keywords": [
+        "libro"
+      ],
+      "categories": [
+        "educational material",
+        "library science",
+        "literature"
+      ]
+    },
+    {
+      "internal_id": 72,
+      "arasaac_id": 2339,
+      "name_es": "Coche",
+      "category": "THINGS",
+      "local_asset_path": "pictograms/2339.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2339?resolution=500",
+      "semantic_selection_reason": "Objeto Coche oficial ARASAAC",
+      "keywords": [
+        "coche",
+        "automóvil",
+        "auto",
+        "carro"
+      ],
+      "categories": [
+        "land transport",
+        "road safety",
+        "core vocabulary-movement"
+      ]
+    },
+    {
+      "internal_id": 73,
+      "arasaac_id": 2475,
+      "name_es": "Mochila",
+      "category": "THINGS",
+      "local_asset_path": "pictograms/2475.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2475?resolution=500",
+      "semantic_selection_reason": "Objeto Mochila oficial ARASAAC",
+      "keywords": [
+        "mochila"
+      ],
+      "categories": [
+        "accessories",
+        "core vocabulary-object"
+      ]
+    },
+    {
+      "internal_id": 80,
+      "arasaac_id": 2673,
+      "name_es": "Cabeza",
+      "category": "BODY",
+      "local_asset_path": "pictograms/2673.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2673?resolution=500",
+      "semantic_selection_reason": "Cuerpo Cabeza oficial ARASAAC",
+      "keywords": [
+        "cabeza"
+      ],
+      "categories": [
+        "human anatomy"
+      ]
+    },
+    {
+      "internal_id": 81,
+      "arasaac_id": 2928,
+      "name_es": "Mano",
+      "category": "BODY",
+      "local_asset_path": "pictograms/2928.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2928?resolution=500",
+      "semantic_selection_reason": "Cuerpo Mano oficial ARASAAC",
+      "keywords": [
+        "mano",
+        "mano derecha"
+      ],
+      "categories": [
+        "human anatomy",
+        "senses"
+      ]
+    },
+    {
+      "internal_id": 82,
+      "arasaac_id": 2841,
+      "name_es": "Pie",
+      "category": "BODY",
+      "local_asset_path": "pictograms/2841.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2841?resolution=500",
+      "semantic_selection_reason": "Cuerpo Pie oficial ARASAAC",
+      "keywords": [
+        "pie"
+      ],
+      "categories": [
+        "human anatomy",
+        "locomotor system"
+      ]
+    },
+    {
+      "internal_id": 90,
+      "arasaac_id": 2798,
+      "name_es": "Sol",
+      "category": "WEATHER",
+      "local_asset_path": "pictograms/2798.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2798?resolution=500",
+      "semantic_selection_reason": "Clima Sol oficial ARASAAC",
+      "keywords": [
+        "Sol"
+      ],
+      "categories": [
+        "astronomy",
+        "summer"
+      ]
+    },
+    {
+      "internal_id": 91,
+      "arasaac_id": 3123,
+      "name_es": "Lluvia",
+      "category": "WEATHER",
+      "local_asset_path": "pictograms/3123.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/3123?resolution=500",
+      "semantic_selection_reason": "Clima Lluvia oficial ARASAAC",
+      "keywords": [
+        "lluvia"
+      ],
+      "categories": [
+        "atmospheric phenomena",
+        "spring"
+      ]
+    },
+    {
+      "internal_id": 100,
+      "arasaac_id": 11351,
+      "name_es": "¿Qué?",
+      "category": "QUESTIONS",
+      "local_asset_path": "pictograms/11351.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/11351?resolution=500",
+      "semantic_selection_reason": "Pregunta Qué oficial ARASAAC",
+      "keywords": [
+        "que"
+      ],
+      "categories": [
+        "conjunction",
+        "copulative conjunction"
+      ]
+    },
+    {
+      "internal_id": 101,
+      "arasaac_id": 7764,
+      "name_es": "¿Dónde?",
+      "category": "QUESTIONS",
+      "local_asset_path": "pictograms/7764.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/7764?resolution=500",
+      "semantic_selection_reason": "Pregunta Dónde oficial ARASAAC",
+      "keywords": [
+        "dónde",
+        "¿dónde?",
+        "donde"
+      ],
+      "categories": [
+        "interrogative pronoun",
+        "core vocabulary-communication",
+        "adverb",
+        "adverb of place"
+      ]
+    },
+    {
+      "internal_id": 104,
+      "arasaac_id": 9853,
+      "name_es": "¿Quién?",
+      "category": "QUESTIONS",
+      "local_asset_path": "pictograms/9853.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/9853?resolution=500",
+      "semantic_selection_reason": "Pregunta Quién oficial ARASAAC",
+      "keywords": [
+        "quién",
+        "desconocido",
+        "¿quién es?",
+        "¿quién es él?",
+        "¿quién?"
+      ],
+      "categories": [
+        "interrogative pronoun",
+        "core vocabulary-communication",
+        "pronoun"
+      ]
+    },
+    {
+      "internal_id": 105,
+      "arasaac_id": 22621,
+      "name_es": "¿Cuándo?",
+      "category": "QUESTIONS",
+      "local_asset_path": "pictograms/22621.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/22621?resolution=500",
+      "semantic_selection_reason": "Pregunta Cuándo oficial ARASAAC",
+      "keywords": [
+        "cuándo",
+        "¿cuándo?"
+      ],
+      "categories": [
+        "interrogative pronoun",
+        "pronoun",
+        "adverb",
+        "adverb of time"
+      ]
+    },
+    {
+      "internal_id": 106,
+      "arasaac_id": 24763,
+      "name_es": "¿Por qué?",
+      "category": "QUESTIONS",
+      "local_asset_path": "pictograms/24763.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/24763?resolution=500",
+      "semantic_selection_reason": "Pregunta Por qué oficial ARASAAC",
+      "keywords": [
+        "por qué"
+      ],
+      "categories": [
+        "interrogative pronoun",
+        "pronoun"
+      ]
+    },
+    {
+      "internal_id": 102,
+      "arasaac_id": 32488,
+      "name_es": "¿Qué día es hoy?",
+      "category": "QUESTIONS",
+      "local_asset_path": "pictograms/32488.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/32488?resolution=500",
+      "semantic_selection_reason": "Pregunta temporal Calendario / Fecha oficial ARASAAC",
+      "keywords": [
+        "calendario"
+      ],
+      "categories": [
+        "calendar",
+        "core vocabulary-time"
+      ]
+    },
+    {
+      "internal_id": 103,
+      "arasaac_id": 2549,
+      "name_es": "¿Qué hora es?",
+      "category": "QUESTIONS",
+      "local_asset_path": "pictograms/2549.png",
+      "original_url": "https://api.arasaac.org/v1/pictograms/2549?resolution=500",
+      "semantic_selection_reason": "Pregunta temporal Reloj / Hora oficial ARASAAC",
+      "keywords": [
+        "reloj"
+      ],
+      "categories": [
+        "accessories",
+        "chronological device",
+        "chronological instrument",
+        "core vocabulary-object",
+        "core vocabulary-time",
+        "trade"
+      ]
+    }
+  ]
+}

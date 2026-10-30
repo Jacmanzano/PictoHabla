@@ -19,6 +19,7 @@ import com.cmanzano.pictohabla.data.repository.BoardRepository
 import com.cmanzano.pictohabla.data.repository.HistoryRepository
 import com.cmanzano.pictohabla.data.repository.PictogramRepository
 import com.cmanzano.pictohabla.data.repository.SettingsRepository
+import com.cmanzano.pictohabla.feature.arasaac.ArasaacSearchScreen
 import com.cmanzano.pictohabla.feature.board.AACBoardScreen
 import com.cmanzano.pictohabla.feature.boardmanager.BoardEditorScreen
 import com.cmanzano.pictohabla.feature.boardmanager.BoardsManagerScreen
@@ -41,7 +42,8 @@ enum class PictoScreen {
     SETTINGS,
     BOARDS_MANAGER,
     BOARD_EDITOR,
-    CUSTOM_PICTO
+    CUSTOM_PICTO,
+    ARASAAC_SEARCH
 }
 
 /**
@@ -143,6 +145,9 @@ fun MainNavigation(
                 onNavigateCustomPicto = {
                     editingCustomPicto = null
                     currentScreen = PictoScreen.CUSTOM_PICTO
+                },
+                onNavigateArasaacSearch = {
+                    currentScreen = PictoScreen.ARASAAC_SEARCH
                 }
             )
 
@@ -365,6 +370,14 @@ fun MainNavigation(
                         pitch = userSettings.speechPitch
                     )
                 },
+                onBack = { currentScreen = PictoScreen.BOARD }
+            )
+
+            PictoScreen.ARASAAC_SEARCH -> ArasaacSearchScreen(
+                pictogramRepository = pictogramRepository,
+                languageCode = userSettings.languageCode,
+                highContrast = userSettings.highContrast,
+                hapticsEnabled = userSettings.hapticsEnabled,
                 onBack = { currentScreen = PictoScreen.BOARD }
             )
         }

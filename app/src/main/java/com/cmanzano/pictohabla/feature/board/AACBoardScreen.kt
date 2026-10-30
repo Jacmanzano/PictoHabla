@@ -28,6 +28,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.Dashboard
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Menu
@@ -110,7 +111,8 @@ fun AACBoardScreen(
     onNavigateSettings: () -> Unit,
     onNavigateLearn: () -> Unit,
     onNavigateBoards: () -> Unit,
-    onNavigateCustomPicto: () -> Unit
+    onNavigateCustomPicto: () -> Unit,
+    onNavigateArasaacSearch: () -> Unit = {}
 ) {
     val hapticFeedback = LocalHapticFeedback.current
 
@@ -299,6 +301,17 @@ fun AACBoardScreen(
                                 },
                                 leadingIcon = {
                                     Icon(Icons.Default.Add, contentDescription = null)
+                                }
+                            )
+
+                            DropdownMenuItem(
+                                text = { Text("Buscar en ARASAAC") },
+                                onClick = {
+                                    menuExpanded = false
+                                    pendingAdultNavigation = onNavigateArasaacSearch
+                                },
+                                leadingIcon = {
+                                    Icon(Icons.Default.CloudDownload, contentDescription = null)
                                 }
                             )
 

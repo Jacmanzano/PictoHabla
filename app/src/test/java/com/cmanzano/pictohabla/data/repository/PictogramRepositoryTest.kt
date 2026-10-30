@@ -61,6 +61,8 @@ class FakePictogramDao : PictogramDao {
 
     override suspend fun getCount(): Int = data.size
 
+    override suspend fun getAllPictogramsList(): List<PictogramEntity> = data.values.toList()
+
     override suspend fun getNextCustomId(): Int {
         val customIds = data.keys.filter { it >= 100000 }
         return if (customIds.isEmpty()) 100000 else customIds.maxOrNull()!! + 1
@@ -198,5 +200,27 @@ class PictogramRepositoryTest {
 
         repository.deleteCustomPictogram(created.id)
         assertNull(repository.getPictogramById(created.id))
+    }
+
+    @Test
+    fun createArasaacPictogram_persistsWithArasaacId() = runTest {
+        val created = repository.createArasaacPictogram(
+            arasaacId = 2462,
+            name = "Manzana verde",
+            speechText = "Comer manzana",
+            category = Category.FOOD,
+            localImagePath = "/data/user/0/app/files/arasaac_pictos/2462.png"
+        )
+
+        assertNotNull(created)
+        assertEquals(2462, created.arasaacId)
+        assertEquals("Manzana verde", created.getName("ES"))
+        assertTrue(created.isCustom)
+        assertEquals(Category.FOOD, created.category)
+
+        val retrieved = repository.getPictogramById(created.id)
+        assertNotNull(retrieved)
+        assertEquals(2462, retrieved!!.arasaacId)
+        assertEquals("Manzana verde", retrieved.getName("ES"))
     }
 }

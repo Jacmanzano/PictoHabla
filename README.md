@@ -161,6 +161,18 @@ El objetivo es mantener el proyecto gratuito, sin publicidad ni suscripciones, y
 
 ---
 
+## 🎨 Atribución y Licencia de ARASAAC
+
+Los símbolos pictográficos utilizados son propiedad del Gobierno de Aragón y han sido creados por Sergio Palao para ARASAAC (http://www.arasaac.org), que los distribuye bajo licencia Creative Commons (BY-NC-SA).
+
+- **Autor:** Sergio Palao.
+- **Propietario:** Gobierno de Aragón.
+- **Procedencia:** ARASAAC ([http://www.arasaac.org](http://www.arasaac.org)).
+- **Licencia:** Creative Commons Reconocimiento-NoComercial-CompartirIgual 4.0 Internacional (CC BY-NC-SA 4.0).
+- Consulta [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) para más detalles legales sobre las condiciones de uso no comercial y reciprocidad.
+
+---
+
 ## 👨‍💻 Sobre el proyecto
 
 PictoHabla es un proyecto personal desarrollado con ilusión por aprender, construir algo útil y explorar cómo la tecnología puede ayudar a mejorar la vida de las personas.

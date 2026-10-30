@@ -178,9 +178,6 @@ fun PhraseBar(
                     ) {
                         itemsIndexed(selectedPictos) { index, picto ->
                             val chipName = picto.getName(languageCode)
-                            val localBitmap = remember(picto.localImagePath) {
-                                ImageStorageHelper.loadBitmap(picto.localImagePath)?.asImageBitmap()
-                            }
 
                             Card(
                                 onClick = {
@@ -210,21 +207,11 @@ fun PhraseBar(
                                         horizontalAlignment = Alignment.CenterHorizontally,
                                         verticalArrangement = Arrangement.Center
                                     ) {
-                                        if (localBitmap != null) {
-                                            Image(
-                                                bitmap = localBitmap,
-                                                contentDescription = null,
-                                                contentScale = ContentScale.Crop,
-                                                modifier = Modifier.size(36.dp)
-                                            )
-                                        } else if (picto.icon != null) {
-                                            Icon(
-                                                imageVector = picto.icon,
-                                                contentDescription = null,
-                                                modifier = Modifier.size(36.dp),
-                                                tint = if (highContrast) Color.White else picto.category.textColor
-                                            )
-                                        }
+                                        PictogramImage(
+                                            picto = picto,
+                                            highContrast = highContrast,
+                                            modifier = Modifier.size(36.dp)
+                                        )
                                         Spacer(Modifier.height(4.dp))
                                         Text(
                                             text = chipName,
