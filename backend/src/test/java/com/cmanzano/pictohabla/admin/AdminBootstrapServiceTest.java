@@ -13,7 +13,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.Instant;
+import org.springframework.transaction.support.TransactionTemplate;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -40,6 +41,9 @@ class AdminBootstrapServiceTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private TransactionTemplate transactionTemplate;
 
     @BeforeEach
     void setUp() {
@@ -69,6 +73,14 @@ class AdminBootstrapServiceTest {
         // Verificar que en base de datos existe exactamente 1 administrador
         assertEquals(1, teacherRepository.countByRole(Role.ADMIN));
         assertTrue(adminBootstrapService.isAdminAlreadyPresent());
+
+        // Verificar que admin_bootstrap_metadata fue insertado y la fecha completed_at fue generada
+        var metadata = jdbcTemplate.queryForMap("SELECT * FROM admin_bootstrap_metadata WHERE id = 1");
+        assertNotNull(metadata);
+        assertEquals(1, ((Number) metadata.get("id")).intValue());
+        assertEquals(true, metadata.get("completed"));
+        assertEquals("admin.principal@colegio.es", metadata.get("admin_email"));
+        assertNotNull(metadata.get("completed_at"), "completed_at debe ser generado por la base de datos");
     }
 
     @Test
@@ -220,18 +232,16 @@ class AdminBootstrapServiceTest {
 
     @Test
     void databaseConstraint_AdminBootstrapMetadata_PreventsMultipleRecords() {
-        // Primer registro: id=1 permitido
+        // Primer registro: id=1 permitido con CURRENT_TIMESTAMP de la BD
         jdbcTemplate.update(
-                "INSERT INTO admin_bootstrap_metadata (id, completed, completed_at, admin_email) VALUES (1, TRUE, ?, ?)",
-                Instant.now(),
+                "INSERT INTO admin_bootstrap_metadata (id, completed, completed_at, admin_email) VALUES (1, TRUE, CURRENT_TIMESTAMP, ?)",
                 "firstadmin@colegio.es"
         );
 
         // Intento de duplicar id=1: falla por Primary Key
         assertThrows(DataIntegrityViolationException.class, () -> {
             jdbcTemplate.update(
-                    "INSERT INTO admin_bootstrap_metadata (id, completed, completed_at, admin_email) VALUES (1, TRUE, ?, ?)",
-                    Instant.now(),
+                    "INSERT INTO admin_bootstrap_metadata (id, completed, completed_at, admin_email) VALUES (1, TRUE, CURRENT_TIMESTAMP, ?)",
                     "secondadmin@colegio.es"
             );
         });
@@ -239,11 +249,44 @@ class AdminBootstrapServiceTest {
         // Intento de insertar id=2: falla por CHECK constraint (chk_single_bootstrap_record CHECK (id = 1))
         assertThrows(DataIntegrityViolationException.class, () -> {
             jdbcTemplate.update(
-                    "INSERT INTO admin_bootstrap_metadata (id, completed, completed_at, admin_email) VALUES (2, TRUE, ?, ?)",
-                    Instant.now(),
+                    "INSERT INTO admin_bootstrap_metadata (id, completed, completed_at, admin_email) VALUES (2, TRUE, CURRENT_TIMESTAMP, ?)",
                     "thirdadmin@colegio.es"
             );
         });
+    }
+
+    @Test
+    void bootstrapAdmin_WhenMetadataInsertionFails_RollsBackAdminCreationCompletely() {
+        assertEquals(0, teacherRepository.countByRole(Role.ADMIN));
+
+        // JdbcTemplate que simula fallo al insertar en admin_bootstrap_metadata
+        JdbcTemplate failingJdbcTemplate = new JdbcTemplate(jdbcTemplate.getDataSource()) {
+            @Override
+            public int update(String sql, Object... args) {
+                if (sql.contains("admin_bootstrap_metadata")) {
+                    throw new DataIntegrityViolationException("Simulación de fallo en persistencia de metadatos");
+                }
+                return super.update(sql, args);
+            }
+        };
+
+        AdminBootstrapService testService = new AdminBootstrapService(
+                teacherRepository,
+                passwordEncoder,
+                transactionTemplate,
+                failingJdbcTemplate
+        );
+
+        // La ejecución debe lanzar IllegalStateException
+        assertThrows(IllegalStateException.class, () ->
+                testService.bootstrapAdmin("rollback@colegio.es", "Password123", "Admin Fallo Metadata")
+        );
+
+        // La transacción completa debe haber hecho ROLLBACK: NO debe existir el admin en teachers
+        assertEquals(0, teacherRepository.countByRole(Role.ADMIN),
+                "El administrador creado debe ser revertido por rollback si la inserción de metadatos falla");
+        assertEquals(0, teacherRepository.count(),
+                "La tabla teachers no debe contener registros huérfanos");
     }
 
     @Test

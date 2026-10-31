@@ -23,7 +23,7 @@ if [ ! -f "${ENV_FILE}" ]; then
     exit 1
 fi
 
-IMAGE_NAME="pictohabla-backend:1.0.1"
+IMAGE_NAME="pictohabla-backend:1.0.2"
 
 # Red interna real de TrueNAS SCALE Apps para Custom App 'pictohabla'
 NETWORK_NAME="ix-pictohabla_pictohabla-internal"

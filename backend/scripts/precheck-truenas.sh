@@ -298,7 +298,7 @@ fi
 # -----------------------------------------------------------------------------
 echo ""
 echo "${BLUE}[6/7] Verificando disponibilidad de la imagen Docker...${NC}"
-IMAGE_NAME="pictohabla-backend:1.0.1"
+IMAGE_NAME="pictohabla-backend:1.0.2"
 if docker image inspect "${IMAGE_NAME}" >/dev/null 2>&1; then
     IMAGE_SIZE=$(docker image inspect "${IMAGE_NAME}" -f '{{.Size}}' 2>/dev/null | awk '{printf "%.1f MB", $1/1024/1024}')
     echo "  ${GREEN}✔${NC} Imagen ${IMAGE_NAME} presente en el almacén local de Docker (${IMAGE_SIZE})."

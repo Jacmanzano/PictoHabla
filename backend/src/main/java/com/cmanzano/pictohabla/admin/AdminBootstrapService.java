@@ -14,7 +14,6 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.time.Instant;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -125,8 +124,7 @@ public class AdminBootstrapService {
                 // 6. Registrar la marca persistente de bootstrap completado en la base de datos
                 try {
                     jdbcTemplate.update(
-                            "INSERT INTO admin_bootstrap_metadata (id, completed, completed_at, admin_email) VALUES (1, TRUE, ?, ?)",
-                            Instant.now(),
+                            "INSERT INTO admin_bootstrap_metadata (id, completed, completed_at, admin_email) VALUES (1, TRUE, CURRENT_TIMESTAMP, ?)",
                             saved.getEmail()
                     );
                 } catch (DataIntegrityViolationException ex) {

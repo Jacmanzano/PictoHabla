@@ -65,7 +65,7 @@ Toda la operativa de PictoHabla se centraliza bajo una estructura canónica limp
 | **Dataset BD Postgres** | `/mnt/Datos/Aplicaciones/PictoHabla/Postgres` | `700` (`70:70` - `postgres:postgres`) |
 | **Dataset Subidas Multimedia** | `/mnt/Datos/Aplicaciones/PictoHabla/Uploads` | `750` (`1000:1000` - `spring:spring`) |
 | **Dataset Copias Seguridad** | `/mnt/Seguridad/PictoHabla/Backups` | `700` (`0:0` - `root:root`) |
-| **Imagen Docker generada** | Daemon local de Docker (`pictohabla-backend:1.0.1`) | N/A (Docker Image Store) |
+| **Imagen Docker generada** | Daemon local de Docker (`pictohabla-backend:1.0.2`) | N/A (Docker Image Store) |
 
 ---
 
@@ -209,7 +209,7 @@ El directorio `/mnt/Datos/Aplicaciones/PictoHabla/source/backend` contiene todos
 ### Verificación de Compilación Aislada:
 ```bash
 cd /mnt/Datos/Aplicaciones/PictoHabla/source/backend
-docker build -t pictohabla-backend:1.0.1 .
+docker build -t pictohabla-backend:1.0.2 .
 ```
 La compilación multi-stage descarga Eclipse Temurin OpenJDK 21 Alpine, ejecuta `./gradlew bootJar --no-daemon` produciendo exclusivamente `pictohabla-backend.jar` y empaqueta el artefacto en una imagen mínima Alpine con usuario `spring:1000`.
 
@@ -367,7 +367,7 @@ docker run --rm -i \
     -e DB_HOST=postgres \
     -e DB_PORT=5432 \
     --entrypoint java \
-    pictohabla-backend:1.0.1 \
+    pictohabla-backend:1.0.2 \
     -Dspring.main.web-application-type=none \
     -XX:+UseContainerSupport \
     -XX:MaxRAMPercentage=75.0 \
@@ -418,16 +418,16 @@ Este procedimiento actualiza exclusivamente la clave, desbloquea la cuenta si fu
 
 ---
 
-## 🔄 12. Procedimiento de Actualización desde Imagen 1.0.0 a 1.0.1 en TrueNAS SCALE
+## 🔄 12. Procedimiento de Actualización a la Versión 1.0.2 en TrueNAS SCALE
 
-Para actualizar el backend sin pérdida de datos, sin tocar PostgreSQL y sin interrumpir las demás aplicaciones:
+Para actualizar el backend desde la versión 1.0.1 a la **1.0.2** (corrección de compatibilidad con PostgreSQL 16 en el bootstrap del administrador) sin pérdida de datos, sin tocar PostgreSQL y sin interrumpir las demás aplicaciones:
 
 ### Opción A: Actualización vía TrueNAS SCALE Apps UI (Procedimiento Preferido)
 1. **Actualizar el código y compilar la nueva imagen en el host (SSH):**
    ```bash
    cd /mnt/Datos/Aplicaciones/PictoHabla/source/backend
    git pull origin main
-   docker build -t pictohabla-backend:1.0.1 .
+   docker build -t pictohabla-backend:1.0.2 .
    ```
 2. **Ejecutar auditoría de prechequeo de sólo lectura:**
    ```bash
@@ -437,11 +437,11 @@ Para actualizar el backend sin pérdida de datos, sin tocar PostgreSQL y sin int
 3. **Actualizar la Custom App en la interfaz web de TrueNAS SCALE:**
    - Navegar a **Apps** → pestaña **Installed Apps**.
    - Localizar la aplicación `pictohabla` y hacer clic en **Edit**.
-   - Comprobar que mantiene la referencia a `/mnt/Datos/Aplicaciones/PictoHabla/custom-app.yaml` (o `source/backend/compose.truenas.yaml` con imagen `pictohabla-backend:1.0.1`).
+   - Comprobar que mantiene la referencia a `/mnt/Datos/Aplicaciones/PictoHabla/custom-app.yaml` (o `source/backend/compose.truenas.yaml` con imagen `pictohabla-backend:1.0.2`).
    - Hacer clic en **Save** / **Update**.
-   - TrueNAS recreará automáticamente el contenedor del backend con la imagen 1.0.1 en la red `ix-pictohabla_pictohabla-internal`, manteniendo PostgreSQL intacto.
+   - TrueNAS recreará automáticamente el contenedor del backend con la imagen 1.0.2 en la red `ix-pictohabla_pictohabla-internal`, manteniendo PostgreSQL intacto.
 4. **Verificar los logs de arranque y migraciones:**
-   - En la tarjeta de la app `pictohabla`, inspeccionar los logs del backend para confirmar que Flyway aplicó exitosamente `V2__add_teacher_role.sql` y `V3__admin_bootstrap_protection.sql`.
+   - En la tarjeta de la app `pictohabla`, inspeccionar los logs del backend para confirmar que el backend 1.0.2 inició correctamente.
 5. **Ejecutar el bootstrap para crear el primer administrador:**
    ```bash
    cd /mnt/Datos/Aplicaciones/PictoHabla
@@ -454,7 +454,7 @@ Si se gestiona directamente desde la consola SSH, **es obligatorio especificar e
 # 1. Acceder al repositorio del backend y compilar
 cd /mnt/Datos/Aplicaciones/PictoHabla/source/backend
 git pull origin main
-docker build -t pictohabla-backend:1.0.1 .
+docker build -t pictohabla-backend:1.0.2 .
 
 # 2. Volver al directorio raíz y verificar
 cd /mnt/Datos/Aplicaciones/PictoHabla
