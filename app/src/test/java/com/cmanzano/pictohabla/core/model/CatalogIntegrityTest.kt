@@ -74,4 +74,30 @@ class CatalogIntegrityTest {
             assertTrue("El ID $id del tablero esencial debe existir en el catálogo", catalogIds.contains(id))
         }
     }
+
+    @Test
+    fun categories_containOnlySpanishAndEnglish_andFallbackDeterministically() {
+        Category.entries.forEach { category ->
+            val keys = category.labels.keys
+            assertTrue("La categoría ${category.name} debe soportar ES", keys.contains("ES"))
+            assertTrue("La categoría ${category.name} debe soportar EN", keys.contains("EN"))
+            assertEquals("La categoría ${category.name} solo debe tener ES y EN", setOf("ES", "EN"), keys)
+
+            // Comprobar fallback determinista a español
+            assertEquals(category.labels["ES"], category.getLabel("FR"))
+            assertEquals(category.labels["ES"], category.getLabel("DE"))
+            assertEquals(category.labels["ES"], category.getLabel("IT"))
+            assertEquals(category.labels["ES"], category.getLabel("ZH"))
+        }
+    }
+
+    @Test
+    fun defaultCatalog_guidedPhrasesContainOnlySpanishAndEnglish() {
+        val phrases = DefaultCatalog.getGuidedPhrases()
+        phrases.forEach { phrase ->
+            assertEquals("Las frases guiadas solo deben contener traducciones ES y EN", setOf("ES", "EN"), phrase.title.keys)
+            assertEquals(phrase.title["ES"], phrase.getTitle("FR"))
+            assertEquals(phrase.title["ES"], phrase.getTitle("DE"))
+        }
+    }
 }

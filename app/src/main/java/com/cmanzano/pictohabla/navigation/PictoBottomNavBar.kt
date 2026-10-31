@@ -1,5 +1,6 @@
 package com.cmanzano.pictohabla.navigation
 
+import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -54,6 +56,11 @@ fun PictoBottomNavBar(
     hapticsEnabled: Boolean = true
 ) {
     val hapticFeedback = LocalHapticFeedback.current
+    val configuration = LocalConfiguration.current
+    val isPhoneLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE && configuration.screenHeightDp < 500
+    val navHeight = if (isPhoneLandscape) 50.dp else PictoDimens.BottomNavHeight
+    val iconSize = if (isPhoneLandscape) 20.dp else 26.dp
+    val labelSize = if (isPhoneLandscape) 10.sp else 12.sp
 
     val navBarColors = if (highContrast) {
         NavigationBarItemDefaults.colors(
@@ -82,7 +89,7 @@ fun PictoBottomNavBar(
         border = if (highContrast) BorderStroke(PictoDimens.BorderWidthThin, Color.White) else null
     ) {
         NavigationBar(
-            modifier = Modifier.height(PictoDimens.BottomNavHeight),
+            modifier = Modifier.height(navHeight),
             containerColor = Color.Transparent,
             tonalElevation = PictoDimens.ElevationNone
         ) {
@@ -100,13 +107,13 @@ fun PictoBottomNavBar(
                     Icon(
                         imageVector = Icons.Default.GridView,
                         contentDescription = null,
-                        modifier = Modifier.size(26.dp)
+                        modifier = Modifier.size(iconSize)
                     )
                 },
                 label = {
                     Text(
                         text = "Tablero",
-                        fontSize = 12.sp,
+                        fontSize = labelSize,
                         fontWeight = if (isBoardSelected) FontWeight.Black else FontWeight.Bold
                     )
                 },
@@ -132,13 +139,13 @@ fun PictoBottomNavBar(
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
-                        modifier = Modifier.size(26.dp)
+                        modifier = Modifier.size(iconSize)
                     )
                 },
                 label = {
                     Text(
                         text = "Favoritos",
-                        fontSize = 12.sp,
+                        fontSize = labelSize,
                         fontWeight = if (isFavSelected) FontWeight.Black else FontWeight.Bold
                     )
                 },
@@ -164,13 +171,13 @@ fun PictoBottomNavBar(
                     Icon(
                         imageVector = Icons.Default.History,
                         contentDescription = null,
-                        modifier = Modifier.size(26.dp)
+                        modifier = Modifier.size(iconSize)
                     )
                 },
                 label = {
                     Text(
                         text = "Historial",
-                        fontSize = 12.sp,
+                        fontSize = labelSize,
                         fontWeight = if (isHistorySelected) FontWeight.Black else FontWeight.Bold
                     )
                 },
@@ -196,13 +203,13 @@ fun PictoBottomNavBar(
                     Icon(
                         imageVector = Icons.Default.School,
                         contentDescription = null,
-                        modifier = Modifier.size(26.dp)
+                        modifier = Modifier.size(iconSize)
                     )
                 },
                 label = {
                     Text(
                         text = "Aprender",
-                        fontSize = 12.sp,
+                        fontSize = labelSize,
                         fontWeight = if (isLearnSelected) FontWeight.Black else FontWeight.Bold
                     )
                 },

@@ -1,6 +1,7 @@
 package com.cmanzano.pictohabla.core.model
 
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.cmanzano.pictohabla.core.util.normalizeForSearch
 
 /**
  * Modelo de dominio para un pictograma en PictoHabla.
@@ -16,6 +17,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
  * @property isNumber Indica si el pictograma representa un dígito numérico (0..9) para concatenación inteligente.
  * @property digit Valor entero (0..9) cuando [isNumber] es verdadero; null en caso contrario.
  * @property arasaacId Identificador oficial del pictograma en el catálogo ARASAAC (cuando proceda).
+ * @property keywords Palabras clave de búsqueda indexadas por idioma ("ES", "EN").
  */
 data class Pictogram(
     val id: Int,
@@ -28,7 +30,8 @@ data class Pictogram(
     val isCustom: Boolean = false,
     val isNumber: Boolean = false,
     val digit: Int? = null,
-    val arasaacId: Int? = null
+    val arasaacId: Int? = null,
+    val keywords: Map<String, List<String>> = emptyMap()
 ) {
     /**
      * Constructor secundario de conveniencia para mantener compatibilidad con firmas
@@ -54,7 +57,8 @@ data class Pictogram(
         isCustom = false,
         isNumber = isNumber,
         digit = digit,
-        arasaacId = arasaacId
+        arasaacId = arasaacId,
+        keywords = emptyMap()
     )
 
     /**
@@ -77,11 +81,42 @@ data class Pictogram(
         isCustom = false,
         isNumber = false,
         digit = null,
-        arasaacId = arasaacId
+        arasaacId = arasaacId,
+        keywords = emptyMap()
     )
 
     fun getName(languageCode: String): String {
-        return names[languageCode] ?: names["ES"] ?: ""
+        val lang = languageCode.uppercase()
+        val specific = names[lang]
+        if (!specific.isNullOrBlank()) return specific
+        return names["ES"] ?: ""
+    }
+
+    fun getDisplayName(languageCode: String): String = getName(languageCode)
+
+    fun getKeywords(languageCode: String): List<String> {
+        return keywords[languageCode] ?: keywords["ES"] ?: emptyList()
+    }
+
+    /**
+     * Determina si este pictograma coincide con una consulta de búsqueda en el idioma activo,
+     * evaluando tanto el nombre principal como sus palabras clave oficiales.
+     */
+    fun matchesSearch(query: String, languageCode: String): Boolean {
+        val normQuery = query.normalizeForSearch()
+        if (normQuery.isBlank()) return true
+        if (getName(languageCode).normalizeForSearch().contains(normQuery)) return true
+        return getKeywords(languageCode).any { it.normalizeForSearch().contains(normQuery) }
+    }
+
+    /**
+     * Determina si una palabra exacta coincide con este pictograma (nombre o keyword) en el idioma activo.
+     */
+    fun matchesWord(word: String, languageCode: String): Boolean {
+        val normWord = word.normalizeForSearch()
+        if (normWord.isBlank()) return false
+        if (getName(languageCode).normalizeForSearch() == normWord) return true
+        return getKeywords(languageCode).any { it.normalizeForSearch() == normWord }
     }
 
     /**

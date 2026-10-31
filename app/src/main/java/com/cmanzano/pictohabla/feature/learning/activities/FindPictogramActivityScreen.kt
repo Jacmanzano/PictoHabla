@@ -50,7 +50,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
+import com.cmanzano.pictohabla.feature.learning.LearningProgressManager
+import com.cmanzano.pictohabla.feature.learning.model.LearningActivityType
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -94,9 +99,11 @@ fun FindPictogramActivityScreen(
     onNavigateFavorites: () -> Unit,
     onNavigateHistory: () -> Unit
 ) {
+    val context = LocalContext.current
+    val progressManager = remember(context) { LearningProgressManager.getInstance(context) }
     val hapticFeedback = LocalHapticFeedback.current
 
-    var config by remember { mutableStateOf(LearningConfig(optionsCount = 4, categoryFilter = null, autoSpeak = true)) }
+    var config by remember { mutableStateOf(LearningConfig(optionsCount = 2, categoryFilter = null, autoSpeak = true)) }
     var showAdultGate by remember { mutableStateOf(false) }
     var showSettingsDialog by remember { mutableStateOf(false) }
 
@@ -181,6 +188,36 @@ fun FindPictogramActivityScreen(
                 .padding(horizontal = PictoDimens.SpaceMedium, vertical = PictoDimens.SpaceSmall),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Selector accesible de opciones (iniciar con 2 e incrementar progresivamente)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Dificultad: ",
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                listOf(2 to "2 opciones", 3 to "3 opciones", 4 to "4 opciones").forEach { (count, label) ->
+                    FilterChip(
+                        selected = config.optionsCount == count,
+                        onClick = {
+                            config = config.copy(optionsCount = count)
+                            exercise = EducationalExerciseGenerator.generateFindExercise(allPictograms, config)
+                        },
+                        label = { Text(label) },
+                        modifier = Modifier.padding(horizontal = 4.dp),
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = if (highContrast) Color.White else MaterialTheme.colorScheme.primaryContainer,
+                            selectedLabelColor = if (highContrast) Color.Black else MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    )
+                }
+            }
+            Spacer(Modifier.height(PictoDimens.SpaceSmall))
+
             // Tarjeta de consigna e instrucción clara
             Card(
                 modifier = Modifier
@@ -279,9 +316,11 @@ fun FindPictogramActivityScreen(
                                 if (isCorrect) {
                                     feedbackState = FeedbackState.Success("¡Muy bien! ¡Has encontrado $targetName!")
                                     onSpeakWord("¡Muy bien!")
+                                    progressManager.recordResult(LearningActivityType.FIND_PICTOGRAM, isHit = true)
                                 } else {
                                     feedbackState = FeedbackState.TryAgain("Vamos a intentarlo de nuevo.")
                                     onSpeakWord(optionName)
+                                    progressManager.recordResult(LearningActivityType.FIND_PICTOGRAM, isHit = false)
                                 }
                             }
                             .semantics {

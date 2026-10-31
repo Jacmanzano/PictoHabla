@@ -37,6 +37,7 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.cmanzano.pictohabla.core.designsystem.PictoColors
 import com.cmanzano.pictohabla.core.designsystem.PictoDimens
@@ -63,6 +64,7 @@ fun PictogramCard(
     isFavorite: Boolean = false,
     highContrast: Boolean = false,
     hapticsEnabled: Boolean = true,
+    iconSize: Dp = PictoDimens.IconSizeLarge,
     onToggleFavorite: (() -> Unit)? = null,
     onClick: () -> Unit
 ) {
@@ -117,7 +119,7 @@ fun PictogramCard(
                     picto = picto,
                     highContrast = highContrast,
                     modifier = Modifier
-                        .size(PictoDimens.IconSizeLarge)
+                        .size(iconSize)
                         .padding(2.dp)
                 )
 

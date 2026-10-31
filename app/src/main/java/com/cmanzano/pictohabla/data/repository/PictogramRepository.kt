@@ -39,13 +39,82 @@ class PictogramRepository(
         } else {
             val defaultMap = defaultList.associateBy { it.id }
             val existing = pictogramDao.getAllPictogramsList()
-            existing.filter { !it.isCustom && it.arasaacId == null && defaultMap.containsKey(it.id) }
+            // Sincronizar catálogo predeterminado: actualizar etiquetas bilingües ES/EN, keywords y arasaacId
+            existing.filter { !it.isCustom && defaultMap.containsKey(it.id) }
                 .forEach { oldEntity ->
-                    val defaultPicto = defaultMap[oldEntity.id]
-                    if (defaultPicto?.arasaacId != null) {
-                        pictogramDao.update(oldEntity.copy(arasaacId = defaultPicto.arasaacId))
+                    val defaultPicto = defaultMap[oldEntity.id]!!
+                    val updated = oldEntity.copy(
+                        nameEs = defaultPicto.names["ES"] ?: oldEntity.nameEs,
+                        nameEn = defaultPicto.names["EN"] ?: oldEntity.nameEn,
+                        keywordsEs = defaultPicto.keywords["ES"]?.joinToString(", ") ?: oldEntity.keywordsEs,
+                        keywordsEn = defaultPicto.keywords["EN"]?.joinToString(", ") ?: oldEntity.keywordsEn,
+                        arasaacId = defaultPicto.arasaacId ?: oldEntity.arasaacId
+                    )
+                    if (updated != oldEntity) {
+                        pictogramDao.update(updated)
                     }
                 }
+        }
+        // Recuperar y sincronizar traducciones bilingües de pictogramas descargados previamente
+        syncDownloadedPictogramTranslations()
+    }
+
+    /**
+     * Sincroniza y repara pictogramas de ARASAAC descargados previamente que tengan `nameEn`
+     * vacío o incorrectamente guardado en español, garantizando coherencia bilingüe sin pérdida de datos.
+     */
+    suspend fun syncDownloadedPictogramTranslations() = withContext(Dispatchers.IO) {
+        val existing = pictogramDao.getAllPictogramsList()
+        existing.filter { it.arasaacId != null }.forEach { entity ->
+            val arasaacId = entity.arasaacId!!
+            val isEnMissingOrIdentical = entity.nameEn.isBlank() ||
+                (entity.nameEn.equals(entity.nameEs, ignoreCase = true) && entity.nameEs.isNotBlank())
+            val areKeywordsMissing = entity.keywordsEs.isBlank() || entity.keywordsEn.isBlank()
+
+            if (isEnMissingOrIdentical || areKeywordsMissing) {
+                // 1. Consulta el diccionario offline en primer lugar
+                val offline = com.cmanzano.pictohabla.core.network.ArasaacTranslationHelper.getTranslation(arasaacId)
+                var resolvedNameEn = if (offline != null && offline.nameEn.isNotBlank()) {
+                    offline.nameEn
+                } else {
+                    ""
+                }
+                var resolvedKwEs = if (offline != null && offline.keywordsEs.isNotEmpty()) {
+                    offline.keywordsEs
+                } else {
+                    emptyList()
+                }
+                var resolvedKwEn = if (offline != null && offline.keywordsEn.isNotEmpty()) {
+                    offline.keywordsEn
+                } else {
+                    emptyList()
+                }
+
+                // 2. Si falta la traducción inglesa, consultar la API oficial de ARASAAC
+                if (resolvedNameEn.isBlank()) {
+                    val details = com.cmanzano.pictohabla.core.network.ArasaacApiService.getPictogramDetails(arasaacId).getOrNull()
+                    if (details != null) {
+                        if (details.nameEn.isNotBlank()) resolvedNameEn = details.nameEn
+                        if (resolvedKwEs.isEmpty()) resolvedKwEs = details.keywordsEs
+                        if (resolvedKwEn.isEmpty()) resolvedKwEn = details.keywordsEn
+                    }
+                }
+
+                if (resolvedNameEn.isNotBlank() && !resolvedNameEn.equals(entity.nameEs, ignoreCase = true)) {
+                    val updated = entity.copy(
+                        nameEn = resolvedNameEn,
+                        keywordsEs = if (entity.keywordsEs.isNotBlank()) entity.keywordsEs else resolvedKwEs.joinToString(", "),
+                        keywordsEn = if (entity.keywordsEn.isNotBlank() && !entity.keywordsEn.equals(entity.keywordsEs, ignoreCase = true)) {
+                            entity.keywordsEn
+                        } else {
+                            resolvedKwEn.joinToString(", ")
+                        }
+                    )
+                    if (updated != entity) {
+                        pictogramDao.update(updated)
+                    }
+                }
+            }
         }
     }
 
@@ -145,24 +214,83 @@ class PictogramRepository(
     }
 
     /**
-     * Añade y persiste un nuevo pictograma descargado desde ARASAAC en el catálogo local.
+     * Añade y persiste un nuevo pictograma descargado desde ARASAAC en el catálogo local
+     * conservando sus traducciones y palabras clave oficiales en español e inglés.
      */
     suspend fun createArasaacPictogram(
         arasaacId: Int,
         name: String,
+        nameEn: String = "",
+        keywordsEs: List<String> = emptyList(),
+        keywordsEn: List<String> = emptyList(),
         speechText: String? = null,
         category: Category,
         localImagePath: String? = null
     ): Pictogram = withContext(Dispatchers.IO) {
         val newId = pictogramDao.getNextCustomId()
+        val offlineTrans = com.cmanzano.pictohabla.core.network.ArasaacTranslationHelper.getTranslation(arasaacId)
+
+        var resolvedNameEs = name.trim().ifEmpty { offlineTrans?.nameEs ?: "" }
+        var resolvedNameEn = nameEn.trim()
+        val resolvedKwEs = keywordsEs.toMutableList()
+        val resolvedKwEn = keywordsEn.toMutableList()
+
+        val needsEnglishResolution = resolvedNameEn.isBlank() ||
+            (resolvedNameEn.equals(resolvedNameEs, ignoreCase = true) && resolvedNameEs.isNotBlank())
+
+        if (needsEnglishResolution || resolvedKwEn.isEmpty() || resolvedKwEs.isEmpty()) {
+            if (offlineTrans != null) {
+                if (resolvedNameEn.isBlank() || resolvedNameEn.equals(resolvedNameEs, ignoreCase = true)) {
+                    if (offlineTrans.nameEn.isNotBlank()) resolvedNameEn = offlineTrans.nameEn
+                }
+                if (resolvedKwEs.isEmpty()) resolvedKwEs.addAll(offlineTrans.keywordsEs)
+                if (resolvedKwEn.isEmpty()) resolvedKwEn.addAll(offlineTrans.keywordsEn)
+                if (resolvedNameEs.isBlank()) resolvedNameEs = offlineTrans.nameEs
+            }
+
+            if (resolvedNameEn.isBlank() || resolvedNameEn.equals(resolvedNameEs, ignoreCase = true) || resolvedKwEn.isEmpty()) {
+                val details = com.cmanzano.pictohabla.core.network.ArasaacApiService.getPictogramDetails(arasaacId).getOrNull()
+                if (details != null) {
+                    if (details.nameEn.isNotBlank()) resolvedNameEn = details.nameEn
+                    if (resolvedNameEs.isBlank() && details.nameEs.isNotBlank()) resolvedNameEs = details.nameEs
+                    if (resolvedKwEs.isEmpty()) resolvedKwEs.addAll(details.keywordsEs)
+                    if (resolvedKwEn.isEmpty()) resolvedKwEn.addAll(details.keywordsEn)
+                }
+            }
+        }
+
+        if (resolvedNameEs.isBlank()) resolvedNameEs = "Símbolo $arasaacId"
+
+        // Protección obligatoria: Nunca presentar silenciosamente el texto español como si fuese inglés
+        if (resolvedNameEn.equals(resolvedNameEs, ignoreCase = true)) {
+            val offline = com.cmanzano.pictohabla.core.network.ArasaacTranslationHelper.getTranslation(arasaacId)
+            if (offline != null && !offline.nameEn.equals(resolvedNameEs, ignoreCase = true)) {
+                resolvedNameEn = offline.nameEn
+            } else {
+                resolvedNameEn = ""
+            }
+        }
+
+        val finalKwEs = if (resolvedKwEs.isNotEmpty()) resolvedKwEs else listOf(resolvedNameEs.lowercase())
+        val finalKwEn = if (resolvedKwEn.isNotEmpty()) {
+            resolvedKwEn
+        } else if (resolvedNameEn.isNotBlank()) {
+            listOf(resolvedNameEn.lowercase())
+        } else {
+            emptyList()
+        }
+
         val entity = PictogramEntity(
             id = newId,
-            nameEs = name.trim(),
+            nameEs = resolvedNameEs,
+            nameEn = resolvedNameEn,
             categoryName = category.name,
             speechText = speechText?.trim()?.ifEmpty { null },
             localImagePath = localImagePath,
             isCustom = true,
-            arasaacId = arasaacId
+            arasaacId = arasaacId,
+            keywordsEs = finalKwEs.joinToString(", "),
+            keywordsEn = finalKwEn.joinToString(", ")
         )
         pictogramDao.insert(entity)
         entity.toDomain()

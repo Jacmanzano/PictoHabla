@@ -37,10 +37,7 @@ enum class Category(
     PEOPLE(
         labels = mapOf(
             "ES" to "Personas",
-            "EN" to "People",
-            "FR" to "Personnes",
-            "DE" to "Personen",
-            "IT" to "Persone"
+            "EN" to "People"
         ),
         color = PictoColors.Fitzgerald.PeopleBackground,
         borderColor = PictoColors.Fitzgerald.PeopleBorder,
@@ -50,10 +47,7 @@ enum class Category(
     ACTIONS(
         labels = mapOf(
             "ES" to "Acciones",
-            "EN" to "Actions",
-            "FR" to "Actions",
-            "DE" to "Aktionen",
-            "IT" to "Azioni"
+            "EN" to "Actions"
         ),
         color = PictoColors.Fitzgerald.ActionsBackground,
         borderColor = PictoColors.Fitzgerald.ActionsBorder,
@@ -63,10 +57,7 @@ enum class Category(
     FOOD(
         labels = mapOf(
             "ES" to "Comida",
-            "EN" to "Food",
-            "FR" to "Nourriture",
-            "DE" to "Essen",
-            "IT" to "Cibo"
+            "EN" to "Food"
         ),
         color = PictoColors.Fitzgerald.FoodBackground,
         borderColor = PictoColors.Fitzgerald.FoodBorder,
@@ -76,10 +67,7 @@ enum class Category(
     FEELINGS(
         labels = mapOf(
             "ES" to "Sentimientos",
-            "EN" to "Feelings",
-            "FR" to "Sentiments",
-            "DE" to "Gefühle",
-            "IT" to "Sentimenti"
+            "EN" to "Feelings"
         ),
         color = PictoColors.Fitzgerald.FeelingsBackground,
         borderColor = PictoColors.Fitzgerald.FeelingsBorder,
@@ -89,10 +77,7 @@ enum class Category(
     PLACES(
         labels = mapOf(
             "ES" to "Lugares",
-            "EN" to "Places",
-            "FR" to "Lieux",
-            "DE" to "Orte",
-            "IT" to "Luoghi"
+            "EN" to "Places"
         ),
         color = PictoColors.Fitzgerald.PlacesBackground,
         borderColor = PictoColors.Fitzgerald.PlacesBorder,
@@ -102,10 +87,7 @@ enum class Category(
     THINGS(
         labels = mapOf(
             "ES" to "Cosas",
-            "EN" to "Things",
-            "FR" to "Choses",
-            "DE" to "Dinge",
-            "IT" to "Cose"
+            "EN" to "Things"
         ),
         color = PictoColors.Fitzgerald.ThingsBackground,
         borderColor = PictoColors.Fitzgerald.ThingsBorder,
@@ -115,10 +97,7 @@ enum class Category(
     SOCIAL(
         labels = mapOf(
             "ES" to "Social",
-            "EN" to "Social",
-            "FR" to "Social",
-            "DE" to "Soziales",
-            "IT" to "Sociale"
+            "EN" to "Social"
         ),
         color = PictoColors.Fitzgerald.SocialBackground,
         borderColor = PictoColors.Fitzgerald.SocialBorder,
@@ -128,10 +107,7 @@ enum class Category(
     BODY(
         labels = mapOf(
             "ES" to "Cuerpo",
-            "EN" to "Body",
-            "FR" to "Corps",
-            "DE" to "Körper",
-            "IT" to "Corpo"
+            "EN" to "Body"
         ),
         color = PictoColors.Fitzgerald.BodyBackground,
         borderColor = PictoColors.Fitzgerald.BodyBorder,
@@ -141,10 +117,7 @@ enum class Category(
     NUMBERS(
         labels = mapOf(
             "ES" to "Números",
-            "EN" to "Numbers",
-            "FR" to "Nombres",
-            "DE" to "Zahlen",
-            "IT" to "Numeri"
+            "EN" to "Numbers"
         ),
         color = PictoColors.Fitzgerald.NumbersBackground,
         borderColor = PictoColors.Fitzgerald.NumbersBorder,
@@ -154,10 +127,7 @@ enum class Category(
     WEATHER(
         labels = mapOf(
             "ES" to "Clima",
-            "EN" to "Weather",
-            "FR" to "Météo",
-            "DE" to "Wetter",
-            "IT" to "Meteo"
+            "EN" to "Weather"
         ),
         color = PictoColors.Fitzgerald.WeatherBackground,
         borderColor = PictoColors.Fitzgerald.WeatherBorder,
@@ -167,10 +137,7 @@ enum class Category(
     QUESTIONS(
         labels = mapOf(
             "ES" to "Preguntas",
-            "EN" to "Questions",
-            "FR" to "Questions",
-            "DE" to "Fragen",
-            "IT" to "Domande"
+            "EN" to "Questions"
         ),
         color = PictoColors.Fitzgerald.QuestionsBackground,
         borderColor = PictoColors.Fitzgerald.QuestionsBorder,

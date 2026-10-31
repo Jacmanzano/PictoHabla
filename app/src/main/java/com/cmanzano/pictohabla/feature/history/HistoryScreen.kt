@@ -74,6 +74,7 @@ fun HistoryScreen(
     historyList: List<PhraseHistory>,
     highContrast: Boolean,
     hapticsEnabled: Boolean,
+    languageCode: String = "ES",
     onSpeakPhrase: (String) -> Unit,
     onRecoverPhrase: (PhraseHistory) -> Unit,
     onDeleteEntry: (Long) -> Unit,
@@ -85,13 +86,14 @@ fun HistoryScreen(
 ) {
     val hapticFeedback = LocalHapticFeedback.current
     var showClearDialog by remember { mutableStateOf(false) }
+    val isEnglish = languageCode.equals("EN", ignoreCase = true)
 
     val timeFormatter = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Historial de Frases", fontWeight = FontWeight.Bold) },
+                title = { Text(if (isEnglish) "Phrase History" else "Historial de Frases", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(
                         onClick = {
@@ -100,7 +102,7 @@ fun HistoryScreen(
                         },
                         modifier = Modifier.semantics {
                             role = Role.Button
-                            contentDescription = "Volver al tablero principal"
+                            contentDescription = if (isEnglish) "Back to main board" else "Volver al tablero principal"
                         }
                     ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
@@ -115,7 +117,7 @@ fun HistoryScreen(
                             },
                             modifier = Modifier.semantics {
                                 role = Role.Button
-                                contentDescription = "Vaciar todo el historial"
+                                contentDescription = if (isEnglish) "Clear all history" else "Vaciar todo el historial"
                             }
                         ) {
                             Icon(
@@ -146,8 +148,13 @@ fun HistoryScreen(
         if (showClearDialog) {
             AlertDialog(
                 onDismissRequest = { showClearDialog = false },
-                title = { Text("¿Vaciar todo el historial?", fontWeight = FontWeight.Bold) },
-                text = { Text("Esta acción eliminará todas las frases guardadas en el historial. No se puede deshacer.") },
+                title = { Text(if (isEnglish) "Clear all history?" else "¿Vaciar todo el historial?", fontWeight = FontWeight.Bold) },
+                text = {
+                    Text(
+                        if (isEnglish) "This action will delete all phrases saved in history. It cannot be undone."
+                        else "Esta acción eliminará todas las frases guardadas en el historial. No se puede deshacer."
+                    )
+                },
                 confirmButton = {
                     TextButton(
                         onClick = {
@@ -156,12 +163,12 @@ fun HistoryScreen(
                             showClearDialog = false
                         }
                     ) {
-                        Text("Sí, vaciar", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                        Text(if (isEnglish) "Yes, clear" else "Sí, vaciar", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showClearDialog = false }) {
-                        Text("Cancelar")
+                        Text(if (isEnglish) "Cancel" else "Cancelar")
                     }
                 }
             )
@@ -187,14 +194,18 @@ fun HistoryScreen(
                     )
                     Spacer(Modifier.height(PictoDimens.SpaceMedium))
                     Text(
-                        text = "El historial está vacío",
+                        text = if (isEnglish) "History is empty" else "El historial está vacío",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     )
                     Spacer(Modifier.height(PictoDimens.SpaceSmall))
                     Text(
-                        text = "Cada vez que construyas y reproduzcas una frase en el tablero, quedará registrada aquí para volver a usarla cuando quieras.",
+                        text = if (isEnglish) {
+                            "Every time you build and speak a phrase on the board, it will be saved here to reuse whenever you want."
+                        } else {
+                            "Cada vez que construyas y reproduzcas una frase en el tablero, quedará registrada aquí para volver a usarla cuando quieras."
+                        },
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -279,7 +290,7 @@ fun HistoryScreen(
                                 ) {
                                     Icon(Icons.AutoMirrored.Filled.VolumeUp, contentDescription = null)
                                     Spacer(Modifier.width(PictoDimens.SpaceExtraSmall))
-                                    Text("Escuchar", fontWeight = FontWeight.Bold)
+                                    Text(if (isEnglish) "Listen" else "Escuchar", fontWeight = FontWeight.Bold)
                                 }
 
                                 // Botón para cargar en el tablero principal
@@ -294,7 +305,7 @@ fun HistoryScreen(
                                 ) {
                                     Icon(Icons.AutoMirrored.Filled.Input, contentDescription = null)
                                     Spacer(Modifier.width(PictoDimens.SpaceExtraSmall))
-                                    Text("Cargar frase", fontWeight = FontWeight.Bold)
+                                    Text(if (isEnglish) "Load phrase" else "Cargar frase", fontWeight = FontWeight.Bold)
                                 }
                             }
                         }

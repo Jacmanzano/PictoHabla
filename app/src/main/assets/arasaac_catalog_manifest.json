@@ -28,6 +28,16 @@
         "numeral adjective",
         "adjective",
         "mathematics"
+      ],
+      "name_en": "zero",
+      "keywords_es": [
+        "0",
+        "cero"
+      ],
+      "keywords_en": [
+        "nought",
+        "zero",
+        "0"
       ]
     },
     {
@@ -48,6 +58,15 @@
         "core vocabulary-knowledge",
         "adjective",
         "numeral adjective"
+      ],
+      "name_en": "one",
+      "keywords_es": [
+        "uno",
+        "1"
+      ],
+      "keywords_en": [
+        "one",
+        "1"
       ]
     },
     {
@@ -67,6 +86,15 @@
         "numeral adjective",
         "adjective",
         "mathematics"
+      ],
+      "name_en": "two",
+      "keywords_es": [
+        "2",
+        "dos"
+      ],
+      "keywords_en": [
+        "2",
+        "two"
       ]
     },
     {
@@ -86,6 +114,15 @@
         "numeral adjective",
         "mathematics",
         "core vocabulary-knowledge"
+      ],
+      "name_en": "three",
+      "keywords_es": [
+        "3",
+        "tres"
+      ],
+      "keywords_en": [
+        "3",
+        "three"
       ]
     },
     {
@@ -105,6 +142,15 @@
         "numeral adjective",
         "mathematics",
         "core vocabulary-knowledge"
+      ],
+      "name_en": "four",
+      "keywords_es": [
+        "4",
+        "cuatro"
+      ],
+      "keywords_en": [
+        "4",
+        "four"
       ]
     },
     {
@@ -124,6 +170,16 @@
         "numeral adjective",
         "mathematics",
         "core vocabulary-knowledge"
+      ],
+      "name_en": "five",
+      "keywords_es": [
+        "5",
+        "cinco"
+      ],
+      "keywords_en": [
+        "five",
+        "5",
+        "five "
       ]
     },
     {
@@ -143,6 +199,15 @@
         "numeral adjective",
         "mathematics",
         "core vocabulary-knowledge"
+      ],
+      "name_en": "six",
+      "keywords_es": [
+        "6",
+        "seis"
+      ],
+      "keywords_en": [
+        "6",
+        "six"
       ]
     },
     {
@@ -162,6 +227,15 @@
         "numeral adjective",
         "mathematics",
         "core vocabulary-knowledge"
+      ],
+      "name_en": "seven",
+      "keywords_es": [
+        "7",
+        "siete"
+      ],
+      "keywords_en": [
+        "7",
+        "seven"
       ]
     },
     {
@@ -181,6 +255,15 @@
         "numeral adjective",
         "mathematics",
         "core vocabulary-knowledge"
+      ],
+      "name_en": "eight",
+      "keywords_es": [
+        "8",
+        "ocho"
+      ],
+      "keywords_en": [
+        "8",
+        "eight"
       ]
     },
     {
@@ -198,6 +281,15 @@
       "categories": [
         "number",
         "numeral adjective"
+      ],
+      "name_en": "nine",
+      "keywords_es": [
+        "9",
+        "nueve"
+      ],
+      "keywords_en": [
+        "9",
+        "nine"
       ]
     },
     {
@@ -213,6 +305,14 @@
       ],
       "categories": [
         "polite set expression"
+      ],
+      "name_en": "Hello",
+      "keywords_es": [
+        "hola"
+      ],
+      "keywords_en": [
+        "hello",
+        "hi"
       ]
     },
     {
@@ -231,6 +331,14 @@
         "human value",
         "core vocabulary-communication",
         "core vocabulary-knowledge"
+      ],
+      "name_en": "Thanks",
+      "keywords_es": [
+        "gracias"
+      ],
+      "keywords_en": [
+        "thanks",
+        "thank you"
       ]
     },
     {
@@ -248,6 +356,16 @@
       "categories": [
         "polite set expression",
         "core vocabulary-communication"
+      ],
+      "name_en": "Please",
+      "keywords_es": [
+        "por favor",
+        "rogar"
+      ],
+      "keywords_en": [
+        "please",
+        "beg",
+        "beseech"
       ]
     },
     {
@@ -266,6 +384,18 @@
       "categories": [
         "polite set expression",
         "core vocabulary-communication"
+      ],
+      "name_en": "Bye",
+      "keywords_es": [
+        "adiós",
+        "hasta luego",
+        "hasta la vista"
+      ],
+      "keywords_en": [
+        "goodbye",
+        "see you later",
+        "see you",
+        "bye"
       ]
     },
     {
@@ -283,6 +413,13 @@
         "adverb",
         "adverb of affirmation",
         "core vocabulary-education"
+      ],
+      "name_en": "Yes",
+      "keywords_es": [
+        "sí"
+      ],
+      "keywords_en": [
+        "yes"
       ]
     },
     {
@@ -302,6 +439,13 @@
         "core vocabulary-communication",
         "adjective",
         "indefinite adjective"
+      ],
+      "name_en": "No",
+      "keywords_es": [
+        "no"
+      ],
+      "keywords_en": [
+        "no"
       ]
     },
     {
@@ -323,6 +467,22 @@
         "polite set expression",
         "human value",
         "core vocabulary-communication"
+      ],
+      "name_en": "Sorry",
+      "keywords_es": [
+        "lo siento",
+        "perdonar",
+        "¡lo siento!",
+        "¡perdón!",
+        "perdón",
+        "pedir perdón"
+      ],
+      "keywords_en": [
+        "sorry",
+        "forgive",
+        "I'm sorry!",
+        "sorry!",
+        "I'm so sorry!"
       ]
     },
     {
@@ -340,6 +500,15 @@
         "verb",
         "basic needs",
         "body sensation"
+      ],
+      "name_en": "I am hungry",
+      "keywords_es": [
+        "tener hambre"
+      ],
+      "keywords_en": [
+        "i am hungry",
+        "be hungry",
+        "hunger"
       ]
     },
     {
@@ -359,6 +528,19 @@
         "verb",
         "basic needs",
         "body sensation"
+      ],
+      "name_en": "I am thirsty",
+      "keywords_es": [
+        "sediento",
+        "tener sed",
+        "sed"
+      ],
+      "keywords_en": [
+        "i am thirsty",
+        "thirsty",
+        "be thirsty",
+        "thirst",
+        "thirst"
       ]
     },
     {
@@ -380,6 +562,19 @@
         "core vocabulary-education",
         "special education",
         "basic needs"
+      ],
+      "name_en": "Help",
+      "keywords_es": [
+        "apoyo",
+        "ayuda",
+        "colaboración",
+        "cooperación"
+      ],
+      "keywords_en": [
+        "support",
+        "help",
+        "colaboration",
+        "cooperation"
       ]
     },
     {
@@ -398,6 +593,16 @@
         "orthographic sign",
         "mathematics",
         "core vocabulary-communication"
+      ],
+      "name_en": "More",
+      "keywords_es": [
+        "más",
+        "+"
+      ],
+      "keywords_en": [
+        "more",
+        "plus sign",
+        "+"
       ]
     },
     {
@@ -417,6 +622,14 @@
         "road safety",
         "core vocabulary-communication",
         "physical exercise"
+      ],
+      "name_en": "Stop",
+      "keywords_es": [
+        "parar",
+        "detener"
+      ],
+      "keywords_en": [
+        "stop"
       ]
     },
     {
@@ -433,6 +646,16 @@
       ],
       "categories": [
         "unit of time"
+      ],
+      "name_en": "Again",
+      "keywords_es": [
+        "otra vez",
+        "una vez más"
+      ],
+      "keywords_en": [
+        "again",
+        "once more",
+        "once again"
       ]
     },
     {
@@ -453,6 +676,19 @@
       "categories": [
         "usual verbs",
         "core vocabulary-communication"
+      ],
+      "name_en": "Finished",
+      "keywords_es": [
+        "terminar",
+        "fin",
+        "acabar",
+        "finalizar",
+        "final"
+      ],
+      "keywords_en": [
+        "finished",
+        "finish",
+        "end"
       ]
     },
     {
@@ -470,6 +706,19 @@
       "categories": [
         "human response",
         "verb"
+      ],
+      "name_en": "I don't know",
+      "keywords_es": [
+        "duda",
+        "dudar"
+      ],
+      "keywords_en": [
+        "i don't know",
+        "doubt",
+        "doubt",
+        "hesitate",
+        "dither",
+        "waver"
       ]
     },
     {
@@ -500,6 +749,17 @@
         "game",
         "outdoor activity",
         "entertainment facility"
+      ],
+      "name_en": "I like it",
+      "keywords_es": [
+        "gustar",
+        "me gusta eso"
+      ],
+      "keywords_en": [
+        "i like it",
+        "like",
+        "enjoy",
+        "I like that"
       ]
     },
     {
@@ -531,6 +791,17 @@
         "show",
         "outdoor activity",
         "entertainment facility"
+      ],
+      "name_en": "I dislike it",
+      "keywords_es": [
+        "no gustar",
+        "no me gusta eso"
+      ],
+      "keywords_en": [
+        "i dislike it",
+        "dislike",
+        "I do not like that",
+        "I don't like that"
       ]
     },
     {
@@ -550,6 +821,18 @@
       "categories": [
         "pronoun",
         "personal pronoun"
+      ],
+      "name_en": "I",
+      "keywords_es": [
+        "yo",
+        "me",
+        "mí",
+        "yo me"
+      ],
+      "keywords_en": [
+        "I",
+        "me",
+        "for me"
       ]
     },
     {
@@ -568,6 +851,15 @@
       "categories": [
         "pronoun",
         "personal pronoun"
+      ],
+      "name_en": "You",
+      "keywords_es": [
+        "tú",
+        "usted",
+        "tú te"
+      ],
+      "keywords_en": [
+        "you"
       ]
     },
     {
@@ -584,6 +876,16 @@
       "categories": [
         "family",
         "core vocabulary-living being"
+      ],
+      "name_en": "Mom",
+      "keywords_es": [
+        "mamá"
+      ],
+      "keywords_en": [
+        "mum",
+        "mom",
+        "mommy",
+        "mother"
       ]
     },
     {
@@ -600,6 +902,14 @@
       "categories": [
         "family",
         "core vocabulary-living being"
+      ],
+      "name_en": "Dad",
+      "keywords_es": [
+        "papá"
+      ],
+      "keywords_en": [
+        "dad",
+        "daddy"
       ]
     },
     {
@@ -617,6 +927,15 @@
       "categories": [
         "elderly",
         "family"
+      ],
+      "name_en": "Grandpa",
+      "keywords_es": [
+        "abuelo",
+        "yayo"
+      ],
+      "keywords_en": [
+        "grandfather",
+        "grandpa"
       ]
     },
     {
@@ -634,6 +953,16 @@
       "categories": [
         "elderly",
         "family"
+      ],
+      "name_en": "Grandma",
+      "keywords_es": [
+        "abuela",
+        "yaya"
+      ],
+      "keywords_en": [
+        "grandmother",
+        "granny",
+        "grandma"
       ]
     },
     {
@@ -649,6 +978,13 @@
       ],
       "categories": [
         "group"
+      ],
+      "name_en": "Friend",
+      "keywords_es": [
+        "amigo"
+      ],
+      "keywords_en": [
+        "friend"
       ]
     },
     {
@@ -670,6 +1006,18 @@
         "education professionals",
         "core vocabulary-education",
         "core vocabulary-work"
+      ],
+      "name_en": "Teacher",
+      "keywords_es": [
+        "maestro",
+        "profesor",
+        "maestra",
+        "profesora"
+      ],
+      "keywords_en": [
+        "schoolteacher",
+        "teacher",
+        "professor"
       ]
     },
     {
@@ -686,6 +1034,14 @@
       ],
       "categories": [
         "personal pronoun"
+      ],
+      "name_en": "He",
+      "keywords_es": [
+        "él",
+        "él se"
+      ],
+      "keywords_en": [
+        "he"
       ]
     },
     {
@@ -706,6 +1062,21 @@
       "categories": [
         "pronoun",
         "personal pronoun"
+      ],
+      "name_en": "She",
+      "keywords_es": [
+        "ella",
+        "la",
+        "lo",
+        "sí",
+        "se",
+        "ella se"
+      ],
+      "keywords_en": [
+        "she",
+        "her",
+        "herself",
+        "with her"
       ]
     },
     {
@@ -722,6 +1093,16 @@
       ],
       "categories": [
         "personal pronoun"
+      ],
+      "name_en": "We",
+      "keywords_es": [
+        "nosotros",
+        "nosotros nos"
+      ],
+      "keywords_en": [
+        "us",
+        "we",
+        "ourselves"
       ]
     },
     {
@@ -747,6 +1128,21 @@
         "educational material",
         "sport material",
         "toy"
+      ],
+      "name_en": "Want",
+      "keywords_es": [
+        "querer",
+        "desear",
+        "pedir",
+        "yo quiero"
+      ],
+      "keywords_en": [
+        "want",
+        "wish for",
+        "I want",
+        "I want that one",
+        "wish",
+        "feel like"
       ]
     },
     {
@@ -765,6 +1161,13 @@
         "human response",
         "core vocabulary-communication",
         "core vocabulary-knowledge"
+      ],
+      "name_en": "Need",
+      "keywords_es": [
+        "necesitar"
+      ],
+      "keywords_en": [
+        "need"
       ]
     },
     {
@@ -783,6 +1186,18 @@
         "verb",
         "food",
         "basic needs"
+      ],
+      "name_en": "Eat",
+      "keywords_es": [
+        "comer",
+        "tomar"
+      ],
+      "keywords_en": [
+        "eat",
+        "have",
+        "take in",
+        "ingest",
+        "take"
       ]
     },
     {
@@ -801,6 +1216,14 @@
         "verb",
         "beverage",
         "basic needs"
+      ],
+      "name_en": "Drink",
+      "keywords_es": [
+        "beber",
+        "tomar"
+      ],
+      "keywords_en": [
+        "drink"
       ]
     },
     {
@@ -817,6 +1240,13 @@
       "categories": [
         "verb",
         "traditional game"
+      ],
+      "name_en": "Play",
+      "keywords_es": [
+        "jugar"
+      ],
+      "keywords_en": [
+        "play"
       ]
     },
     {
@@ -834,6 +1264,13 @@
         "verb",
         "basic needs",
         "routine"
+      ],
+      "name_en": "Sleep",
+      "keywords_es": [
+        "dormir"
+      ],
+      "keywords_en": [
+        "sleep"
       ]
     },
     {
@@ -849,6 +1286,13 @@
       ],
       "categories": [
         "verb"
+      ],
+      "name_en": "Go",
+      "keywords_es": [
+        "ir"
+      ],
+      "keywords_en": [
+        "go"
       ]
     },
     {
@@ -866,6 +1310,16 @@
       ],
       "categories": [
         "verb"
+      ],
+      "name_en": "Come",
+      "keywords_es": [
+        "venir",
+        "acudir",
+        "llegar"
+      ],
+      "keywords_en": [
+        "come",
+        "arrive"
       ]
     },
     {
@@ -882,6 +1336,15 @@
       "categories": [
         "usual verbs",
         "core vocabulary-communication"
+      ],
+      "name_en": "Do",
+      "keywords_es": [
+        "hacer"
+      ],
+      "keywords_en": [
+        "make",
+        "do",
+        "create"
       ]
     },
     {
@@ -900,6 +1363,19 @@
       "categories": [
         "verb",
         "senses"
+      ],
+      "name_en": "Watch",
+      "keywords_es": [
+        "ver",
+        "mirar",
+        "observar"
+      ],
+      "keywords_en": [
+        "see",
+        "look",
+        "look at",
+        "watch",
+        "observe"
       ]
     },
     {
@@ -917,6 +1393,15 @@
       "categories": [
         "verb",
         "senses"
+      ],
+      "name_en": "Listen",
+      "keywords_es": [
+        "oír",
+        "escuchar"
+      ],
+      "keywords_en": [
+        "hear",
+        "listen"
       ]
     },
     {
@@ -933,6 +1418,13 @@
       "categories": [
         "verb",
         "physical exercise"
+      ],
+      "name_en": "Run",
+      "keywords_es": [
+        "correr"
+      ],
+      "keywords_en": [
+        "run"
       ]
     },
     {
@@ -949,6 +1441,13 @@
       "categories": [
         "fruit",
         "core vocabulary-feeding"
+      ],
+      "name_en": "Apple",
+      "keywords_es": [
+        "manzana"
+      ],
+      "keywords_en": [
+        "apple"
       ]
     },
     {
@@ -965,6 +1464,13 @@
       "categories": [
         "fruit",
         "core vocabulary-feeding"
+      ],
+      "name_en": "Banana",
+      "keywords_es": [
+        "plátano"
+      ],
+      "keywords_en": [
+        "banana"
       ]
     },
     {
@@ -982,6 +1488,17 @@
       "categories": [
         "ultra-processed food",
         "core vocabulary-feeding"
+      ],
+      "name_en": "Bread",
+      "keywords_es": [
+        "pan",
+        "barra de pan"
+      ],
+      "keywords_en": [
+        "bread",
+        "bread stick",
+        "French bread",
+        "baguette"
       ]
     },
     {
@@ -999,6 +1516,16 @@
         "beverage",
         "dairy product",
         "core vocabulary-feeding"
+      ],
+      "name_en": "Milk",
+      "keywords_es": [
+        "leche"
+      ],
+      "keywords_en": [
+        "milk",
+        "cows' milk",
+        "pasteurized milk",
+        "whole milk"
       ]
     },
     {
@@ -1015,6 +1542,13 @@
       "categories": [
         "beverage",
         "mineral rich food"
+      ],
+      "name_en": "Water",
+      "keywords_es": [
+        "agua"
+      ],
+      "keywords_en": [
+        "water"
       ]
     },
     {
@@ -1031,6 +1565,13 @@
       "categories": [
         "traditional dish",
         "core vocabulary-feeding"
+      ],
+      "name_en": "Pizza",
+      "keywords_es": [
+        "pizza"
+      ],
+      "keywords_en": [
+        "pizza"
       ]
     },
     {
@@ -1050,6 +1591,16 @@
         "qualifying adjective",
         "feeling",
         "adjective"
+      ],
+      "name_en": "Happy",
+      "keywords_es": [
+        "contento",
+        "feliz",
+        "contenta"
+      ],
+      "keywords_en": [
+        "content",
+        "happy"
       ]
     },
     {
@@ -1066,6 +1617,15 @@
       "categories": [
         "qualifying adjective",
         "feeling"
+      ],
+      "name_en": "Sad",
+      "keywords_es": [
+        "triste"
+      ],
+      "keywords_en": [
+        "sad",
+        "depressed",
+        "unhappy"
       ]
     },
     {
@@ -1083,6 +1643,16 @@
       "categories": [
         "qualifying adjective",
         "feeling"
+      ],
+      "name_en": "Angry",
+      "keywords_es": [
+        "enfadado",
+        "enfadada"
+      ],
+      "keywords_en": [
+        "angry",
+        "irritated",
+        "annoyed"
       ]
     },
     {
@@ -1101,6 +1671,15 @@
         "feeling",
         "body sensation",
         "symptom"
+      ],
+      "name_en": "Tired",
+      "keywords_es": [
+        "cansado"
+      ],
+      "keywords_en": [
+        "tired",
+        "exhausted",
+        "fatigued"
       ]
     },
     {
@@ -1120,6 +1699,17 @@
         "symptom",
         "human anatomy",
         "animal anatomy"
+      ],
+      "name_en": "Hurt",
+      "keywords_es": [
+        "doler",
+        "dolor"
+      ],
+      "keywords_en": [
+        "hurt",
+        "suffer",
+        "ache",
+        "pain"
       ]
     },
     {
@@ -1136,6 +1726,14 @@
       "categories": [
         "body sensation",
         "meteorology"
+      ],
+      "name_en": "I am cold",
+      "keywords_es": [
+        "frío"
+      ],
+      "keywords_en": [
+        "i am cold",
+        "cold"
       ]
     },
     {
@@ -1158,6 +1756,15 @@
         "core vocabulary-living being",
         "core vocabulary-miscellaneous",
         "beach"
+      ],
+      "name_en": "I am hot",
+      "keywords_es": [
+        "tener calor",
+        "hacer calor"
+      ],
+      "keywords_en": [
+        "i am hot",
+        "be hot"
       ]
     },
     {
@@ -1173,6 +1780,13 @@
       ],
       "categories": [
         "residential building"
+      ],
+      "name_en": "House",
+      "keywords_es": [
+        "casa"
+      ],
+      "keywords_en": [
+        "house"
       ]
     },
     {
@@ -1189,6 +1803,20 @@
       ],
       "categories": [
         "building room"
+      ],
+      "name_en": "Bathroom",
+      "keywords_es": [
+        "cuarto de baño",
+        "baño"
+      ],
+      "keywords_en": [
+        "bathroom",
+        "men's bathroom",
+        "toilet",
+        "men's wastroom",
+        "W.C.",
+        "washroom",
+        "lavatory"
       ]
     },
     {
@@ -1207,6 +1835,15 @@
         "educational building",
         "educational_building",
         "educational institution"
+      ],
+      "name_en": "School",
+      "keywords_es": [
+        "colegio",
+        "escuela"
+      ],
+      "keywords_en": [
+        "school",
+        "schoolhouse"
       ]
     },
     {
@@ -1225,6 +1862,15 @@
         "entertainment facility",
         "core vocabulary-place",
         "core vocabulary-leisure"
+      ],
+      "name_en": "Park",
+      "keywords_es": [
+        "parque"
+      ],
+      "keywords_en": [
+        "park",
+        "playground",
+        "playpark"
       ]
     },
     {
@@ -1247,6 +1893,19 @@
         "basic needs",
         "routine",
         "core vocabulary-communication"
+      ],
+      "name_en": "I want to go to bathroom",
+      "keywords_es": [
+        "hacer pis",
+        "orinar",
+        "pis",
+        "pipí",
+        "hacer pipí"
+      ],
+      "keywords_en": [
+        "i want to go to bathroom",
+        "pee",
+        "urinate"
       ]
     },
     {
@@ -1265,6 +1924,16 @@
         "toy",
         "beach",
         "core vocabulary-leisure"
+      ],
+      "name_en": "Ball",
+      "keywords_es": [
+        "pelota",
+        "pelota de playa"
+      ],
+      "keywords_en": [
+        "ball",
+        "beach ball",
+        "beachball"
       ]
     },
     {
@@ -1282,6 +1951,13 @@
         "educational material",
         "library science",
         "literature"
+      ],
+      "name_en": "Book",
+      "keywords_es": [
+        "libro"
+      ],
+      "keywords_en": [
+        "book"
       ]
     },
     {
@@ -1302,6 +1978,18 @@
         "land transport",
         "road safety",
         "core vocabulary-movement"
+      ],
+      "name_en": "Car",
+      "keywords_es": [
+        "coche",
+        "automóvil",
+        "auto",
+        "carro"
+      ],
+      "keywords_en": [
+        "car",
+        "family touring car",
+        "auto"
       ]
     },
     {
@@ -1318,6 +2006,14 @@
       "categories": [
         "accessories",
         "core vocabulary-object"
+      ],
+      "name_en": "Backpack",
+      "keywords_es": [
+        "mochila"
+      ],
+      "keywords_en": [
+        "rucksack",
+        "backpack"
       ]
     },
     {
@@ -1333,6 +2029,13 @@
       ],
       "categories": [
         "human anatomy"
+      ],
+      "name_en": "Head",
+      "keywords_es": [
+        "cabeza"
+      ],
+      "keywords_en": [
+        "head"
       ]
     },
     {
@@ -1350,6 +2053,15 @@
       "categories": [
         "human anatomy",
         "senses"
+      ],
+      "name_en": "Hand",
+      "keywords_es": [
+        "mano",
+        "mano derecha"
+      ],
+      "keywords_en": [
+        "hand",
+        "right hand"
       ]
     },
     {
@@ -1366,6 +2078,13 @@
       "categories": [
         "human anatomy",
         "locomotor system"
+      ],
+      "name_en": "Foot",
+      "keywords_es": [
+        "pie"
+      ],
+      "keywords_en": [
+        "foot"
       ]
     },
     {
@@ -1382,6 +2101,13 @@
       "categories": [
         "astronomy",
         "summer"
+      ],
+      "name_en": "Sun",
+      "keywords_es": [
+        "Sol"
+      ],
+      "keywords_en": [
+        "Sun"
       ]
     },
     {
@@ -1398,6 +2124,14 @@
       "categories": [
         "atmospheric phenomena",
         "spring"
+      ],
+      "name_en": "Rain",
+      "keywords_es": [
+        "lluvia"
+      ],
+      "keywords_en": [
+        "rain",
+        "rainfall"
       ]
     },
     {
@@ -1414,6 +2148,14 @@
       "categories": [
         "conjunction",
         "copulative conjunction"
+      ],
+      "name_en": "What?",
+      "keywords_es": [
+        "que"
+      ],
+      "keywords_en": [
+        "what?",
+        "that"
       ]
     },
     {
@@ -1434,6 +2176,16 @@
         "core vocabulary-communication",
         "adverb",
         "adverb of place"
+      ],
+      "name_en": "Where?",
+      "keywords_es": [
+        "dónde",
+        "¿dónde?",
+        "donde"
+      ],
+      "keywords_en": [
+        "where",
+        "where?"
       ]
     },
     {
@@ -1455,6 +2207,26 @@
         "interrogative pronoun",
         "core vocabulary-communication",
         "pronoun"
+      ],
+      "name_en": "Who?",
+      "keywords_es": [
+        "quién",
+        "desconocido",
+        "¿quién es?",
+        "¿quién es él?",
+        "¿quién?"
+      ],
+      "keywords_en": [
+        "who?",
+        "who",
+        "unknown",
+        "Who's he?",
+        "who is he?",
+        "strange",
+        "anonymous",
+        "unidentified",
+        "nameless",
+        "whom"
       ]
     },
     {
@@ -1474,6 +2246,15 @@
         "pronoun",
         "adverb",
         "adverb of time"
+      ],
+      "name_en": "When?",
+      "keywords_es": [
+        "cuándo",
+        "¿cuándo?"
+      ],
+      "keywords_en": [
+        "when?",
+        "when"
       ]
     },
     {
@@ -1490,6 +2271,14 @@
       "categories": [
         "interrogative pronoun",
         "pronoun"
+      ],
+      "name_en": "Why?",
+      "keywords_es": [
+        "por qué"
+      ],
+      "keywords_en": [
+        "why?",
+        "why"
       ]
     },
     {
@@ -1506,6 +2295,14 @@
       "categories": [
         "calendar",
         "core vocabulary-time"
+      ],
+      "name_en": "What day is today?",
+      "keywords_es": [
+        "calendario"
+      ],
+      "keywords_en": [
+        "what day is today?",
+        "calendar"
       ]
     },
     {
@@ -1526,6 +2323,15 @@
         "core vocabulary-object",
         "core vocabulary-time",
         "trade"
+      ],
+      "name_en": "What time is it?",
+      "keywords_es": [
+        "reloj"
+      ],
+      "keywords_en": [
+        "what time is it?",
+        "watch",
+        "wristwatch"
       ]
     }
   ]

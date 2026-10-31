@@ -223,4 +223,93 @@ class PictogramRepositoryTest {
         assertEquals(2462, retrieved!!.arasaacId)
         assertEquals("Manzana verde", retrieved.getName("ES"))
     }
+
+    @Test
+    fun createArasaacPictogram_storesBilingualNamesAndKeywords() = runTest {
+        val created = repository.createArasaacPictogram(
+            arasaacId = 2517, // Perro / Dog
+            name = "Perro",
+            nameEn = "Dog",
+            keywordsEs = listOf("perro", "can", "chucho"),
+            keywordsEn = listOf("dog", "puppy", "canine"),
+            speechText = "Perro",
+            category = Category.THINGS,
+            localImagePath = "/data/user/0/app/files/arasaac_pictos/2517.png"
+        )
+
+        assertNotNull(created)
+        assertEquals(2517, created.arasaacId)
+        assertEquals("Perro", created.getName("ES"))
+        assertEquals("Dog", created.getName("EN"))
+        assertTrue(created.matchesSearch("can", "ES"))
+        assertTrue(created.matchesSearch("puppy", "EN"))
+
+        val retrieved = repository.getPictogramById(created.id)
+        assertNotNull(retrieved)
+        assertEquals(2517, retrieved!!.arasaacId)
+        assertEquals("Perro", retrieved.getName("ES"))
+        assertEquals("Dog", retrieved.getName("EN"))
+        assertTrue(retrieved.matchesSearch("perro", "ES"))
+        assertTrue(retrieved.matchesSearch("dog", "EN"))
+    }
+
+    @Test
+    fun createArasaacPictogram_usesFallbackTranslationsWhenNotExplicitlyProvided() = runTest {
+        // Al pasar solo el nombre en español, debe resolver inglés y keywords usando ArasaacTranslationHelper
+        val created = repository.createArasaacPictogram(
+            arasaacId = 2406, // Gato / Cat
+            name = "Gato",
+            speechText = "Gato",
+            category = Category.THINGS
+        )
+
+        assertNotNull(created)
+        assertEquals("Gato", created.getName("ES"))
+        assertEquals("Cat", created.getName("EN"))
+        assertTrue(created.matchesSearch("felino", "ES"))
+        assertTrue(created.matchesSearch("kitten", "EN"))
+    }
+
+    @Test
+    fun initializeCatalogIfNeeded_syncsBilingualNamesAndKeywordsForExistingDatabase() = runTest {
+        // Simular una base de datos antigua donde los pictogramas solo tenían nameEs y no tenían keywords ni nameEn
+        val oldEntity = PictogramEntity(
+            id = 40,
+            arasaacId = 2462,
+            nameEs = "Manzana",
+            nameEn = "",
+            keywordsEs = "",
+            keywordsEn = "",
+            categoryName = "FOOD"
+        )
+        fakePictoDao.insert(oldEntity)
+
+        // Al ejecutar initializeCatalogIfNeeded(), debe actualizar nameEn y keywords para los pictogramas predeterminados
+        repository.initializeCatalogIfNeeded()
+
+        val updated = repository.getPictogramById(40)
+        assertNotNull(updated)
+        assertEquals("Manzana", updated!!.getName("ES"))
+        assertEquals("Apple", updated.getName("EN"))
+        assertTrue("Debe buscar manzana en español", updated.matchesSearch("manzana", "ES"))
+        assertTrue("Debe buscar apple en inglés", updated.matchesSearch("apple", "EN"))
+    }
+
+    @Test
+    fun pictogramEntity_mapsOnlySpanishAndEnglishToDomain() {
+        val entity = PictogramEntity(
+            id = 999,
+            nameEs = "Hola",
+            nameEn = "Hello",
+            nameFr = "Bonjour",
+            nameDe = "Hallo",
+            nameIt = "Ciao",
+            categoryName = "SOCIAL"
+        )
+        val domain = entity.toDomain()
+        assertEquals(setOf("ES", "EN"), domain.names.keys)
+        assertEquals("Hola", domain.getName("ES"))
+        assertEquals("Hello", domain.getName("EN"))
+        assertEquals("Hola", domain.getName("FR")) // Fallback to ES
+    }
 }

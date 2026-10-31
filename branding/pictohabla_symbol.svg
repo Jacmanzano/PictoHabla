@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="100%" height="100%">
+  <!-- PictoHabla Official Brand Symbol -->
+  <!-- Person speaking silhouette, 3 orange speech waves, speech bubble with 4 pictograms (apple, house, smiley, tree) -->
+  <rect width="1024" height="1024" fill="#FFFFFF"/>
+  <g transform="translate(60, 180) scale(0.98)">
+    <!-- Person Head & Body -->
+    <path d="M 235 480 C 170 480, 100 520, 65 600 C 130 630, 240 650, 350 640 C 370 600, 360 540, 320 495 C 295 485, 265 480, 235 480 Z" fill="#5EA521" stroke="#1D1E20" stroke-width="26" stroke-linejoin="round"/>
+    <!-- Head outline and open mouth -->
+    <path d="M 230 180 C 145 180, 85 240, 85 330 C 85 390, 120 440, 175 465 L 175 510 L 295 510 L 295 465 C 330 450, 360 415, 375 375 L 315 375 C 300 375, 290 390, 280 405 C 275 395, 285 360, 320 340 L 375 340 C 385 310, 380 270, 355 235 C 325 195, 280 180, 230 180 Z" fill="#FFFFFF" stroke="#1D1E20" stroke-width="26" stroke-linejoin="round" stroke-linecap="round"/>
+    <!-- Eye -->
+    <circle cx="280" cy="275" r="22" fill="#1D1E20"/>
+    <!-- Three Orange Communication Waves -->
+    <path d="M 365 375 L 435 345" stroke="#FD9717" stroke-width="24" stroke-linecap="round"/>
+    <path d="M 370 425 L 455 425" stroke="#FD9717" stroke-width="24" stroke-linecap="round"/>
+    <path d="M 365 475 L 435 505" stroke="#FD9717" stroke-width="24" stroke-linecap="round"/>
+    <!-- Speech Bubble Container -->
+    <path d="M 520 80 L 840 80 C 910 80, 960 130, 960 200 L 960 460 C 960 530, 910 580, 840 580 L 580 580 L 465 670 L 495 580 L 520 580 C 450 580, 400 530, 400 460 L 400 200 C 400 130, 450 80, 520 80 Z" fill="#FFFFFF" stroke="#1D1E20" stroke-width="26" stroke-linejoin="round" stroke-linecap="round"/>
+    <!-- 4 Pictogram Tile Grid -->
+    <!-- Tile 1: Apple -->
+    <rect x="445" y="125" width="220" height="200" rx="30" fill="#F4F5F7"/>
+    <circle cx="535" cy="235" r="50" fill="#E63023"/>
+    <circle cx="575" cy="235" r="50" fill="#E63023"/>
+    <path d="M 555 185 C 555 165, 570 150, 580 145" stroke="#795548" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <path d="M 560 175 C 585 165, 605 175, 600 190 C 580 195, 565 185, 560 175 Z" fill="#5EA521"/>
+    <!-- Tile 2: House -->
+    <rect x="695" y="125" width="220" height="200" rx="30" fill="#F4F5F7"/>
+    <polygon points="805,145 725,215 885,215" fill="#D32F2F" stroke="#1D1E20" stroke-width="14" stroke-linejoin="round"/>
+    <rect x="740" y="215" width="130" height="90" fill="#FFF8E7" stroke="#1D1E20" stroke-width="14"/>
+    <rect x="765" y="245" width="30" height="60" fill="#795548"/>
+    <rect x="820" y="240" width="30" height="30" fill="#42A5F5" stroke="#1D1E20" stroke-width="8"/>
+    <!-- Tile 3: Smiley Face -->
+    <rect x="445" y="345" width="220" height="200" rx="30" fill="#FFF8E7"/>
+    <circle cx="555" cy="445" r="65" fill="#F4B41A" stroke="#1D1E20" stroke-width="14"/>
+    <circle cx="530" cy="425" r="10" fill="#1D1E20"/>
+    <circle cx="580" cy="425" r="10" fill="#1D1E20"/>
+    <path d="M 525 460 C 535 485, 575 485, 585 460" stroke="#1D1E20" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <!-- Tile 4: Tree -->
+    <rect x="695" y="345" width="220" height="200" rx="30" fill="#F4F5F7"/>
+    <rect x="795" y="450" width="22" height="70" rx="6" fill="#795548" stroke="#1D1E20" stroke-width="12"/>
+    <path d="M 805 385 C 770 385, 755 410, 760 435 C 745 445, 750 470, 770 475 C 780 485, 830 485, 840 475 C 860 470, 865 445, 850 435 C 855 410, 840 385, 805 385 Z" fill="#439819" stroke="#1D1E20" stroke-width="14" stroke-linejoin="round"/>
+  </g>
+</svg>

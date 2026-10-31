@@ -96,6 +96,7 @@ fun CustomPictoScreen(
     val hapticFeedback = LocalHapticFeedback.current
     val coroutineScope = rememberCoroutineScope()
 
+    val isEnglish = languageCode.equals("EN", ignoreCase = true)
     var name by remember { mutableStateOf(editingPicto?.getName(languageCode) ?: "") }
     var speechText by remember { mutableStateOf(editingPicto?.speechText ?: "") }
     var selectedCategory by remember { mutableStateOf(editingPicto?.category ?: Category.THINGS) }
@@ -128,7 +129,11 @@ fun CustomPictoScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = if (editingPicto != null) "Editar Pictograma" else "Nuevo Pictograma",
+                        text = if (isEnglish) {
+                            if (editingPicto != null) "Edit Pictogram" else "New Pictogram"
+                        } else {
+                            if (editingPicto != null) "Editar Pictograma" else "Nuevo Pictograma"
+                        },
                         fontWeight = FontWeight.Bold
                     )
                 },
@@ -140,7 +145,7 @@ fun CustomPictoScreen(
                         },
                         modifier = Modifier.semantics {
                             role = Role.Button
-                            contentDescription = "Volver"
+                            contentDescription = if (isEnglish) "Back" else "Volver"
                         }
                     ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
@@ -155,7 +160,7 @@ fun CustomPictoScreen(
                             },
                             modifier = Modifier.semantics {
                                 role = Role.Button
-                                contentDescription = "Eliminar pictograma"
+                                contentDescription = if (isEnglish) "Delete pictogram" else "Eliminar pictograma"
                             }
                         ) {
                             Icon(
@@ -175,23 +180,37 @@ fun CustomPictoScreen(
         if (showDeleteConfirm) {
             AlertDialog(
                 onDismissRequest = { showDeleteConfirm = false },
-                title = { Text("¿Eliminar este pictograma?", fontWeight = FontWeight.Bold) },
-                text = { Text("Esta acción eliminará el pictograma personalizado de los tableros y favoritos. Las frases registradas anteriormente en el historial conservarán su texto.") },
+                title = {
+                    Text(
+                        if (isEnglish) "Delete this pictogram?" else "¿Eliminar este pictograma?",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
+                text = {
+                    Text(
+                        if (isEnglish) {
+                            "This action will remove the custom pictogram from boards and favorites. Phrases already recorded in history will retain their spoken text."
+                        } else {
+                            "Esta acción eliminará el pictograma personalizado de los tableros y favoritos. Las frases registradas anteriormente en el historial conservarán su texto."
+                        }
+                    )
+                },
                 confirmButton = {
-                    TextButton(
+                    Button(
                         onClick = {
                             PictoHaptics.performEmphasis(hapticFeedback, hapticsEnabled)
                             editingPicto?.let { onDeletePicto?.invoke(it.id) }
                             showDeleteConfirm = false
                             onBack()
-                        }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                     ) {
-                        Text("Eliminar", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.Bold)
+                        Text(if (isEnglish) "Delete" else "Eliminar")
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDeleteConfirm = false }) {
-                        Text("Cancelar")
+                        Text(if (isEnglish) "Cancel" else "Cancelar")
                     }
                 }
             )
@@ -254,7 +273,7 @@ fun CustomPictoScreen(
                             )
                             Spacer(Modifier.height(PictoDimens.SpaceSmall))
                             Text(
-                                text = "Toca para elegir una foto del dispositivo",
+                                text = if (isEnglish) "Tap to choose a photo from device" else "Toca para elegir una foto del dispositivo",
                                 style = MaterialTheme.typography.bodyMedium,
                                 fontWeight = FontWeight.Bold,
                                 color = selectedCategory.textColor
@@ -267,13 +286,17 @@ fun CustomPictoScreen(
             Spacer(Modifier.height(PictoDimens.SpaceLarge))
 
             // 2. Nombre visible del pictograma
-            Text("Nombre visible", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = if (isEnglish) "Visible name" else "Nombre visible",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleMedium
+            )
             Spacer(Modifier.height(PictoDimens.SpaceExtraSmall))
 
             OutlinedTextField(
                 value = name,
                 onValueChange = { name = it },
-                label = { Text("Ej: Abuela Carmen, Mi perrito, Juguete favorito") },
+                label = { Text(if (isEnglish) "E.g.: Grandma Carmen, My puppy, Favorite toy" else "Ej: Abuela Carmen, Mi perrito, Juguete favorito") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 shape = PictoDimens.CornerMedium
@@ -282,13 +305,17 @@ fun CustomPictoScreen(
             Spacer(Modifier.height(PictoDimens.SpaceLarge))
 
             // 3. Pronunciación de voz TTS (Opcional)
-            Text("Texto a pronunciar (TTS)", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = if (isEnglish) "Spoken text (TTS)" else "Texto a pronunciar (TTS)",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleMedium
+            )
             Spacer(Modifier.height(PictoDimens.SpaceExtraSmall))
 
             OutlinedTextField(
                 value = speechText,
                 onValueChange = { speechText = it },
-                label = { Text("Opcional: Si lo dejas vacío se pronunciará el nombre visible") },
+                label = { Text(if (isEnglish) "Optional: If empty, visible name will be spoken" else "Opcional: Si lo dejas vacío se pronunciará el nombre visible") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 shape = PictoDimens.CornerMedium
@@ -297,7 +324,11 @@ fun CustomPictoScreen(
             Spacer(Modifier.height(PictoDimens.SpaceLarge))
 
             // 4. Selector de categoría gramatical (Fitzgerald)
-            Text("Categoría (Color Fitzgerald)", fontWeight = FontWeight.Bold, style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = if (isEnglish) "Category (Fitzgerald Color)" else "Categoría (Color Fitzgerald)",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleMedium
+            )
             Spacer(Modifier.height(PictoDimens.SpaceExtraSmall))
 
             ExposedDropdownMenuBox(
@@ -373,13 +404,13 @@ fun CustomPictoScreen(
                     .height(56.dp)
                     .semantics {
                         role = Role.Button
-                        contentDescription = "Guardar pictograma personalizado"
+                        contentDescription = if (isEnglish) "Save custom pictogram" else "Guardar pictograma personalizado"
                     },
                 shape = PictoDimens.CornerMedium
             ) {
                 Icon(Icons.Default.Save, contentDescription = null)
                 Spacer(Modifier.width(PictoDimens.SpaceSmall))
-                Text("Guardar Pictograma", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(if (isEnglish) "Save Pictogram" else "Guardar Pictograma", fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
 
             Spacer(Modifier.height(PictoDimens.SpaceLarge))

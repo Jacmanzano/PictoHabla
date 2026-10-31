@@ -95,16 +95,13 @@ class TtsManager(context: Context) : TextToSpeech.OnInitListener {
         return try {
             val targetLocale = when (languageCode.uppercase()) {
                 "EN" -> Locale.ENGLISH
-                "FR" -> Locale.FRENCH
-                "DE" -> Locale.GERMAN
-                "IT" -> Locale.ITALIAN
-                else -> Locale("es", "ES")
+                else -> Locale.forLanguageTag("es-ES")
             }
 
             val langResult = activeTts.setLanguage(targetLocale)
             if (langResult == TextToSpeech.LANG_MISSING_DATA || langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
                 // Fallback seguro a español o locale por defecto si el idioma específico no está instalado
-                activeTts.language = Locale("es", "ES")
+                activeTts.language = Locale.forLanguageTag("es-ES")
             }
 
             activeTts.setSpeechRate(speed.coerceIn(0.5f, 2.0f))

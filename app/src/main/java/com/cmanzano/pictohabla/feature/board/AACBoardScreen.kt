@@ -2,8 +2,10 @@ package com.cmanzano.pictohabla.feature.board
 
 import android.content.res.Configuration
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -56,8 +58,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -65,6 +69,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.cmanzano.pictohabla.R
 import com.cmanzano.pictohabla.core.designsystem.PictoColors
 import com.cmanzano.pictohabla.core.designsystem.PictoDimens
 import com.cmanzano.pictohabla.core.designsystem.PictoHaptics
@@ -74,6 +79,7 @@ import com.cmanzano.pictohabla.core.model.Category
 import com.cmanzano.pictohabla.core.model.Pictogram
 import com.cmanzano.pictohabla.core.util.normalizeForSearch
 import com.cmanzano.pictohabla.core.util.processPhraseForSpeech
+import com.cmanzano.pictohabla.feature.board.components.LandscapePhraseSidePanel
 import com.cmanzano.pictohabla.feature.board.components.PhraseBar
 import com.cmanzano.pictohabla.feature.board.components.PictogramCard
 import com.cmanzano.pictohabla.feature.settings.AdultGateDialog
@@ -136,7 +142,7 @@ fun AACBoardScreen(
     ) {
         if (searchText.isNotBlank()) {
             allPictograms.filter { picto ->
-                picto.getName(languageCode).normalizeForSearch().contains(searchText.normalizeForSearch())
+                picto.matchesSearch(searchText, languageCode)
             }
         } else if (selectedCategory == null) {
             // Modo "Mi Tablero"
@@ -170,6 +176,8 @@ fun AACBoardScreen(
         if (largeGrid) PictoDimens.CardHeightPortraitLarge else PictoDimens.CardHeightPortraitStandard
     }
 
+    val isPhoneLandscapeDevice = isLandscape && configuration.screenHeightDp < 500
+
     Scaffold(
         topBar = {
             // Cabecera limpia y profesional: «PictoHabla» con protagonismo absoluto
@@ -184,58 +192,47 @@ fun AACBoardScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = PictoDimens.HeaderPaddingHorizontal, vertical = PictoDimens.HeaderPaddingVertical),
+                        .padding(
+                            horizontal = PictoDimens.HeaderPaddingHorizontal,
+                            vertical = if (isPhoneLandscapeDevice) PictoDimens.SpaceExtraSmall else PictoDimens.HeaderPaddingVertical
+                        ),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    // Nombre y lema de la aplicación
-                    Column {
-                        Text(
-                            text = "PictoHabla",
-                            style = PictoTypography.AppHeaderTitle,
-                            color = if (highContrast) PictoColors.HighlightHighContrast else PictoColors.Primary
+                    // Identidad visual oficial: Logotipo y nombre de la aplicación
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(if (isPhoneLandscapeDevice) 6.dp else PictoDimens.SpaceSmall)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_pictohabla_symbol),
+                            contentDescription = "Logotipo de PictoHabla",
+                            modifier = Modifier.size(if (isPhoneLandscapeDevice) 26.dp else 36.dp),
+                            contentScale = ContentScale.Fit
                         )
-                        Text(
-                            text = "Comunícate a tu manera",
-                            style = PictoTypography.AppHeaderSubtitle,
-                            color = if (highContrast) Color.LightGray else MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Column {
+                            Text(
+                                text = "PictoHabla",
+                                style = if (isPhoneLandscapeDevice) {
+                                    MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Black)
+                                } else {
+                                    PictoTypography.AppHeaderTitle
+                                },
+                                color = if (highContrast) PictoColors.HighlightHighContrast else PictoColors.Primary
+                            )
+                            if (!isPhoneLandscapeDevice) {
+                                Text(
+                                    text = "Comunícate a tu manera",
+                                    style = PictoTypography.AppHeaderSubtitle,
+                                    color = if (highContrast) Color.LightGray else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     }
 
                     // Acceso a opciones del sistema (menú protegido para cuidadores)
                     Box {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (activeBoard != null && !isLandscape) {
-                                AssistChip(
-                                    onClick = {
-                                        PictoHaptics.performClick(hapticFeedback, hapticsEnabled)
-                                        pendingAdultNavigation = onNavigateBoards
-                                    },
-                                    label = {
-                                        Text(
-                                            text = activeBoard.name,
-                                            fontSize = 11.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            maxLines = 1
-                                        )
-                                    },
-                                    leadingIcon = {
-                                        Icon(
-                                            Icons.Default.Dashboard,
-                                            contentDescription = null,
-                                            modifier = Modifier.size(14.dp)
-                                        )
-                                    },
-                                    colors = AssistChipDefaults.assistChipColors(
-                                        containerColor = if (highContrast) Color(0xFF222222) else MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)
-                                    ),
-                                    modifier = Modifier.semantics {
-                                        contentDescription = "Tablero actual: ${activeBoard.name}. Toca para cambiar de tablero."
-                                    }
-                                )
-                                Spacer(Modifier.width(PictoDimens.SpaceSmall))
-                            }
-
                             IconButton(
                                 onClick = {
                                     PictoHaptics.performClick(hapticFeedback, hapticsEnabled)
@@ -262,37 +259,6 @@ fun AACBoardScreen(
                             expanded = menuExpanded,
                             onDismissRequest = { menuExpanded = false }
                         ) {
-                            if (activeBoard != null) {
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = "Tablero: ${activeBoard.name}",
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 13.sp
-                                        )
-                                    },
-                                    onClick = {
-                                        menuExpanded = false
-                                        pendingAdultNavigation = onNavigateBoards
-                                    },
-                                    leadingIcon = {
-                                        Icon(Icons.Default.Dashboard, contentDescription = null)
-                                    }
-                                )
-                                HorizontalDivider()
-                            }
-
-                            DropdownMenuItem(
-                                text = { Text("Gestionar tableros") },
-                                onClick = {
-                                    menuExpanded = false
-                                    pendingAdultNavigation = onNavigateBoards
-                                },
-                                leadingIcon = {
-                                    Icon(Icons.Default.GridView, contentDescription = null)
-                                }
-                            )
-
                             DropdownMenuItem(
                                 text = { Text("Crear pictograma con foto") },
                                 onClick = {
@@ -345,11 +311,313 @@ fun AACBoardScreen(
             )
         }
     ) { padding ->
-        Row(
+        BoxWithConstraints(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
         ) {
+            val isPhoneLandscape = AACBoardLayoutPolicy.isPhoneLandscape(
+                isOrientationLandscape = isLandscape,
+                screenWidthDp = configuration.screenWidthDp,
+                screenHeightDp = configuration.screenHeightDp,
+                availableWidthDp = maxWidth.value,
+                availableHeightDp = maxHeight.value
+            )
+
+            if (isPhoneLandscape) {
+                // NUEVO DISEÑO COMPACTO DE DOS ZONAS PARA MÓVILES EN HORIZONTAL
+                Row(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = PictoDimens.SpaceSmall, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(PictoDimens.SpaceSmall)
+                ) {
+                    // 1. PANEL LATERAL (~33% de ancho): Frase construida y controles
+                    LandscapePhraseSidePanel(
+                        currentPhrase = currentPhrase,
+                        languageCode = languageCode,
+                        highContrast = highContrast,
+                        hapticsEnabled = hapticsEnabled,
+                        onSpeakClick = {
+                            val speechText = processPhraseForSpeech(currentPhrase, languageCode)
+                            val pictoIds = currentPhrase.map { it.id }
+                            onSpeakPhrase(speechText, pictoIds)
+                        },
+                        onClearClick = { onPhraseChange(emptyList()) },
+                        onRemoveLast = {
+                            if (currentPhrase.isNotEmpty()) {
+                                onPhraseChange(currentPhrase.dropLast(1))
+                            }
+                        },
+                        onRemoveAtIndex = { index ->
+                            if (index in currentPhrase.indices) {
+                                onPhraseChange(currentPhrase.toMutableList().apply { removeAt(index) })
+                            }
+                        },
+                        modifier = Modifier
+                            .weight(0.33f)
+                            .fillMaxHeight()
+                    )
+
+                    // 2. ZONA PRINCIPAL (~67% de ancho): Selección de pictogramas
+                    Column(
+                        modifier = Modifier
+                            .weight(0.67f)
+                            .fillMaxHeight()
+                    ) {
+                        // Selector de categorías en píldoras horizontales compactas
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentPadding = PaddingValues(horizontal = 2.dp),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            // Píldora: «Mi tablero»
+                            item {
+                                val isBoardSelected = selectedCategory == null && searchText.isEmpty()
+                                val boardLabel = activeBoard?.name ?: if (languageCode == "EN") "My Board" else "Mi tablero"
+
+                                Surface(
+                                    onClick = {
+                                        PictoHaptics.performClick(hapticFeedback, hapticsEnabled)
+                                        selectedCategory = null
+                                        searchText = ""
+                                    },
+                                    shape = PictoDimens.CornerPill,
+                                    color = if (isBoardSelected) {
+                                        if (highContrast) PictoColors.HighlightHighContrast else PictoColors.Primary
+                                    } else {
+                                        if (highContrast) Color(0xFF1E1E1E) else MaterialTheme.colorScheme.surface
+                                    },
+                                    border = if (isBoardSelected) null else BorderStroke(
+                                        1.dp,
+                                        if (highContrast) Color.Gray else MaterialTheme.colorScheme.outlineVariant
+                                    ),
+                                    modifier = Modifier
+                                        .height(34.dp)
+                                        .semantics {
+                                            role = Role.Tab
+                                            contentDescription = "Pestaña Tablero $boardLabel" + if (isBoardSelected) ", seleccionada" else ""
+                                        }
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.GridView,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp),
+                                            tint = if (isBoardSelected) {
+                                                if (highContrast) Color.Black else Color.White
+                                            } else {
+                                                if (highContrast) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                            }
+                                        )
+                                        Spacer(Modifier.width(4.dp))
+                                        Text(
+                                            text = boardLabel,
+                                            fontSize = 12.sp,
+                                            fontWeight = if (isBoardSelected) FontWeight.Black else FontWeight.Bold,
+                                            color = if (isBoardSelected) {
+                                                if (highContrast) Color.Black else Color.White
+                                            } else {
+                                                if (highContrast) Color.White else MaterialTheme.colorScheme.onSurface
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+
+                            // Píldoras para cada categoría de Fitzgerald
+                            items(Category.entries) { category ->
+                                val isCategorySelected = selectedCategory == category && searchText.isEmpty()
+                                val categoryLabel = category.getLabel(languageCode)
+
+                                Surface(
+                                    onClick = {
+                                        PictoHaptics.performClick(hapticFeedback, hapticsEnabled)
+                                        selectedCategory = category
+                                        searchText = ""
+                                    },
+                                    shape = PictoDimens.CornerPill,
+                                    color = if (isCategorySelected) {
+                                        if (highContrast) Color(0xFF333333) else category.color
+                                    } else {
+                                        if (highContrast) Color(0xFF1E1E1E) else MaterialTheme.colorScheme.surface
+                                    },
+                                    border = BorderStroke(
+                                        if (isCategorySelected) PictoDimens.BorderWidthStandard else 1.dp,
+                                        if (isCategorySelected) {
+                                            if (highContrast) Color.White else category.borderColor
+                                        } else {
+                                            if (highContrast) Color.Gray else MaterialTheme.colorScheme.outlineVariant
+                                        }
+                                    ),
+                                    modifier = Modifier
+                                        .height(34.dp)
+                                        .semantics {
+                                            role = Role.Tab
+                                            contentDescription = "Categoría $categoryLabel" + if (isCategorySelected) ", seleccionada" else ""
+                                        }
+                                ) {
+                                    Row(
+                                        modifier = Modifier.padding(horizontal = 10.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = category.icon,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp),
+                                            tint = if (highContrast) Color.White else if (isCategorySelected) category.textColor else Color.Gray
+                                        )
+                                        Spacer(Modifier.width(4.dp))
+                                        Text(
+                                            text = categoryLabel,
+                                            fontSize = 12.sp,
+                                            fontWeight = if (isCategorySelected) FontWeight.Black else FontWeight.Medium,
+                                            color = if (highContrast) Color.White else if (isCategorySelected) category.textColor else MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        Spacer(Modifier.height(4.dp))
+
+                        // 2. Buscador rápido compacto
+                        OutlinedTextField(
+                            value = searchText,
+                            onValueChange = { newValue ->
+                                searchText = newValue
+                                if (newValue.endsWith(" ")) {
+                                    val word = newValue.trim().split(" ").lastOrNull()
+                                    if (word != null) {
+                                        val match = allPictograms.find {
+                                            it.matchesWord(word, languageCode)
+                                        }
+                                        if (match != null) {
+                                            onPhraseChange(currentPhrase + match)
+                                            searchText = ""
+                                        }
+                                    }
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(46.dp),
+                            placeholder = {
+                                Text(
+                                    text = if (languageCode == "EN") "Search pictogram..." else "Buscar pictograma...",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontSize = 12.sp,
+                                    color = if (highContrast) Color.LightGray else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = null,
+                                    tint = if (highContrast) PictoColors.HighlightHighContrast else PictoColors.Primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            },
+                            trailingIcon = {
+                                if (searchText.isNotEmpty()) {
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        IconButton(
+                                            onClick = { searchText = "" },
+                                            modifier = Modifier.size(32.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Default.Close,
+                                                contentDescription = if (languageCode == "EN") "Clear search" else "Borrar búsqueda",
+                                                tint = if (highContrast) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                        IconButton(
+                                            onClick = {
+                                                val words = searchText.trim().split(" ")
+                                                var added = false
+                                                words.forEach { word ->
+                                                    val match = allPictograms.find {
+                                                        it.matchesWord(word, languageCode)
+                                                    }
+                                                    if (match != null) {
+                                                        onPhraseChange(currentPhrase + match)
+                                                        added = true
+                                                    }
+                                                }
+                                                if (!added) {
+                                                    onSpeakPhrase(searchText, emptyList())
+                                                }
+                                                searchText = ""
+                                            },
+                                            modifier = Modifier.size(32.dp)
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.AutoMirrored.Filled.Send,
+                                                contentDescription = "Añadir o pronunciar",
+                                                tint = if (highContrast) PictoColors.HighlightHighContrast else PictoColors.Primary,
+                                                modifier = Modifier.size(16.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            },
+                            shape = PictoDimens.CornerPill,
+                            singleLine = true,
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = if (highContrast) Color.White else PictoColors.Primary,
+                                unfocusedBorderColor = if (highContrast) Color.Gray else MaterialTheme.colorScheme.outlineVariant,
+                                focusedContainerColor = if (highContrast) Color.Black else MaterialTheme.colorScheme.surface,
+                                unfocusedContainerColor = if (highContrast) Color.Black else MaterialTheme.colorScheme.surface
+                            )
+                        )
+
+                        Spacer(Modifier.height(4.dp))
+
+                        // 3. Cuadrícula de pictogramas con todo el espacio restante disponible y scroll vertical fluido
+                        val phoneLandscapeGridCells = if (selectedCategory == null && searchText.isBlank()) {
+                            GridCells.Fixed((activeColumns + 1).coerceIn(3, 5))
+                        } else {
+                            GridCells.Adaptive(minSize = if (largeGrid) 100.dp else 84.dp)
+                        }
+                        val phoneLandscapeCardHeight = if (largeGrid) 104.dp else 90.dp
+                        val phoneLandscapeIconSize = if (largeGrid) 48.dp else 40.dp
+
+                        LazyVerticalGrid(
+                            columns = phoneLandscapeGridCells,
+                            contentPadding = PaddingValues(vertical = 2.dp),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth()
+                        ) {
+                            items(displayedPictograms, key = { it.id }) { picto ->
+                                val isFav = picto.id in favoriteIds
+                                PictogramCard(
+                                    picto = picto,
+                                    languageCode = languageCode,
+                                    isFavorite = isFav,
+                                    highContrast = highContrast,
+                                    hapticsEnabled = hapticsEnabled,
+                                    iconSize = phoneLandscapeIconSize,
+                                    onToggleFavorite = { onToggleFavorite(picto.id) },
+                                    modifier = Modifier.height(phoneLandscapeCardHeight)
+                                ) {
+                                    onPhraseChange(currentPhrase + picto)
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                // DISEÑO ORIGINAL (Móvil vertical, Tablet vertical, Tablet horizontal)
+                Row(
+                    modifier = Modifier.fillMaxSize()
+                ) {
             // Barra lateral de categorías para modo horizontal (Tablets / Apaisado)
             if (isLandscape) {
                 Surface(
@@ -514,7 +782,7 @@ fun AACBoardScreen(
                             val word = newValue.trim().split(" ").lastOrNull()
                             if (word != null) {
                                 val match = allPictograms.find {
-                                    it.getName(languageCode).normalizeForSearch() == word.normalizeForSearch()
+                                    it.matchesWord(word, languageCode)
                                 }
                                 if (match != null) {
                                     onPhraseChange(currentPhrase + match)
@@ -529,7 +797,7 @@ fun AACBoardScreen(
                         .padding(horizontal = PictoDimens.GridHorizontalPadding),
                     placeholder = {
                         Text(
-                            text = "Buscar pictograma...",
+                            text = if (languageCode == "EN") "Search pictogram..." else "Buscar pictograma...",
                             style = MaterialTheme.typography.bodyLarge,
                             color = if (highContrast) Color.LightGray else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                         )
@@ -548,7 +816,7 @@ fun AACBoardScreen(
                                 IconButton(onClick = { searchText = "" }) {
                                     Icon(
                                         imageVector = Icons.Default.Close,
-                                        contentDescription = "Borrar búsqueda",
+                                        contentDescription = if (languageCode == "EN") "Clear search" else "Borrar búsqueda",
                                         tint = if (highContrast) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
                                     )
                                 }
@@ -557,7 +825,7 @@ fun AACBoardScreen(
                                     var added = false
                                     words.forEach { word ->
                                         val match = allPictograms.find {
-                                            it.getName(languageCode).normalizeForSearch() == word.normalizeForSearch()
+                                            it.matchesWord(word, languageCode)
                                         }
                                         if (match != null) {
                                             onPhraseChange(currentPhrase + match)
@@ -740,6 +1008,8 @@ fun AACBoardScreen(
             }
         }
     }
+}
+}
 
     // Barrera de protección para adultos (profesores y cuidadores)
     pendingAdultNavigation?.let { destinationCallback ->

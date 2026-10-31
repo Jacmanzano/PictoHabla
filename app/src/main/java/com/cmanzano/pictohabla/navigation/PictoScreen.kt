@@ -183,7 +183,8 @@ fun MainNavigation(
                 },
                 onBack = { currentScreen = PictoScreen.BOARD },
                 highContrast = userSettings.highContrast,
-                hapticsEnabled = userSettings.hapticsEnabled
+                hapticsEnabled = userSettings.hapticsEnabled,
+                languageCode = userSettings.languageCode
             )
 
             PictoScreen.BOARD_EDITOR -> BoardEditorScreen(
@@ -292,6 +293,7 @@ fun MainNavigation(
                 historyList = historyList,
                 highContrast = userSettings.highContrast,
                 hapticsEnabled = userSettings.hapticsEnabled,
+                languageCode = userSettings.languageCode,
                 onSpeakPhrase = { text ->
                     ttsManager.speak(
                         text = text,
@@ -358,9 +360,6 @@ fun MainNavigation(
                 onTestVoice = {
                     val testPhrase = when (userSettings.languageCode) {
                         "EN" -> "Hello, this is my PictoHabla voice"
-                        "FR" -> "Bonjour, ceci est ma voix PictoHabla"
-                        "DE" -> "Hallo, das ist meine PictoHabla Stimme"
-                        "IT" -> "Ciao, questa è la mia voce PictoHabla"
                         else -> "Hola, esta es mi voz en PictoHabla"
                     }
                     ttsManager.speak(
@@ -370,7 +369,8 @@ fun MainNavigation(
                         pitch = userSettings.speechPitch
                     )
                 },
-                onBack = { currentScreen = PictoScreen.BOARD }
+                onBack = { currentScreen = PictoScreen.BOARD },
+                onNavigateBoards = { currentScreen = PictoScreen.BOARDS_MANAGER }
             )
 
             PictoScreen.ARASAAC_SEARCH -> ArasaacSearchScreen(

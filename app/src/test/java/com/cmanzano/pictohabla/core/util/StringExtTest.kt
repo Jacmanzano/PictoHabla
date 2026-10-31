@@ -33,15 +33,19 @@ class StringExtTest {
 
     @Test
     fun processPhraseForSpeech_handlesLanguageTranslations() {
-        val pictoYo = Pictogram(id = 20, names = mapOf("ES" to "Yo", "EN" to "I", "FR" to "Je"), category = Category.PEOPLE)
-        val pictoQuiero = Pictogram(id = 30, names = mapOf("ES" to "Quiero", "EN" to "Want", "FR" to "Veux"), category = Category.ACTIONS)
-        val pictoAgua = Pictogram(id = 44, names = mapOf("ES" to "Agua", "EN" to "Water", "FR" to "Eau"), category = Category.FOOD)
+        val pictoYo = Pictogram(id = 20, names = mapOf("ES" to "Yo", "EN" to "I"), category = Category.PEOPLE)
+        val pictoQuiero = Pictogram(id = 30, names = mapOf("ES" to "Quiero", "EN" to "Want"), category = Category.ACTIONS)
+        val pictoAgua = Pictogram(id = 44, names = mapOf("ES" to "Agua", "EN" to "Water"), category = Category.FOOD)
 
         val spanishPhrase = processPhraseForSpeech(listOf(pictoYo, pictoQuiero, pictoAgua), "ES")
         assertEquals("Yo Quiero Agua", spanishPhrase)
 
         val englishPhrase = processPhraseForSpeech(listOf(pictoYo, pictoQuiero, pictoAgua), "EN")
         assertEquals("I Want Water", englishPhrase)
+
+        // Verificamos que si se pide un idioma no soportado, recurre limpiamente al español ("ES")
+        val fallbackPhrase = processPhraseForSpeech(listOf(pictoYo, pictoQuiero, pictoAgua), "FR")
+        assertEquals("Yo Quiero Agua", fallbackPhrase)
     }
 
     @Test

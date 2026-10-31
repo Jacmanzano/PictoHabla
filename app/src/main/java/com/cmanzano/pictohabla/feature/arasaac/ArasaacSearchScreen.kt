@@ -121,11 +121,19 @@ fun ArasaacSearchScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var hasSearched by remember { mutableStateOf(false) }
 
+    val isEnglish = languageCode.equals("EN", ignoreCase = true)
+    val searchLocale = if (isEnglish) "en" else "es"
+
     // Diálogo de confirmación para añadir pictograma
     var selectedResultForAdd by remember { mutableStateOf<ArasaacSearchResult?>(null) }
     var customName by remember { mutableStateOf("") }
+    var candidateNameEs by remember { mutableStateOf("") }
+    var candidateNameEn by remember { mutableStateOf("") }
+    var candidateKwEs by remember { mutableStateOf<List<String>>(emptyList()) }
+    var candidateKwEn by remember { mutableStateOf<List<String>>(emptyList()) }
     var selectedCategory by remember { mutableStateOf(Category.THINGS) }
     var isDownloading by remember { mutableStateOf(false) }
+    var isDetailsLoading by remember { mutableStateOf(false) }
 
     fun executeSearch() {
         if (searchQuery.isBlank()) return
@@ -135,12 +143,16 @@ fun ArasaacSearchScreen(
         hasSearched = true
 
         coroutineScope.launch {
-            val result = ArasaacApiService.searchPictograms(searchQuery.trim(), locale = "es")
+            val result = ArasaacApiService.searchPictograms(searchQuery.trim(), locale = searchLocale)
             isLoading = false
             result.onSuccess { list ->
                 searchResults = list
             }.onFailure { ex ->
-                errorMessage = "No se pudo conectar con ARASAAC. Comprueba tu conexión a Internet."
+                errorMessage = if (isEnglish) {
+                    "Could not connect to ARASAAC. Check your Internet connection."
+                } else {
+                    "No se pudo conectar con ARASAAC. Comprueba tu conexión a Internet."
+                }
             }
         }
     }
@@ -150,7 +162,7 @@ fun ArasaacSearchScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Buscar en ARASAAC",
+                        text = if (isEnglish) "Search in ARASAAC" else "Buscar en ARASAAC",
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleMedium
                     )
@@ -163,7 +175,7 @@ fun ArasaacSearchScreen(
                         },
                         modifier = Modifier.semantics {
                             role = Role.Button
-                            contentDescription = "Volver al tablero de comunicación"
+                            contentDescription = if (isEnglish) "Back to communication board" else "Volver al tablero de comunicación"
                         }
                     ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
@@ -191,14 +203,19 @@ fun ArasaacSearchScreen(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
                     modifier = Modifier.weight(1f),
-                    placeholder = { Text("Ej: perro, zapato, piscina...") },
+                    placeholder = {
+                        Text(if (isEnglish) "E.g. dog, cat, apple, house..." else "Ej: perro, gato, manzana, casa...")
+                    },
                     leadingIcon = {
                         Icon(Icons.Default.Search, contentDescription = null, tint = PictoColors.Primary)
                     },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
                             IconButton(onClick = { searchQuery = "" }) {
-                                Icon(Icons.Default.Clear, contentDescription = "Borrar texto")
+                                Icon(
+                                    Icons.Default.Clear,
+                                    contentDescription = if (isEnglish) "Clear text" else "Borrar texto"
+                                )
                             }
                         }
                     },
@@ -216,7 +233,7 @@ fun ArasaacSearchScreen(
                     shape = PictoDimens.CornerPill,
                     enabled = searchQuery.isNotBlank() && !isLoading
                 ) {
-                    Text("Buscar")
+                    Text(if (isEnglish) "Search" else "Buscar")
                 }
             }
 
@@ -235,7 +252,7 @@ fun ArasaacSearchScreen(
                             CircularProgressIndicator(color = PictoColors.Primary)
                             Spacer(Modifier.height(PictoDimens.SpaceSmall))
                             Text(
-                                text = "Consultando catálogo oficial de ARASAAC...",
+                                text = if (isEnglish) "Querying official ARASAAC catalog..." else "Consultando catálogo oficial de ARASAAC...",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -262,7 +279,7 @@ fun ArasaacSearchScreen(
                             )
                             Spacer(Modifier.height(PictoDimens.SpaceMedium))
                             OutlinedButton(onClick = { executeSearch() }) {
-                                Text("Reintentar búsqueda")
+                                Text(if (isEnglish) "Retry search" else "Reintentar búsqueda")
                             }
                         }
                     }
@@ -284,12 +301,12 @@ fun ArasaacSearchScreen(
                             )
                             Spacer(Modifier.height(PictoDimens.SpaceSmall))
                             Text(
-                                text = "No se encontraron pictogramas para \"$searchQuery\"",
+                                text = if (isEnglish) "No pictograms found for \"$searchQuery\"" else "No se encontraron pictogramas para \"$searchQuery\"",
                                 style = MaterialTheme.typography.bodyLarge,
                                 fontWeight = FontWeight.Medium
                             )
                             Text(
-                                text = "Prueba con sinónimos o palabras en infinitivo / singular",
+                                text = if (isEnglish) "Try using base forms or singular nouns" else "Prueba con sinónimos o palabras en infinitivo / singular",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -324,13 +341,17 @@ fun ArasaacSearchScreen(
                                 )
                                 Spacer(Modifier.height(PictoDimens.SpaceSmall))
                                 Text(
-                                    text = "Amplía tu catálogo con ARASAAC",
+                                    text = if (isEnglish) "Expand your catalog with ARASAAC" else "Amplía tu catálogo con ARASAAC",
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
                                 Spacer(Modifier.height(PictoDimens.SpaceExtraSmall))
                                 Text(
-                                    text = "Busca cualquier palabra para previsualizar y añadir nuevos símbolos oficiales. Una vez descargados, estarán siempre disponibles sin conexión a Internet.",
+                                    text = if (isEnglish) {
+                                        "Search any concept to preview and download official AAC symbols in English and Spanish. Once downloaded, they remain 100% available offline."
+                                    } else {
+                                        "Busca cualquier palabra para previsualizar y añadir nuevos símbolos oficiales. Una vez descargados, estarán siempre disponibles sin conexión a Internet."
+                                    },
                                     style = MaterialTheme.typography.bodyMedium,
                                     textAlign = TextAlign.Center,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -356,8 +377,29 @@ fun ArasaacSearchScreen(
                                 onClick = {
                                     PictoHaptics.performClick(hapticFeedback, hapticsEnabled)
                                     selectedResultForAdd = item
-                                    customName = item.name.replaceFirstChar { it.uppercase() }
                                     selectedCategory = inferCategoryFromArasaac(item.categories)
+                                    candidateNameEs = if (!isEnglish) item.name.replaceFirstChar { it.uppercase() } else ""
+                                    candidateNameEn = if (isEnglish) item.name.replaceFirstChar { it.uppercase() } else ""
+                                    customName = item.name.replaceFirstChar { it.uppercase() }
+                                    candidateKwEs = if (!isEnglish) item.keywords else emptyList()
+                                    candidateKwEn = if (isEnglish) item.keywords else emptyList()
+                                    isDetailsLoading = true
+
+                                    // Consultar detalles y traducciones oficiales ES/EN
+                                    coroutineScope.launch {
+                                        val detailsResult = ArasaacApiService.getPictogramDetails(item.id)
+                                        isDetailsLoading = false
+                                        detailsResult.onSuccess { details ->
+                                            if (details.nameEs.isNotBlank()) candidateNameEs = details.nameEs
+                                            if (details.nameEn.isNotBlank()) candidateNameEn = details.nameEn
+                                            if (details.keywordsEs.isNotEmpty()) candidateKwEs = details.keywordsEs
+                                            if (details.keywordsEn.isNotEmpty()) candidateKwEn = details.keywordsEn
+                                            val resolved = if (isEnglish) details.nameEn else details.nameEs
+                                            if (resolved.isNotBlank()) {
+                                                customName = resolved
+                                            }
+                                        }
+                                    }
                                 }
                             )
                         }
@@ -378,7 +420,7 @@ fun ArasaacSearchScreen(
             },
             title = {
                 Text(
-                    text = "Añadir a tu catálogo",
+                    text = if (isEnglish) "Add to your catalog" else "Añadir a tu catálogo",
                     fontWeight = FontWeight.Bold
                 )
             },
@@ -395,7 +437,11 @@ fun ArasaacSearchScreen(
 
                     Spacer(Modifier.height(PictoDimens.SpaceSmall))
 
-                    Text("Nombre visible:", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text(
+                        text = if (isEnglish) "Visible name:" else "Nombre visible:",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    )
                     OutlinedTextField(
                         value = customName,
                         onValueChange = { customName = it },
@@ -403,9 +449,36 @@ fun ArasaacSearchScreen(
                         singleLine = true
                     )
 
+                    Spacer(Modifier.height(4.dp))
+                    if (isDetailsLoading) {
+                        Text(
+                            text = if (isEnglish) "Fetching official Spanish translation..." else "Consultando traducción oficial al inglés...",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        val otherLangLabel = if (isEnglish) {
+                            if (candidateNameEs.isNotBlank()) "Español: $candidateNameEs" else null
+                        } else {
+                            if (candidateNameEn.isNotBlank()) "English: $candidateNameEn" else null
+                        }
+                        if (otherLangLabel != null) {
+                            Text(
+                                text = otherLangLabel,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = PictoColors.Primary,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        }
+                    }
+
                     Spacer(Modifier.height(PictoDimens.SpaceSmall))
 
-                    Text("Categoría Fitzgerald:", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                    Text(
+                        text = if (isEnglish) "Fitzgerald Category:" else "Categoría Fitzgerald:",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 13.sp
+                    )
                     ExposedDropdownMenuBox(
                         expanded = categoryMenuExpanded,
                         onExpandedChange = { categoryMenuExpanded = !categoryMenuExpanded }
@@ -442,24 +515,52 @@ fun ArasaacSearchScreen(
                         if (customName.isNotBlank() && !isDownloading) {
                             isDownloading = true
                             coroutineScope.launch {
+                                // Asegurar que las traducciones bilingües están completas antes de persistir
+                                if (candidateNameEs.isBlank() || candidateNameEn.isBlank() || candidateKwEn.isEmpty() || candidateKwEs.isEmpty()) {
+                                    val details = ArasaacApiService.getPictogramDetails(candidate.id).getOrNull()
+                                    if (details != null) {
+                                        if (candidateNameEs.isBlank() && details.nameEs.isNotBlank()) candidateNameEs = details.nameEs
+                                        if (candidateNameEn.isBlank() && details.nameEn.isNotBlank()) candidateNameEn = details.nameEn
+                                        if (candidateKwEs.isEmpty() && details.keywordsEs.isNotEmpty()) candidateKwEs = details.keywordsEs
+                                        if (candidateKwEn.isEmpty() && details.keywordsEn.isNotEmpty()) candidateKwEn = details.keywordsEn
+                                    }
+                                }
+
                                 val dlResult = ArasaacApiService.downloadPictogramBytes(candidate.id)
                                 dlResult.onSuccess { bytes ->
                                     val localPath = ArasaacImageHelper.saveArasaacImage(context, candidate.id, bytes)
+
+                                    val finalEs = if (isEnglish) {
+                                        candidateNameEs.ifBlank { candidate.name.replaceFirstChar { it.uppercase() } }
+                                    } else {
+                                        customName.trim()
+                                    }
+                                    val finalEn = if (isEnglish) {
+                                        customName.trim()
+                                    } else {
+                                        candidateNameEn.ifBlank { "" }
+                                    }
+
                                     pictogramRepository.createArasaacPictogram(
                                         arasaacId = candidate.id,
-                                        name = customName.trim(),
+                                        name = finalEs,
+                                        nameEn = finalEn,
+                                        keywordsEs = candidateKwEs,
+                                        keywordsEn = candidateKwEn,
                                         category = selectedCategory,
                                         localImagePath = localPath
                                     )
                                     isDownloading = false
                                     selectedResultForAdd = null
                                     snackbarHostState.showSnackbar(
-                                        "«$customName» añadido al catálogo (disponible offline)"
+                                        if (isEnglish) "«$customName» added to catalog (available offline in ES and EN)"
+                                        else "«$customName» añadido al catálogo (disponible offline en ES y EN)"
                                     )
                                 }.onFailure { ex ->
                                     isDownloading = false
                                     snackbarHostState.showSnackbar(
-                                        "Error al descargar la imagen: ${ex.message}"
+                                        if (isEnglish) "Error downloading image: ${ex.message}"
+                                        else "Error al descargar la imagen: ${ex.message}"
                                     )
                                 }
                             }
@@ -470,11 +571,11 @@ fun ArasaacSearchScreen(
                     if (isDownloading) {
                         CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Color.White)
                         Spacer(Modifier.width(8.dp))
-                        Text("Descargando...")
+                        Text(if (isEnglish) "Downloading..." else "Descargando...")
                     } else {
                         Icon(Icons.Default.Download, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text("Guardar offline")
+                        Text(if (isEnglish) "Save offline" else "Guardar offline")
                     }
                 }
             },
@@ -483,7 +584,7 @@ fun ArasaacSearchScreen(
                     onClick = { selectedResultForAdd = null },
                     enabled = !isDownloading
                 ) {
-                    Text("Cancelar")
+                    Text(if (isEnglish) "Cancel" else "Cancelar")
                 }
             }
         )

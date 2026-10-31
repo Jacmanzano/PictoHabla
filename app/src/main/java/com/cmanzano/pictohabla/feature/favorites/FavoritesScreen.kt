@@ -80,10 +80,17 @@ fun FavoritesScreen(
         if (largeGrid) PictoDimens.CardHeightPortraitLarge else PictoDimens.CardHeightPortraitStandard
     }
 
+    val isEn = languageCode.equals("EN", ignoreCase = true)
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Pictogramas Favoritos", fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        if (isEn) "Favorite Pictograms" else "Pictogramas Favoritos",
+                        fontWeight = FontWeight.Bold
+                    )
+                },
                 navigationIcon = {
                     IconButton(
                         onClick = {
@@ -92,7 +99,7 @@ fun FavoritesScreen(
                         },
                         modifier = Modifier.semantics {
                             role = Role.Button
-                            contentDescription = "Volver al tablero principal"
+                            contentDescription = if (isEn) "Back to main board" else "Volver al tablero principal"
                         }
                     ) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
@@ -135,14 +142,18 @@ fun FavoritesScreen(
                     )
                     Spacer(Modifier.height(PictoDimens.SpaceMedium))
                     Text(
-                        text = "Aún no tienes favoritos guardados",
+                        text = if (isEn) "No favorites saved yet" else "Aún no tienes favoritos guardados",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         textAlign = TextAlign.Center
                     )
                     Spacer(Modifier.height(PictoDimens.SpaceSmall))
                     Text(
-                        text = "Toca la estrella en la esquina de cualquier pictograma del tablero para añadirlo a esta sección de acceso rápido.",
+                        text = if (isEn) {
+                            "Tap the star on any pictogram on the board to add it to quick access."
+                        } else {
+                            "Toca la estrella en la esquina de cualquier pictograma del tablero para añadirlo a esta sección de acceso rápido."
+                        },
                         style = MaterialTheme.typography.bodyLarge,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurfaceVariant

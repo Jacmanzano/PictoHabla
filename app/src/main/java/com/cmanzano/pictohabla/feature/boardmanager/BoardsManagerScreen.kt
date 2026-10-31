@@ -88,9 +88,11 @@ fun BoardsManagerScreen(
     onDeleteBoard: (Long) -> Unit,
     onBack: () -> Unit,
     highContrast: Boolean = false,
-    hapticsEnabled: Boolean = true
+    hapticsEnabled: Boolean = true,
+    languageCode: String = "ES"
 ) {
     val hapticFeedback = LocalHapticFeedback.current
+    val isEn = languageCode.equals("EN", ignoreCase = true)
 
     var showCreateDialog by remember { mutableStateOf(false) }
     var boardToDelete by remember { mutableStateOf<Board?>(null) }
@@ -100,7 +102,7 @@ fun BoardsManagerScreen(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        text = "Tableros de Comunicación",
+                        text = if (isEn) "Communication Boards" else "Tableros de Comunicación",
                         fontWeight = FontWeight.Bold,
                         style = MaterialTheme.typography.titleLarge
                     )
@@ -113,7 +115,7 @@ fun BoardsManagerScreen(
                         },
                         modifier = Modifier.semantics {
                             role = Role.Button
-                            contentDescription = "Volver al comunicador"
+                            contentDescription = if (isEn) "Back to communicator" else "Volver al comunicador"
                         }
                     ) {
                         Icon(
@@ -131,7 +133,7 @@ fun BoardsManagerScreen(
                         },
                         modifier = Modifier.semantics {
                             role = Role.Button
-                            contentDescription = "Crear nuevo tablero"
+                            contentDescription = if (isEn) "Create new board" else "Crear nuevo tablero"
                         }
                     ) {
                         Icon(
@@ -154,12 +156,12 @@ fun BoardsManagerScreen(
                     showCreateDialog = true
                 },
                 icon = { Icon(Icons.Default.Add, contentDescription = null) },
-                text = { Text("Nuevo Tablero", fontWeight = FontWeight.Bold) },
+                text = { Text(if (isEn) "New Board" else "Nuevo Tablero", fontWeight = FontWeight.Bold) },
                 containerColor = if (highContrast) Color.White else MaterialTheme.colorScheme.primary,
                 contentColor = if (highContrast) Color.Black else MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.semantics {
                     role = Role.Button
-                    contentDescription = "Crear un nuevo tablero personalizado"
+                    contentDescription = if (isEn) "Create a new custom board" else "Crear un nuevo tablero personalizado"
                 }
             )
         }
@@ -172,7 +174,7 @@ fun BoardsManagerScreen(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    text = "No hay tableros disponibles.",
+                    text = if (isEn) "No boards available." else "No hay tableros disponibles.",
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
@@ -191,6 +193,7 @@ fun BoardsManagerScreen(
                         board = board,
                         isActive = isActive,
                         highContrast = highContrast,
+                        isEn = isEn,
                         onActivate = {
                             PictoHaptics.performClick(hapticFeedback, hapticsEnabled)
                             onSelectActiveBoard(board.id)
@@ -217,6 +220,7 @@ fun BoardsManagerScreen(
     // Diálogo para crear un nuevo tablero
     if (showCreateDialog) {
         CreateBoardDialog(
+            isEn = isEn,
             onDismiss = { showCreateDialog = false },
             onConfirm = { name, description, columns ->
                 showCreateDialog = false
@@ -230,10 +234,16 @@ fun BoardsManagerScreen(
         AlertDialog(
             onDismissRequest = { boardToDelete = null },
             title = {
-                Text(text = "Eliminar tablero", fontWeight = FontWeight.Bold)
+                Text(text = if (isEn) "Delete board" else "Eliminar tablero", fontWeight = FontWeight.Bold)
             },
             text = {
-                Text(text = "¿Estás seguro de que deseas eliminar el tablero \"${board.name}\"? Esta acción no se puede deshacer.")
+                Text(
+                    text = if (isEn) {
+                        "Are you sure you want to delete the board \"${board.name}\"? This action cannot be undone."
+                    } else {
+                        "¿Estás seguro de que deseas eliminar el tablero \"${board.name}\"? Esta acción no se puede deshacer."
+                    }
+                )
             },
             confirmButton = {
                 Button(
@@ -244,12 +254,12 @@ fun BoardsManagerScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Eliminar", color = MaterialTheme.colorScheme.onError)
+                    Text(if (isEn) "Delete" else "Eliminar", color = MaterialTheme.colorScheme.onError)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { boardToDelete = null }) {
-                    Text("Cancelar")
+                    Text(if (isEn) "Cancel" else "Cancelar")
                 }
             }
         )
@@ -264,6 +274,7 @@ private fun BoardCardItem(
     board: Board,
     isActive: Boolean,
     highContrast: Boolean,
+    isEn: Boolean,
     onActivate: () -> Unit,
     onEdit: () -> Unit,
     onDuplicate: () -> Unit,
@@ -281,10 +292,10 @@ private fun BoardCardItem(
             .fillMaxWidth()
             .semantics(mergeDescendants = true) {
                 contentDescription = buildString {
-                    append("Tablero: ${board.name}. ")
-                    if (isActive) append("Actualmente seleccionado. ")
-                    if (board.isDefault) append("Predeterminado. ")
-                    append("${board.columnsCount} columnas. ")
+                    append(if (isEn) "Board: ${board.name}. " else "Tablero: ${board.name}. ")
+                    if (isActive) append(if (isEn) "Currently selected. " else "Actualmente seleccionado. ")
+                    if (board.isDefault) append(if (isEn) "Default. " else "Predeterminado. ")
+                    append(if (isEn) "${board.columnsCount} columns. " else "${board.columnsCount} columnas. ")
                     if (board.description.isNotBlank()) append("${board.description}. ")
                 }
             },
@@ -335,7 +346,7 @@ private fun BoardCardItem(
                 if (isActive) {
                     AssistChip(
                         onClick = {},
-                        label = { Text("Activo", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
+                        label = { Text(if (isEn) "Active" else "Activo", fontWeight = FontWeight.Bold, fontSize = 12.sp) },
                         leadingIcon = {
                             Icon(
                                 Icons.Default.CheckCircle,
@@ -361,7 +372,7 @@ private fun BoardCardItem(
             ) {
                 AssistChip(
                     onClick = {},
-                    label = { Text("${board.columnsCount} columnas", fontSize = 11.sp) },
+                    label = { Text(if (isEn) "${board.columnsCount} columns" else "${board.columnsCount} columnas", fontSize = 11.sp) },
                     leadingIcon = {
                         Icon(Icons.Default.GridView, contentDescription = null, modifier = Modifier.size(14.dp))
                     }
@@ -370,7 +381,7 @@ private fun BoardCardItem(
                 if (board.isDefault) {
                     AssistChip(
                         onClick = {},
-                        label = { Text("Predeterminado", fontSize = 11.sp) },
+                        label = { Text(if (isEn) "Default" else "Predeterminado", fontSize = 11.sp) },
                         leadingIcon = {
                             Icon(Icons.Default.Lock, contentDescription = null, modifier = Modifier.size(14.dp))
                         }
@@ -393,7 +404,7 @@ private fun BoardCardItem(
                         modifier = Modifier.heightIn(min = PictoDimens.TouchTargetMinimum),
                         shape = PictoDimens.CornerSmall
                     ) {
-                        Text("Usar este tablero", fontWeight = FontWeight.Bold)
+                        Text(if (isEn) "Use this board" else "Usar este tablero", fontWeight = FontWeight.Bold)
                     }
                 } else {
                     OutlinedButton(
@@ -403,7 +414,7 @@ private fun BoardCardItem(
                     ) {
                         Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(Modifier.width(PictoDimens.SpaceExtraSmall))
-                        Text("Editar pictogramas", fontWeight = FontWeight.Bold)
+                        Text(if (isEn) "Edit pictograms" else "Editar pictogramas", fontWeight = FontWeight.Bold)
                     }
                 }
 
@@ -416,7 +427,7 @@ private fun BoardCardItem(
                                 .size(PictoDimens.TouchTargetMinimum)
                                 .semantics {
                                     role = Role.Button
-                                    contentDescription = "Editar pictogramas de ${board.name}"
+                                    contentDescription = if (isEn) "Edit pictograms of ${board.name}" else "Editar pictogramas de ${board.name}"
                                 }
                         ) {
                             Icon(
@@ -433,7 +444,7 @@ private fun BoardCardItem(
                             .size(PictoDimens.TouchTargetMinimum)
                             .semantics {
                                 role = Role.Button
-                                contentDescription = "Duplicar tablero ${board.name}"
+                                contentDescription = if (isEn) "Duplicate board ${board.name}" else "Duplicar tablero ${board.name}"
                             }
                     ) {
                         Icon(
@@ -450,7 +461,7 @@ private fun BoardCardItem(
                                 .size(PictoDimens.TouchTargetMinimum)
                                 .semantics {
                                     role = Role.Button
-                                    contentDescription = "Eliminar tablero ${board.name}"
+                                    contentDescription = if (isEn) "Delete board ${board.name}" else "Eliminar tablero ${board.name}"
                                 }
                         ) {
                             Icon(
@@ -471,6 +482,7 @@ private fun BoardCardItem(
  */
 @Composable
 private fun CreateBoardDialog(
+    isEn: Boolean,
     onDismiss: () -> Unit,
     onConfirm: (name: String, description: String, columns: Int) -> Unit
 ) {
@@ -482,7 +494,7 @@ private fun CreateBoardDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(text = "Crear nuevo tablero", fontWeight = FontWeight.Bold)
+            Text(text = if (isEn) "Create new board" else "Crear nuevo tablero", fontWeight = FontWeight.Bold)
         },
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -493,11 +505,11 @@ private fun CreateBoardDialog(
                         nameError = false
                     },
                     isError = nameError,
-                    label = { Text("Nombre del tablero *") },
-                    placeholder = { Text("Ej: En casa, Patio, Terapia...") },
+                    label = { Text(if (isEn) "Board name *" else "Nombre del tablero *") },
+                    placeholder = { Text(if (isEn) "E.g.: At home, School, Therapy..." else "Ej: En casa, Patio, Terapia...") },
                     singleLine = true,
                     supportingText = if (nameError) {
-                        { Text("El nombre es obligatorio", color = MaterialTheme.colorScheme.error) }
+                        { Text(if (isEn) "The name is required" else "El nombre es obligatorio", color = MaterialTheme.colorScheme.error) }
                     } else null,
                     modifier = Modifier.fillMaxWidth(),
                     shape = PictoDimens.CornerMedium
@@ -508,8 +520,8 @@ private fun CreateBoardDialog(
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
-                    label = { Text("Descripción (opcional)") },
-                    placeholder = { Text("Para situaciones cotidianas...") },
+                    label = { Text(if (isEn) "Description (optional)" else "Descripción (opcional)") },
+                    placeholder = { Text(if (isEn) "For everyday situations..." else "Para situaciones cotidianas...") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = PictoDimens.CornerMedium
@@ -518,7 +530,7 @@ private fun CreateBoardDialog(
                 Spacer(Modifier.height(PictoDimens.SpaceMedium))
 
                 Text(
-                    text = "Número de columnas: $columns",
+                    text = if (isEn) "Number of columns: $columns" else "Número de columnas: $columns",
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold
                 )
@@ -533,7 +545,7 @@ private fun CreateBoardDialog(
                             onClick = { columns = colCount },
                             label = { Text("$colCount", fontWeight = FontWeight.Bold) },
                             modifier = Modifier.semantics {
-                                contentDescription = "$colCount columnas"
+                                contentDescription = if (isEn) "$colCount columns" else "$colCount columnas"
                             }
                         )
                     }
@@ -551,12 +563,12 @@ private fun CreateBoardDialog(
                 },
                 shape = PictoDimens.CornerSmall
             ) {
-                Text("Crear", fontWeight = FontWeight.Bold)
+                Text(if (isEn) "Create" else "Crear", fontWeight = FontWeight.Bold)
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Cancelar")
+                Text(if (isEn) "Cancel" else "Cancelar")
             }
         }
     )

@@ -14,5 +14,6 @@ keystore.properties
 .env
 *.apk
 *.aab
+/app/release/
 
 scratch/

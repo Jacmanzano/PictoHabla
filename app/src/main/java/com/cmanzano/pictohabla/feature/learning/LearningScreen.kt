@@ -28,11 +28,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.Forum
+import androidx.compose.material.icons.filled.Hearing
+import androidx.compose.material.icons.filled.Help
 import androidx.compose.material.icons.automirrored.filled.MenuBook
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShortText
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -56,6 +61,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -73,9 +79,13 @@ import com.cmanzano.pictohabla.core.designsystem.PictoTypography
 import com.cmanzano.pictohabla.core.model.Pictogram
 import com.cmanzano.pictohabla.core.util.processPhraseForSpeech
 import com.cmanzano.pictohabla.data.local.DefaultCatalog
+import com.cmanzano.pictohabla.feature.learning.activities.BuildPhraseActivityScreen
 import com.cmanzano.pictohabla.feature.learning.activities.ClassifyActivityScreen
 import com.cmanzano.pictohabla.feature.learning.activities.FindPictogramActivityScreen
+import com.cmanzano.pictohabla.feature.learning.activities.ListenActivityScreen
 import com.cmanzano.pictohabla.feature.learning.activities.MatchWordActivityScreen
+import com.cmanzano.pictohabla.feature.learning.activities.MemoryActivityScreen
+import com.cmanzano.pictohabla.feature.learning.activities.WhatMeansActivityScreen
 import com.cmanzano.pictohabla.feature.learning.components.LearningSettingsDialog
 import com.cmanzano.pictohabla.feature.learning.model.LearningActivityType
 import com.cmanzano.pictohabla.feature.learning.model.LearningConfig
@@ -106,10 +116,21 @@ fun LearningScreen(
 ) {
     val hapticFeedback = LocalHapticFeedback.current
 
+    val context = LocalContext.current
+    val progressManager = remember(context) { LearningProgressManager.getInstance(context) }
+    var learningStats by remember { mutableStateOf(progressManager.getStats()) }
+
     var activeSubActivity by remember { mutableStateOf<LearningActivityType?>(null) }
     var config by remember { mutableStateOf(LearningConfig(optionsCount = 4, categoryFilter = null, autoSpeak = true)) }
     var showAdultGate by remember { mutableStateOf(false) }
     var showSettingsDialog by remember { mutableStateOf(false) }
+
+    // Actualiza las estadísticas locales al regresar al menú principal
+    androidx.compose.runtime.LaunchedEffect(activeSubActivity) {
+        if (activeSubActivity == null) {
+            learningStats = progressManager.getStats()
+        }
+    }
 
     AnimatedContent(
         targetState = activeSubActivity,
@@ -119,6 +140,62 @@ fun LearningScreen(
         when (currentActivity) {
             LearningActivityType.FIND_PICTOGRAM -> {
                 FindPictogramActivityScreen(
+                    allPictograms = allPictograms,
+                    languageCode = languageCode,
+                    highContrast = highContrast,
+                    hapticsEnabled = hapticsEnabled,
+                    onSpeakWord = onSpeakWord,
+                    onBackToHub = { activeSubActivity = null },
+                    onNavigateTablero = onNavigateTablero,
+                    onNavigateFavorites = onNavigateFavorites,
+                    onNavigateHistory = onNavigateHistory
+                )
+            }
+
+            LearningActivityType.WHAT_MEANS -> {
+                WhatMeansActivityScreen(
+                    allPictograms = allPictograms,
+                    languageCode = languageCode,
+                    highContrast = highContrast,
+                    hapticsEnabled = hapticsEnabled,
+                    onSpeakWord = onSpeakWord,
+                    onBackToHub = { activeSubActivity = null },
+                    onNavigateTablero = onNavigateTablero,
+                    onNavigateFavorites = onNavigateFavorites,
+                    onNavigateHistory = onNavigateHistory
+                )
+            }
+
+            LearningActivityType.LISTEN_AND_FIND -> {
+                ListenActivityScreen(
+                    allPictograms = allPictograms,
+                    languageCode = languageCode,
+                    highContrast = highContrast,
+                    hapticsEnabled = hapticsEnabled,
+                    onSpeakWord = onSpeakWord,
+                    onBackToHub = { activeSubActivity = null },
+                    onNavigateTablero = onNavigateTablero,
+                    onNavigateFavorites = onNavigateFavorites,
+                    onNavigateHistory = onNavigateHistory
+                )
+            }
+
+            LearningActivityType.VISUAL_MEMORY -> {
+                MemoryActivityScreen(
+                    allPictograms = allPictograms,
+                    languageCode = languageCode,
+                    highContrast = highContrast,
+                    hapticsEnabled = hapticsEnabled,
+                    onSpeakWord = onSpeakWord,
+                    onBackToHub = { activeSubActivity = null },
+                    onNavigateTablero = onNavigateTablero,
+                    onNavigateFavorites = onNavigateFavorites,
+                    onNavigateHistory = onNavigateHistory
+                )
+            }
+
+            LearningActivityType.BUILD_PHRASE -> {
+                BuildPhraseActivityScreen(
                     allPictograms = allPictograms,
                     languageCode = languageCode,
                     highContrast = highContrast,
@@ -253,15 +330,62 @@ fun LearningScreen(
                             }
                         }
 
-                        // Tarjeta 1: Encuentra el pictograma
+                        // Resumen local de progreso de aprendizaje (100% privado en el dispositivo)
+                        if (learningStats.totalCompleted > 0) {
+                            item {
+                                Card(
+                                    shape = PictoDimens.CornerMedium,
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = if (highContrast) Color(0xFF1E1E1E) else Color(0xFFE8F5E9)
+                                    ),
+                                    border = BorderStroke(
+                                        width = 1.5.dp,
+                                        color = if (highContrast) PictoColors.HighlightHighContrast else PictoColors.Success
+                                    ),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(PictoDimens.SpaceMedium),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.EmojiEvents,
+                                            contentDescription = null,
+                                            tint = if (highContrast) PictoColors.HighlightHighContrast else PictoColors.Success,
+                                            modifier = Modifier.size(36.dp)
+                                        )
+                                        Spacer(Modifier.width(PictoDimens.SpaceMedium))
+                                        Column {
+                                            Text(
+                                                text = "Progreso de Aprendizaje",
+                                                fontWeight = FontWeight.Bold,
+                                                style = MaterialTheme.typography.titleMedium,
+                                                color = if (highContrast) Color.White else MaterialTheme.colorScheme.onSurface
+                                            )
+                                            Text(
+                                                text = "${learningStats.totalCompleted} ejercicios completados · ${learningStats.totalHits} aciertos",
+                                                fontSize = 12.sp,
+                                                fontWeight = FontWeight.Medium,
+                                                color = if (highContrast) Color.LightGray else MaterialTheme.colorScheme.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        // Modo 1: Encuentra el pictograma
                         item {
                             ActivityHubCard(
-                                title = "Encuentra el pictograma",
+                                title = "Modo 1: Encuentra el pictograma",
                                 description = "Escucha o lee la palabra y elige la imagen correcta entre las opciones.",
                                 icon = Icons.Default.Search,
                                 badgeColor = if (highContrast) Color.Black else Color(0xFFE0F2F1),
                                 badgeBorder = if (highContrast) Color.White else PictoColors.Primary,
                                 iconTint = if (highContrast) PictoColors.HighlightHighContrast else PictoColors.Primary,
+                                completedCount = learningStats.completedByMode[LearningActivityType.FIND_PICTOGRAM] ?: 0,
                                 highContrast = highContrast,
                                 hapticsEnabled = hapticsEnabled,
                                 onStart = {
@@ -270,32 +394,88 @@ fun LearningScreen(
                             )
                         }
 
-                        // Tarjeta 2: Relaciona palabra e imagen
+                        // Modo 2: ¿Qué significa?
                         item {
                             ActivityHubCard(
-                                title = "Relaciona palabra e imagen",
-                                description = "Lee la palabra escrita y selecciona el pictograma que le corresponde.",
-                                icon = Icons.AutoMirrored.Filled.MenuBook,
-                                badgeColor = if (highContrast) Color.Black else Color(0xFFE8EAF6),
-                                badgeBorder = if (highContrast) Color.White else Color(0xFF3F51B5),
-                                iconTint = if (highContrast) PictoColors.HighlightHighContrast else Color(0xFF3F51B5),
+                                title = "Modo 2: ¿Qué significa?",
+                                description = "Observa el pictograma y selecciona la palabra correcta que describe su significado.",
+                                icon = Icons.Default.Help,
+                                badgeColor = if (highContrast) Color.Black else Color(0xFFFFF9C4),
+                                badgeBorder = if (highContrast) Color.White else Color(0xFFFBC02D),
+                                iconTint = if (highContrast) PictoColors.HighlightHighContrast else Color(0xFFF57F17),
+                                completedCount = learningStats.completedByMode[LearningActivityType.WHAT_MEANS] ?: 0,
                                 highContrast = highContrast,
                                 hapticsEnabled = hapticsEnabled,
                                 onStart = {
-                                    activeSubActivity = LearningActivityType.MATCH_WORD
+                                    activeSubActivity = LearningActivityType.WHAT_MEANS
                                 }
                             )
                         }
 
-                        // Tarjeta 3: Clasifica pictogramas
+                        // Modo 3: Escucha y encuentra
+                        item {
+                            ActivityHubCard(
+                                title = "Modo 3: Escucha y encuentra",
+                                description = "Escucha la locución pronunciada y encuentra el pictograma que le corresponde.",
+                                icon = Icons.Default.Hearing,
+                                badgeColor = if (highContrast) Color.Black else Color(0xFFE1F5FE),
+                                badgeBorder = if (highContrast) Color.White else Color(0xFF0288D1),
+                                iconTint = if (highContrast) PictoColors.HighlightHighContrast else Color(0xFF0288D1),
+                                completedCount = learningStats.completedByMode[LearningActivityType.LISTEN_AND_FIND] ?: 0,
+                                highContrast = highContrast,
+                                hapticsEnabled = hapticsEnabled,
+                                onStart = {
+                                    activeSubActivity = LearningActivityType.LISTEN_AND_FIND
+                                }
+                            )
+                        }
+
+                        // Modo 4: Memoria visual
+                        item {
+                            ActivityHubCard(
+                                title = "Modo 4: Memoria visual",
+                                description = "Juego de parejas boca abajo para ejercitar la retención y discriminación visual.",
+                                icon = Icons.Default.Extension,
+                                badgeColor = if (highContrast) Color.Black else Color(0xFFFCE4EC),
+                                badgeBorder = if (highContrast) Color.White else Color(0xFFC2185B),
+                                iconTint = if (highContrast) PictoColors.HighlightHighContrast else Color(0xFFC2185B),
+                                completedCount = learningStats.completedByMode[LearningActivityType.VISUAL_MEMORY] ?: 0,
+                                highContrast = highContrast,
+                                hapticsEnabled = hapticsEnabled,
+                                onStart = {
+                                    activeSubActivity = LearningActivityType.VISUAL_MEMORY
+                                }
+                            )
+                        }
+
+                        // Modo 5: Construye la frase
+                        item {
+                            ActivityHubCard(
+                                title = "Modo 5: Construye la frase",
+                                description = "Ordena y selecciona pictogramas para estructurar frases comunicativas paso a paso.",
+                                icon = Icons.Default.ShortText,
+                                badgeColor = if (highContrast) Color.Black else Color(0xFFE8F5E9),
+                                badgeBorder = if (highContrast) Color.White else Color(0xFF388E3C),
+                                iconTint = if (highContrast) PictoColors.HighlightHighContrast else Color(0xFF388E3C),
+                                completedCount = learningStats.completedByMode[LearningActivityType.BUILD_PHRASE] ?: 0,
+                                highContrast = highContrast,
+                                hapticsEnabled = hapticsEnabled,
+                                onStart = {
+                                    activeSubActivity = LearningActivityType.BUILD_PHRASE
+                                }
+                            )
+                        }
+
+                        // Actividad adicional: Clasifica pictogramas
                         item {
                             ActivityHubCard(
                                 title = "Clasifica pictogramas",
-                                description = "Aprende a reconocer a qué categoría pertenece cada pictograma.",
+                                description = "Aprende a reconocer a qué categoría semántica pertenece cada pictograma.",
                                 icon = Icons.Default.Category,
                                 badgeColor = if (highContrast) Color.Black else Color(0xFFFFF3E0),
                                 badgeBorder = if (highContrast) Color.White else Color(0xFFE65100),
                                 iconTint = if (highContrast) PictoColors.HighlightHighContrast else Color(0xFFE65100),
+                                completedCount = learningStats.completedByMode[LearningActivityType.CLASSIFY_CATEGORY] ?: 0,
                                 highContrast = highContrast,
                                 hapticsEnabled = hapticsEnabled,
                                 onStart = {
@@ -304,7 +484,25 @@ fun LearningScreen(
                             )
                         }
 
-                        // Tarjeta 4 (Adicional / Conservada): Frases guiadas
+                        // Actividad adicional: Relaciona palabra e imagen
+                        item {
+                            ActivityHubCard(
+                                title = "Relaciona palabra e imagen",
+                                description = "Lee la palabra escrita y selecciona el pictograma que le corresponde.",
+                                icon = Icons.AutoMirrored.Filled.MenuBook,
+                                badgeColor = if (highContrast) Color.Black else Color(0xFFE8EAF6),
+                                badgeBorder = if (highContrast) Color.White else Color(0xFF3F51B5),
+                                iconTint = if (highContrast) PictoColors.HighlightHighContrast else Color(0xFF3F51B5),
+                                completedCount = learningStats.completedByMode[LearningActivityType.MATCH_WORD] ?: 0,
+                                highContrast = highContrast,
+                                hapticsEnabled = hapticsEnabled,
+                                onStart = {
+                                    activeSubActivity = LearningActivityType.MATCH_WORD
+                                }
+                            )
+                        }
+
+                        // Actividad adicional: Frases guiadas
                         item {
                             ActivityHubCard(
                                 title = "Frases guiadas",
@@ -313,6 +511,7 @@ fun LearningScreen(
                                 badgeColor = if (highContrast) Color.Black else Color(0xFFF3E5F5),
                                 badgeBorder = if (highContrast) Color.White else Color(0xFF7B1FA2),
                                 iconTint = if (highContrast) PictoColors.HighlightHighContrast else Color(0xFF7B1FA2),
+                                completedCount = learningStats.completedByMode[LearningActivityType.GUIDED_PHRASES] ?: 0,
                                 highContrast = highContrast,
                                 hapticsEnabled = hapticsEnabled,
                                 onStart = {
@@ -363,6 +562,7 @@ private fun ActivityHubCard(
     iconTint: Color,
     highContrast: Boolean,
     hapticsEnabled: Boolean,
+    completedCount: Int = 0,
     onStart: () -> Unit
 ) {
     val hapticFeedback = LocalHapticFeedback.current
@@ -412,12 +612,28 @@ private fun ActivityHubCard(
                 Spacer(Modifier.width(PictoDimens.SpaceMedium))
 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = if (highContrast) Color.White else MaterialTheme.colorScheme.onSurface
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = if (highContrast) Color.White else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                        if (completedCount > 0) {
+                            Text(
+                                text = "✓ $completedCount",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.ExtraBold,
+                                color = if (highContrast) PictoColors.HighlightHighContrast else PictoColors.Success,
+                                modifier = Modifier.padding(start = 6.dp)
+                            )
+                        }
+                    }
                     Spacer(Modifier.height(PictoDimens.SpaceExtraSmall))
                     Text(
                         text = description,

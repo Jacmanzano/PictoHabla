@@ -21,9 +21,28 @@ class SettingsRepository(context: Context) {
     private val _settings = MutableStateFlow(loadSettings())
     val settings: StateFlow<UserSettings> = _settings.asStateFlow()
 
+    private fun sanitizeLanguage(code: String?): String {
+        return when (code?.trim()?.uppercase()) {
+            "EN" -> "EN"
+            else -> "ES"
+        }
+    }
+
+    private fun resolveDefaultLanguage(): String {
+        val systemLang = java.util.Locale.getDefault().language
+        return if (systemLang.equals("en", ignoreCase = true)) "EN" else "ES"
+    }
+
     private fun loadSettings(): UserSettings {
+        val rawLanguage = if (prefs.contains(KEY_LANGUAGE)) {
+            prefs.getString(KEY_LANGUAGE, "ES")
+        } else {
+            resolveDefaultLanguage()
+        }
+        val languageCode = sanitizeLanguage(rawLanguage)
+
         return UserSettings(
-            languageCode = prefs.getString(KEY_LANGUAGE, "ES") ?: "ES",
+            languageCode = languageCode,
             speechSpeed = prefs.getFloat(KEY_SPEED, 1.0f),
             speechPitch = prefs.getFloat(KEY_PITCH, 1.0f),
             highContrast = prefs.getBoolean(KEY_HIGH_CONTRAST, false),
@@ -34,8 +53,9 @@ class SettingsRepository(context: Context) {
     }
 
     fun setLanguage(code: String) {
-        prefs.edit().putString(KEY_LANGUAGE, code).apply()
-        _settings.value = _settings.value.copy(languageCode = code)
+        val sanitized = sanitizeLanguage(code)
+        prefs.edit().putString(KEY_LANGUAGE, sanitized).apply()
+        _settings.value = _settings.value.copy(languageCode = sanitized)
     }
 
     fun setSpeechSpeed(speed: Float) {

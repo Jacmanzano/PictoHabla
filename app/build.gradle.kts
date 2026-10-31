@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.cmanzano.pictohabla"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.cmanzano.pictohabla"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -38,6 +38,14 @@ android {
     buildFeatures {
         compose = true
     }
+    androidResources {
+        localeFilters += listOf("es", "en")
+    }
+    bundle {
+        language {
+            enableSplit = false
+        }
+    }
 }
 
 dependencies {
@@ -59,6 +67,8 @@ dependencies {
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.okhttp.mockwebserver)
+    testImplementation("org.json:json:20240303")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.cmanzano.pictohabla.core.model.Category
 import com.cmanzano.pictohabla.core.model.GuidedPhrase
 import com.cmanzano.pictohabla.core.model.Pictogram
+import com.cmanzano.pictohabla.core.network.ArasaacTranslationHelper
 
 /**
  * Catálogo de inicio integrado con vocabulario esencial de comunicación (AAC Core Vocabulary)
@@ -30,12 +31,28 @@ object DefaultCatalog {
         category: Category,
         arasaacId: Int
     ): Pictogram {
+        val trans = ArasaacTranslationHelper.getTranslation(arasaacId)
+        val finalNames = if (trans != null) {
+            mapOf(
+                "ES" to (names["ES"] ?: trans.nameEs),
+                "EN" to (names["EN"] ?: trans.nameEn)
+            )
+        } else names
+
+        val keywordsMap = if (trans != null) {
+            mapOf(
+                "ES" to trans.keywordsEs,
+                "EN" to trans.keywordsEn
+            )
+        } else emptyMap()
+
         return Pictogram(
             id = id,
-            names = names,
+            names = finalNames,
             category = category,
             icon = icon,
-            arasaacId = arasaacId
+            arasaacId = arasaacId,
+            keywords = keywordsMap
         )
     }
 
@@ -49,14 +66,30 @@ object DefaultCatalog {
         digit: Int,
         arasaacId: Int
     ): Pictogram {
+        val trans = ArasaacTranslationHelper.getTranslation(arasaacId)
+        val finalNames = if (trans != null) {
+            mapOf(
+                "ES" to (names["ES"] ?: trans.nameEs),
+                "EN" to (names["EN"] ?: trans.nameEn)
+            )
+        } else names
+
+        val keywordsMap = if (trans != null) {
+            mapOf(
+                "ES" to trans.keywordsEs,
+                "EN" to trans.keywordsEn
+            )
+        } else emptyMap()
+
         return Pictogram(
             id = id,
-            names = names,
+            names = finalNames,
             category = Category.NUMBERS,
             icon = icon,
             isNumber = true,
             digit = digit,
-            arasaacId = arasaacId
+            arasaacId = arasaacId,
+            keywords = keywordsMap
         )
     }
 
@@ -78,16 +111,16 @@ object DefaultCatalog {
 
         // 0..9 NÚMEROS (NUMBERS) - ARASAAC IDs 2626..2635
         val numNames = listOf(
-            mapOf("ES" to "cero", "EN" to "zero", "FR" to "zéro", "DE" to "null", "IT" to "zero"),
-            mapOf("ES" to "uno", "EN" to "one", "FR" to "un", "DE" to "eins", "IT" to "uno"),
-            mapOf("ES" to "dos", "EN" to "two", "FR" to "deux", "DE" to "zwei", "IT" to "due"),
-            mapOf("ES" to "tres", "EN" to "three", "FR" to "trois", "DE" to "drei", "IT" to "tre"),
-            mapOf("ES" to "cuatro", "EN" to "four", "FR" to "quatre", "DE" to "vier", "IT" to "quattro"),
-            mapOf("ES" to "cinco", "EN" to "five", "FR" to "cinq", "DE" to "fünf", "IT" to "cinque"),
-            mapOf("ES" to "seis", "EN" to "six", "FR" to "six", "DE" to "sechs", "IT" to "sei"),
-            mapOf("ES" to "siete", "EN" to "seven", "FR" to "sept", "DE" to "sieben", "IT" to "sette"),
-            mapOf("ES" to "ocho", "EN" to "eight", "FR" to "huit", "DE" to "acht", "IT" to "otto"),
-            mapOf("ES" to "nueve", "EN" to "nine", "FR" to "neuf", "DE" to "neun", "IT" to "nove")
+            mapOf("ES" to "cero", "EN" to "zero"),
+            mapOf("ES" to "uno", "EN" to "one"),
+            mapOf("ES" to "dos", "EN" to "two"),
+            mapOf("ES" to "tres", "EN" to "three"),
+            mapOf("ES" to "cuatro", "EN" to "four"),
+            mapOf("ES" to "cinco", "EN" to "five"),
+            mapOf("ES" to "seis", "EN" to "six"),
+            mapOf("ES" to "siete", "EN" to "seven"),
+            mapOf("ES" to "ocho", "EN" to "eight"),
+            mapOf("ES" to "nueve", "EN" to "nine")
         )
         val numArasaacIds = listOf(2626, 2627, 2628, 2629, 2630, 2631, 2632, 2633, 2634, 2635)
         for (i in 0..9) {
@@ -103,12 +136,12 @@ object DefaultCatalog {
         }
 
         // --- VOCABULARIO ESENCIAL Y SOCIAL (SOCIAL / QUESTIONS / ACTIONS / FOOD / FEELINGS) ---
-        list.add(createPicto(1, mapOf("ES" to "Hola", "EN" to "Hello", "FR" to "Bonjour", "DE" to "Hallo", "IT" to "Ciao"), Icons.Default.WavingHand, Category.SOCIAL, 6009))
-        list.add(createPicto(2, mapOf("ES" to "Gracias", "EN" to "Thanks", "FR" to "Merci", "DE" to "Danke", "IT" to "Grazie"), Icons.Default.Favorite, Category.SOCIAL, 8129))
-        list.add(createPicto(3, mapOf("ES" to "Por favor", "EN" to "Please", "FR" to "S'il vous plaît", "DE" to "Bitte", "IT" to "Per favore"), Icons.Default.ThumbUp, Category.SOCIAL, 8195))
-        list.add(createPicto(4, mapOf("ES" to "Adiós", "EN" to "Bye", "FR" to "Au revoir", "DE" to "Tschüss", "IT" to "Ciao"), Icons.AutoMirrored.Filled.Logout, Category.SOCIAL, 6028))
-        list.add(createPicto(5, mapOf("ES" to "Sí", "EN" to "Yes", "FR" to "Oui", "DE" to "Ja", "IT" to "Sì"), Icons.Default.CheckCircle, Category.QUESTIONS, 5584))
-        list.add(createPicto(6, mapOf("ES" to "No", "EN" to "No", "FR" to "Non", "DE" to "Nein", "IT" to "No"), Icons.Default.Cancel, Category.QUESTIONS, 5526))
+        list.add(createPicto(1, mapOf("ES" to "Hola", "EN" to "Hello"), Icons.Default.WavingHand, Category.SOCIAL, 6009))
+        list.add(createPicto(2, mapOf("ES" to "Gracias", "EN" to "Thanks"), Icons.Default.Favorite, Category.SOCIAL, 8129))
+        list.add(createPicto(3, mapOf("ES" to "Por favor", "EN" to "Please"), Icons.Default.ThumbUp, Category.SOCIAL, 8195))
+        list.add(createPicto(4, mapOf("ES" to "Adiós", "EN" to "Bye"), Icons.AutoMirrored.Filled.Logout, Category.SOCIAL, 6028))
+        list.add(createPicto(5, mapOf("ES" to "Sí", "EN" to "Yes"), Icons.Default.CheckCircle, Category.QUESTIONS, 5584))
+        list.add(createPicto(6, mapOf("ES" to "No", "EN" to "No"), Icons.Default.Cancel, Category.QUESTIONS, 5526))
         list.add(createPicto(7, mapOf("ES" to "Perdón", "EN" to "Sorry"), Icons.Default.SentimentDissatisfied, Category.SOCIAL, 11625))
         list.add(createPicto(8, mapOf("ES" to "Tengo hambre", "EN" to "I am hungry"), Icons.Default.Restaurant, Category.FOOD, 7272))
         list.add(createPicto(9, mapOf("ES" to "Tengo sed", "EN" to "I am thirsty"), Icons.Default.LocalDrink, Category.FOOD, 7273))
@@ -166,7 +199,7 @@ object DefaultCatalog {
         list.add(createPicto(56, mapOf("ES" to "Tengo calor", "EN" to "I am hot"), Icons.Default.WbSunny, Category.FEELINGS, 6952))
 
         // --- LUGARES (PLACES) ---
-        list.add(createPicto(60, mapOf("ES" to "Casa", "EN" to "Home"), Icons.Default.Home, Category.PLACES, 2317))
+        list.add(createPicto(60, mapOf("ES" to "Casa", "EN" to "House"), Icons.Default.Home, Category.PLACES, 2317))
         list.add(createPicto(61, mapOf("ES" to "Baño", "EN" to "Bathroom"), Icons.Default.Wc, Category.PLACES, 6929))
         list.add(createPicto(62, mapOf("ES" to "Colegio", "EN" to "School"), Icons.Default.School, Category.PLACES, 3082))
         list.add(createPicto(63, mapOf("ES" to "Parque", "EN" to "Park"), Icons.Default.Park, Category.PLACES, 2859))
@@ -229,23 +262,23 @@ object DefaultCatalog {
 
         return listOf(
             GuidedPhrase(
-                mapOf("ES" to "Tengo hambre", "EN" to "I'm hungry", "FR" to "J'ai faim", "DE" to "Ich habe Hunger", "IT" to "Ho fame"),
+                mapOf("ES" to "Tengo hambre", "EN" to "I'm hungry"),
                 listOf(findPicto(20), findPicto(30), findPicto(31), findPicto(40))
             ),
             GuidedPhrase(
-                mapOf("ES" to "Saludar", "EN" to "Greeting", "FR" to "Saluer", "DE" to "Grüßen", "IT" to "Salutare"),
+                mapOf("ES" to "Saludar", "EN" to "Greeting"),
                 listOf(findPicto(1), findPicto(21))
             ),
             GuidedPhrase(
-                mapOf("ES" to "Ir al baño", "EN" to "Go to bathroom", "FR" to "Aller aux toilettes", "DE" to "Zur Toilette gehen", "IT" to "Andare in bagno"),
+                mapOf("ES" to "Ir al baño", "EN" to "Go to bathroom"),
                 listOf(findPicto(20), findPicto(30), findPicto(61))
             ),
             GuidedPhrase(
-                mapOf("ES" to "Día y Hora", "EN" to "Day and Time", "FR" to "Jour et Heure", "DE" to "Tag und Uhrzeit", "IT" to "Giorno e Ora"),
+                mapOf("ES" to "Día y Hora", "EN" to "Day and Time"),
                 listOf(findPicto(102), findPicto(103))
             ),
             GuidedPhrase(
-                mapOf("ES" to "Me duele algo", "EN" to "Something hurts", "FR" to "J'ai mal", "DE" to "Etwas tut weh", "IT" to "Mi fa male"),
+                mapOf("ES" to "Me duele algo", "EN" to "Something hurts"),
                 listOf(findPicto(20), findPicto(54), findPicto(80))
             )
         )

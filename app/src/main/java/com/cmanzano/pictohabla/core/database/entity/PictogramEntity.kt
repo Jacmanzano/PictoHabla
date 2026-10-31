@@ -26,11 +26,13 @@ data class PictogramEntity(
     val speechText: String? = null,
     val isCustom: Boolean = false,
     val orderIndex: Int = 0,
-    val arasaacId: Int? = null
+    val arasaacId: Int? = null,
+    val keywordsEs: String = "",
+    val keywordsEn: String = ""
 ) {
     /**
      * Convierte la entidad de Room al modelo de dominio [Pictogram],
-     * enlazando su icono estático y su ID oficial ARASAAC desde [DefaultCatalog] si existe.
+     * enlazando su icono estático, etiquetas bilingües y palabras clave desde [DefaultCatalog] si procede.
      */
     fun toDomain(): Pictogram {
         val category = try {
@@ -39,15 +41,54 @@ data class PictogramEntity(
             Category.THINGS
         }
 
+        val catalogMatch = DefaultCatalog.getFullCatalog().find { it.id == id }
+
         val names = mutableMapOf<String, String>().apply {
-            if (nameEs.isNotBlank()) put("ES", nameEs)
-            if (nameEn.isNotBlank()) put("EN", nameEn)
-            if (nameFr.isNotBlank()) put("FR", nameFr)
-            if (nameDe.isNotBlank()) put("DE", nameDe)
-            if (nameIt.isNotBlank()) put("IT", nameIt)
+            if (nameEs.isNotBlank()) {
+                put("ES", nameEs)
+            } else if (catalogMatch != null) {
+                put("ES", catalogMatch.getName("ES"))
+            }
+
+            if (nameEn.isNotBlank() && !nameEn.equals(nameEs, ignoreCase = true)) {
+                put("EN", nameEn)
+            } else if (catalogMatch != null && catalogMatch.names.containsKey("EN")) {
+                put("EN", catalogMatch.getName("EN"))
+            } else if (arasaacId != null) {
+                val offline = com.cmanzano.pictohabla.core.network.ArasaacTranslationHelper.getTranslation(arasaacId)
+                if (offline != null && offline.nameEn.isNotBlank()) {
+                    put("EN", offline.nameEn)
+                } else if (nameEn.isNotBlank()) {
+                    put("EN", nameEn)
+                }
+            } else if (nameEn.isNotBlank()) {
+                put("EN", nameEn)
+            }
         }
 
-        val catalogMatch = DefaultCatalog.getFullCatalog().find { it.id == id }
+        val keywordsMap = mutableMapOf<String, List<String>>().apply {
+            if (keywordsEs.isNotBlank()) {
+                put("ES", keywordsEs.split(",").map { it.trim() }.filter { it.isNotEmpty() })
+            } else if (catalogMatch != null && catalogMatch.keywords.containsKey("ES")) {
+                put("ES", catalogMatch.getKeywords("ES"))
+            } else if (arasaacId != null) {
+                val offline = com.cmanzano.pictohabla.core.network.ArasaacTranslationHelper.getTranslation(arasaacId)
+                if (offline != null && offline.keywordsEs.isNotEmpty()) {
+                    put("ES", offline.keywordsEs)
+                }
+            }
+
+            if (keywordsEn.isNotBlank() && !keywordsEn.equals(keywordsEs, ignoreCase = true)) {
+                put("EN", keywordsEn.split(",").map { it.trim() }.filter { it.isNotEmpty() })
+            } else if (catalogMatch != null && catalogMatch.keywords.containsKey("EN")) {
+                put("EN", catalogMatch.getKeywords("EN"))
+            } else if (arasaacId != null) {
+                val offline = com.cmanzano.pictohabla.core.network.ArasaacTranslationHelper.getTranslation(arasaacId)
+                if (offline != null && offline.keywordsEn.isNotEmpty()) {
+                    put("EN", offline.keywordsEn)
+                }
+            }
+        }
 
         val staticIcon = if (isNumber && digit != null) {
             DefaultCatalog.getNumberIcon(digit)
@@ -60,6 +101,7 @@ data class PictogramEntity(
         return Pictogram(
             id = id,
             names = names,
+            keywords = keywordsMap,
             icon = staticIcon,
             imageUrl = customImageUrl,
             localImagePath = localImagePath,
@@ -78,9 +120,9 @@ data class PictogramEntity(
                 id = domain.id,
                 nameEs = domain.names["ES"] ?: "",
                 nameEn = domain.names["EN"] ?: "",
-                nameFr = domain.names["FR"] ?: "",
-                nameDe = domain.names["DE"] ?: "",
-                nameIt = domain.names["IT"] ?: "",
+                nameFr = "",
+                nameDe = "",
+                nameIt = "",
                 categoryName = domain.category.name,
                 isNumber = domain.isNumber,
                 digit = domain.digit,
@@ -89,7 +131,9 @@ data class PictogramEntity(
                 speechText = domain.speechText,
                 isCustom = domain.isCustom,
                 orderIndex = order,
-                arasaacId = domain.arasaacId
+                arasaacId = domain.arasaacId,
+                keywordsEs = domain.keywords["ES"]?.joinToString(", ") ?: "",
+                keywordsEn = domain.keywords["EN"]?.joinToString(", ") ?: ""
             )
         }
     }

@@ -548,9 +548,7 @@ private fun AddPictogramsDialog(
     val filteredPictos = remember(allPictograms, searchText, selectedCategory, languageCode) {
         allPictograms.filter { picto ->
             val matchesCategory = selectedCategory == null || picto.category == selectedCategory
-            val matchesSearch = searchText.isBlank() || picto.getName(languageCode)
-                .normalizeForSearch()
-                .contains(searchText.normalizeForSearch())
+            val matchesSearch = searchText.isBlank() || picto.matchesSearch(searchText, languageCode)
             matchesCategory && matchesSearch
         }
     }
