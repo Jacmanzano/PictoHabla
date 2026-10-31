@@ -16,6 +16,7 @@ import com.cmanzano.pictohabla.common.util.HashUtils;
 import com.cmanzano.pictohabla.config.AppProperties;
 import com.cmanzano.pictohabla.security.JwtService;
 import com.cmanzano.pictohabla.security.SecurityUser;
+import com.cmanzano.pictohabla.teacher.Role;
 import com.cmanzano.pictohabla.teacher.Teacher;
 import com.cmanzano.pictohabla.teacher.TeacherRepository;
 import com.cmanzano.pictohabla.teacher.TeacherStatus;
@@ -101,7 +102,8 @@ public class AuthService {
                 normalizedEmail,
                 passwordEncoder.encode(request.password()),
                 request.fullName().trim(),
-                initialStatus
+                initialStatus,
+                Role.TEACHER
         );
 
         if (requireVerification) {
@@ -223,7 +225,7 @@ public class AuthService {
         );
         refreshTokenRepository.save(newToken);
 
-        String newAccessToken = jwtService.generateAccessToken(teacher.getId(), teacher.getEmail(), teacher.getFullName());
+        String newAccessToken = jwtService.generateAccessToken(teacher.getId(), teacher.getEmail(), teacher.getFullName(), teacher.getRole());
         setRefreshCookie(response, newRawRefreshToken, refreshDays);
 
         return AuthResponse.of(
@@ -309,7 +311,7 @@ public class AuthService {
     }
 
     private AuthResponse createAuthSession(Teacher teacher, HttpServletResponse response) {
-        String accessToken = jwtService.generateAccessToken(teacher.getId(), teacher.getEmail(), teacher.getFullName());
+        String accessToken = jwtService.generateAccessToken(teacher.getId(), teacher.getEmail(), teacher.getFullName(), teacher.getRole());
 
         String rawRefreshToken = UUID.randomUUID().toString() + "-" + UUID.randomUUID().toString();
         String tokenHash = HashUtils.sha256Hex(rawRefreshToken);

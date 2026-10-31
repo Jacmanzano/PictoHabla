@@ -57,7 +57,7 @@ services:
         max-file: "3"
 
   backend:
-    image: pictohabla-backend:1.0.0
+    image: pictohabla-backend:1.0.1
     container_name: pictohabla-backend
     restart: unless-stopped
     depends_on:

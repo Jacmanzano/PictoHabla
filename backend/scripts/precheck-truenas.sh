@@ -155,7 +155,7 @@ if [ ! -d "${SCRIPTS_DIR}" ] && [ -d "/mnt/Datos/PictoHabla/scripts" ]; then
 fi
 if [ -d "${SCRIPTS_DIR}" ]; then
     echo "  ${GREEN}✔${NC} Directorio de scripts existe: ${SCRIPTS_DIR}"
-    for script_file in backup.sh restore.sh precheck-truenas.sh; do
+    for script_file in backup.sh restore.sh precheck-truenas.sh bootstrap-admin.sh; do
         if [ -f "${SCRIPTS_DIR}/${script_file}" ]; then
             if [ -x "${SCRIPTS_DIR}/${script_file}" ]; then
                 echo "    ${GREEN}✔${NC} Script ejecutable: ${script_file}"
@@ -170,11 +170,23 @@ else
     echo "       Créalo con: mkdir -p ${SCRIPTS_DIR}"
 fi
 
-# -----------------------------------------------------------------------------
-# 3. Red Docker de Cloudflare Tunnel
-# -----------------------------------------------------------------------------
-echo ""
-echo "${BLUE}[3/7] Verificando red Docker de Cloudflare Tunnel...${NC}"
+# Directorio de Fuentes y Definición de App
+SOURCE_DIR="/mnt/Datos/Aplicaciones/PictoHabla/source/backend"
+if [ -d "${SOURCE_DIR}" ]; then
+    echo "  ${GREEN}✔${NC} Directorio de código fuente detectado: ${SOURCE_DIR}"
+    if [ -f "${SOURCE_DIR}/compose.truenas.yaml" ]; then
+        echo "    ${GREEN}✔${NC} compose.truenas.yaml presente."
+    else
+        echo "    ${YELLOW}⚠${NC} compose.truenas.yaml no encontrado en ${SOURCE_DIR}."
+        WARNINGS=$((WARNINGS + 1))
+    fi
+    if [ -f "${SOURCE_DIR}/Dockerfile" ]; then
+        echo "    ${GREEN}✔${NC} Dockerfile presente."
+    else
+        echo "    ${YELLOW}⚠${NC} Dockerfile no encontrado en ${SOURCE_DIR}."
+        WARNINGS=$((WARNINGS + 1))
+    fi
+fi
 CF_NETWORK="ix-cloudflared_default"
 CF_SUBNET=""
 if docker network inspect "${CF_NETWORK}" >/dev/null 2>&1; then
@@ -286,14 +298,14 @@ fi
 # -----------------------------------------------------------------------------
 echo ""
 echo "${BLUE}[6/7] Verificando disponibilidad de la imagen Docker...${NC}"
-IMAGE_NAME="pictohabla-backend:1.0.0"
+IMAGE_NAME="pictohabla-backend:1.0.1"
 if docker image inspect "${IMAGE_NAME}" >/dev/null 2>&1; then
     IMAGE_SIZE=$(docker image inspect "${IMAGE_NAME}" -f '{{.Size}}' 2>/dev/null | awk '{printf "%.1f MB", $1/1024/1024}')
     echo "  ${GREEN}✔${NC} Imagen ${IMAGE_NAME} presente en el almacén local de Docker (${IMAGE_SIZE})."
 else
     echo "  ${YELLOW}ℹ${NC} Imagen '${IMAGE_NAME}' no existe aún en Docker."
     echo "       Opciones de despliegue antes de iniciar:"
-    echo "       A) Construcción local en TrueNAS: docker build -t ${IMAGE_NAME} /mnt/Datos/Aplicaciones/PictoHabla/build"
+    echo "       A) Construcción local en TrueNAS: cd /mnt/Datos/Aplicaciones/PictoHabla/source/backend && docker build -t ${IMAGE_NAME} ."
     echo "       B) Carga de tar precompilado:   docker load -i /mnt/Datos/Aplicaciones/PictoHabla/${IMAGE_NAME}.tar.gz"
 fi
 

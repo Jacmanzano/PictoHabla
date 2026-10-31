@@ -6,6 +6,7 @@ import com.cmanzano.pictohabla.teacher.dto.TeacherResponse;
 import com.cmanzano.pictohabla.teacher.dto.UpdateTeacherRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1/teachers")
+@PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
 public class TeacherController {
 
     private final TeacherService teacherService;

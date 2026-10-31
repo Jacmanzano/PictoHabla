@@ -34,6 +34,10 @@ public class Teacher {
     @Column(name = "status", nullable = false, length = 50)
     private TeacherStatus status = TeacherStatus.ACTIVE;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", nullable = false, length = 20)
+    private Role role = Role.TEACHER;
+
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified = false;
 
@@ -65,11 +69,16 @@ public class Teacher {
     }
 
     public Teacher(UUID id, String email, String passwordHash, String fullName, TeacherStatus status) {
+        this(id, email, passwordHash, fullName, status, Role.TEACHER);
+    }
+
+    public Teacher(UUID id, String email, String passwordHash, String fullName, TeacherStatus status, Role role) {
         this.id = id != null ? id : UUID.randomUUID();
         this.email = email != null ? email.trim().toLowerCase() : null;
         this.passwordHash = passwordHash;
         this.fullName = fullName != null ? fullName.trim() : null;
         this.status = status != null ? status : TeacherStatus.ACTIVE;
+        this.role = role != null ? role : Role.TEACHER;
     }
 
     @PrePersist
@@ -84,6 +93,9 @@ public class Teacher {
         updatedAt = now;
         if (email != null) {
             email = email.trim().toLowerCase();
+        }
+        if (role == null) {
+            role = Role.TEACHER;
         }
     }
 
@@ -133,6 +145,14 @@ public class Teacher {
 
     public void setStatus(TeacherStatus status) {
         this.status = status;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role != null ? role : Role.TEACHER;
     }
 
     public boolean isEmailVerified() {

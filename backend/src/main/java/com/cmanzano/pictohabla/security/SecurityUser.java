@@ -1,5 +1,6 @@
 package com.cmanzano.pictohabla.security;
 
+import com.cmanzano.pictohabla.teacher.Role;
 import com.cmanzano.pictohabla.teacher.Teacher;
 import com.cmanzano.pictohabla.teacher.TeacherStatus;
 import org.springframework.security.core.GrantedAuthority;
@@ -15,6 +16,7 @@ public class SecurityUser implements UserDetails {
     private final UUID id;
     private final String email;
     private final String passwordHash;
+    private final Role role;
     private final boolean active;
     private final boolean accountNonLocked;
     private final Collection<? extends GrantedAuthority> authorities;
@@ -23,13 +25,18 @@ public class SecurityUser implements UserDetails {
         this.id = teacher.getId();
         this.email = teacher.getEmail();
         this.passwordHash = teacher.getPasswordHash();
+        this.role = teacher.getRole() != null ? teacher.getRole() : Role.TEACHER;
         this.active = teacher.getStatus() != TeacherStatus.SUSPENDED;
         this.accountNonLocked = teacher.isAccountNonLocked();
-        this.authorities = List.of(new SimpleGrantedAuthority("ROLE_TEACHER"));
+        this.authorities = List.of(new SimpleGrantedAuthority("ROLE_" + this.role.name()));
     }
 
     public UUID getId() {
         return id;
+    }
+
+    public Role getRole() {
+        return role;
     }
 
     @Override

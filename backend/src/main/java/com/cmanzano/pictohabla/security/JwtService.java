@@ -1,6 +1,7 @@
 package com.cmanzano.pictohabla.security;
 
 import com.cmanzano.pictohabla.config.AppProperties;
+import com.cmanzano.pictohabla.teacher.Role;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -35,20 +36,26 @@ public class JwtService {
                 : 15;
     }
 
-    public String generateAccessToken(UUID teacherId, String email, String fullName) {
+    public String generateAccessToken(UUID teacherId, String email, String fullName, Role role) {
         Instant now = Instant.now();
         Instant expiry = now.plus(accessTokenExpirationMinutes, ChronoUnit.MINUTES);
+        Role effectiveRole = role != null ? role : Role.TEACHER;
 
         return Jwts.builder()
                 .issuer(ISSUER)
                 .subject(teacherId.toString())
                 .claim("email", email)
                 .claim("name", fullName)
-                .claim("role", "ROLE_TEACHER")
+                .claim("role", effectiveRole.name())
+                .claim("authority", "ROLE_" + effectiveRole.name())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiry))
                 .signWith(signingKey)
                 .compact();
+    }
+
+    public String generateAccessToken(UUID teacherId, String email, String fullName) {
+        return generateAccessToken(teacherId, email, fullName, Role.TEACHER);
     }
 
     public boolean validateToken(String token) {
@@ -72,6 +79,25 @@ public class JwtService {
     public String extractEmail(String token) {
         Claims claims = extractAllClaims(token);
         return claims.get("email", String.class);
+    }
+
+    public Role extractRole(String token) {
+        Claims claims = extractAllClaims(token);
+        String roleStr = claims.get("role", String.class);
+        if (roleStr == null) {
+            String authStr = claims.get("authority", String.class);
+            if (authStr != null && authStr.startsWith("ROLE_")) {
+                roleStr = authStr.substring(5);
+            }
+        }
+        if (roleStr != null && roleStr.startsWith("ROLE_")) {
+            roleStr = roleStr.substring(5);
+        }
+        try {
+            return roleStr != null ? Role.valueOf(roleStr) : Role.TEACHER;
+        } catch (IllegalArgumentException e) {
+            return Role.TEACHER;
+        }
     }
 
     public long getAccessTokenExpirationSeconds() {

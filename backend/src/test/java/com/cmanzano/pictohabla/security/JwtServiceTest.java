@@ -1,6 +1,7 @@
 package com.cmanzano.pictohabla.security;
 
 import com.cmanzano.pictohabla.config.AppProperties;
+import com.cmanzano.pictohabla.teacher.Role;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +36,22 @@ class JwtServiceTest {
         assertTrue(jwtService.validateToken(token));
         assertEquals(teacherId, jwtService.extractTeacherId(token));
         assertEquals(email, jwtService.extractEmail(token));
+        assertEquals(Role.TEACHER, jwtService.extractRole(token));
         assertEquals(900L, jwtService.getAccessTokenExpirationSeconds());
+    }
+
+    @Test
+    void generateAccessToken_WithAdminRole_ContainsAdminRole() {
+        UUID adminId = UUID.randomUUID();
+        String email = "admin@colegio.es";
+        String fullName = "Administrador Sistema";
+
+        String token = jwtService.generateAccessToken(adminId, email, fullName, Role.ADMIN);
+
+        assertNotNull(token);
+        assertTrue(jwtService.validateToken(token));
+        assertEquals(Role.ADMIN, jwtService.extractRole(token));
+        assertEquals(adminId, jwtService.extractTeacherId(token));
     }
 
     @Test

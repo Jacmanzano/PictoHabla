@@ -1,9 +1,12 @@
 package com.cmanzano.pictohabla.security;
 
+import com.cmanzano.pictohabla.teacher.Role;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,6 +20,8 @@ import java.io.IOException;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
     private final JwtService jwtService;
     private final CustomUserDetailsService userDetailsService;
@@ -42,6 +47,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
                 if (userDetails.isEnabled() && userDetails.isAccountNonLocked()) {
+                    // Verificación de integridad: el token nunca puede conceder privilegios superiores al rol real
+                    if (userDetails instanceof SecurityUser securityUser) {
+                        Role tokenRole = jwtService.extractRole(token);
+                        if (tokenRole == Role.ADMIN && securityUser.getRole() != Role.ADMIN) {
+                            log.warn("Alerta de seguridad: Discrepancia de rol en JWT para {}. Token declara ADMIN pero cuenta en base de datos es {}. Acceso denegado.", email, securityUser.getRole());
+                            filterChain.doFilter(request, response);
+                            return;
+                        }
+                    }
+
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
@@ -64,3 +79,4 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return null;
     }
 }
+

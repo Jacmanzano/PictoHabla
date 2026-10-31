@@ -3,7 +3,9 @@ package com.cmanzano.pictohabla.classroom;
 import com.cmanzano.pictohabla.classroom.dto.ClassroomRequest;
 import com.cmanzano.pictohabla.classroom.dto.ClassroomResponse;
 import com.cmanzano.pictohabla.classroom.dto.UpdateClassroomRequest;
+import com.cmanzano.pictohabla.common.exception.ForbiddenException;
 import com.cmanzano.pictohabla.common.exception.ResourceNotFoundException;
+import com.cmanzano.pictohabla.teacher.Role;
 import com.cmanzano.pictohabla.teacher.Teacher;
 import com.cmanzano.pictohabla.teacher.TeacherRepository;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,10 @@ public class ClassroomService {
     public ClassroomResponse createClassroom(UUID teacherId, ClassroomRequest request) {
         Teacher teacher = teacherRepository.findById(teacherId)
                 .orElseThrow(() -> new ResourceNotFoundException("Profesor no encontrado"));
+
+        if (teacher.getRole() != Role.TEACHER) {
+            throw new ForbiddenException("Solo los usuarios con rol de profesor pueden gestionar aulas de comunicación.");
+        }
 
         Classroom classroom = new Classroom(
                 UUID.randomUUID(),
